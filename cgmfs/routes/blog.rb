@@ -1,0 +1,984 @@
+class CGMFS
+
+
+# require 'date'
+def calculate_moon_phase(date)
+  current_date = Date.parse(date)
+  jd = current_date.jd
+  age = BigDecimal("#{(jd - 2451545.0) / 29.530588853}")
+  phase = age % 1
+  if phase < 0.05
+    name = "New Moon"
+    ascii_moon = "🌑"
+  elsif phase < 0.25
+    name = "Waxing Crescent"
+    ascii_moon = "🌖"
+  elsif phase < 0.5
+    name = "First Quarter"
+    ascii_moon = "🌗"
+  elsif phase < 0.75
+    name = "Waxing Gibbous"
+    ascii_moon = "🌘"
+  elsif phase < 0.95
+    name = "Full Moon"
+    ascii_moon = "🌕"
+  else
+    name = "Waning Gibbous"
+    ascii_moon = "🌘"
+  end
+  return name, ascii_moon, phase
+end
+
+
+
+  def tags2posts(tags_string, user, r)
+    parsed = ""
+    tags_string.split(", ").each do |tag|
+      parsed += "<a href='#{domain_name(r)}/blog/#{user}/tag/#{tag}'>[#{tag}]</a>&nbsp;"
+    end
+    parsed
+  end
+
+  def inflate(string)
+    Zlib::Inflate.inflate(string)
+  end
+
+  def deflate(string)
+    Zlib::Deflate.deflate(string)
+  end
+
+
+  def to_numer_string(words) # to get theoretical numerology number based on any type of character byte...
+
+
+
+
+    reduced_numbers= words.each_byte.inject(0) do |result, element|
+      result+element
+    end
+
+    reduced_numbers = reduced_numbers.to_s.split("").inject(0) do |result, element|
+      result.to_i+element.to_i
+    end
+
+    reduced_numbers
+
+
+  end
+
+  def domain_name(r)
+
+    if (!r)
+      return SERVER_IP_LOCAL if LOCAL # cgmfs.rb
+      return DOMAIN_NAME if !LOCAL # cgmfs.rb ##
+    end
+
+    if DEBUG
+      return "http://localhost:8080"
+    end
+
+    if (r.host == "localhost")
+      return "http://localhost:8080"
+    end
+
+    return "https://" + r.host
+
+
+  end
+
+  def logged_in?(r, user)
+    if session['user'] != user
+      r.redirect "#{domain_name(r)}/blog/login"
+    end
+  end
+
+  def private_view?(r, user)
+    if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'].nil?
+      @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'] = false
+      @@line_db[user].pad['blog_database', 'blog_profile_table'].save_everything_to_files!
+    end
+    if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'] == true && session['user'] != user && !LOCAL # add admin access later
+      r.redirect("#{domain_name(r)}/blog/")
+    elsif @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'] == true && session['user'] != user && LOCAL
+      r.redirect("#{SERVER_IP_LOCAL}/blog/") if LOCAL
+    end
+  end
+
+  # require_user_login_to_view?(user, r) # redirect to login if not logged in, or redirect to view if logged in
+  # private_poster?(user, r) # redirect to blog_view if private, or redirect to blog username if public
+  def require_user_login_to_view?(r, user, require_login)
+      if session['user'] != user && require_login
+        r.redirect("#{domain_name(r)}/blog/login")
+    elsif session['user'] == user
+        r.redirect("#{domain_name(r)}/blog/#{user}/view")
+    else
+      # code here for analytics tracking
+    end
+
+  end
+
+
+
+  def user_logged_in_check?(r, user)
+    logged_in = false
+    if session['user'] == user
+      logged_in = true
+    else
+      logged_in = false
+    end
+    logged_in
+  end
+
+  def private_poster?(user, r)
+    if @@line_db[user].pad['blog_database', 'blog_profile_table']['private_poster'] == true
+      r.redirect "#{domain_name(r)}" unless session['user'] == user && !LOCAL
+      r.redirect "#{SERVER_IP_LOCAL}" if session['user'] == user && LOCAL
+    end
+  end
+
+
+  def user_failcheck(username, r)
+    return if @@line_db.databases.include?(username)
+
+    # @@line_db.new_database!(username)
+    # @@line_db[username].pad.new_table!(database_name: "#{username}_database", database_table: "#{username}_table")
+    r.redirect "https://#{r.host}":8080 if LOCAL
+    r.redirect "https://#{r.host}" if !LOCAL
+  end
+
+  def redirect_if_id_not_in_db?(id, user, override_param, r)
+    redirect = false
+    db_id = nil
+    begin
+      db_id = @@line_db[user].pad['blog_database', 'blog_table'].get(id)
+    rescue StandardError
+      # redirect = true #r.redirect "https://midscore.io"
+    end
+
+    r.redirect "https://#{r.host}blog/#{user}/view" if override_param
+
+    return unless db_id.nil?
+
+    r.redirect "https://#{r.host}/blog/#{user}/view"
+
+    #  override = false
+    # end
+    # r.redirect("https://midscore.io") if !id && !override
+  end
+
+  # def check_boundaries!(id, user, r)
+  #
+  #     id = @@line_db[user].pad["blog_database", "blog_table"]
+  #     database_size = @@line_db[user].pad["blog_database", "blog_table"].data_arr.size - 1
+  #     if id > database_size || id < 0
+  #       r.redirect "https://midscore.io"
+  #     end
+  #   end
+  # end
+
+  hash_branch 'blog' do |r| # ss: screenshot
+    @start_rendering_time = Time.now.to_f
+    r.hash_branches
+    @r = r
+    r.is do
+      view("blog/blog", engine: 'html.erb', layout: 'layout.html')
+
+    end
+
+    r.on 'render' do
+      r.get do
+        @id = r.params['id']
+        log("ID: #{@id}")
+        @user = r.params['user'].to_s
+        if @id == "pin"
+          log("ID is pin")
+          #@pin = @@line_db[@user].pad['blog_database', 'blog_pinned_table'].get(0)
+          @body = @@line_db[@user].pad['blog_database', 'blog_pinned_table'].get(0)['blog_post_body'] # get pinned post
+          log("1")
+          @title = @@line_db[@user].pad['blog_database', 'blog_pinned_table'].get(0)['blog_post_title']
+          log("2")
+        else
+          log("ID is an integer")
+          @post = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id.to_i)
+
+          @rendered_type =             @post['blog_post_rendered_type']
+          @body = @post['blog_post_body']
+        end
+
+        if @rendered_type == 'markdown'
+          log("Rendering markdown") # stored as markdown in markdown variable; access accordingly
+          markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true, fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
+          @body =   @post['blog_post_body']
+          @markdown_body =@post['blog_post_body_markdown'] # save markdown body for later
+          log(@body)
+          @markdown_body = @body.to_s # save markdown body for later
+          @body = markdown.render(@markdown_body) if @rendered_type == 'markdown'
+
+        end
+
+
+
+
+
+
+
+%Q[
+<html>
+<title>(Raw): (#{to_numer_string(@body)}) - #{@title}</title>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="#{domain_name(r)}/assets/prism.css">
+</head>
+<body>
+
+#{@body}
+<script src="#{domain_name(r)}/assets/prism.js"></script>
+</body>
+</html>
+]
+      end
+    end
+
+
+    r.on 'logout' do
+      r.get do
+        session['admin'] = false
+        session['user'] = nil
+        session['password'] = nil
+        r.redirect(domain_name(r))
+      end
+    end
+
+    r.on 'login' do
+      r.is do
+        r.get do
+          # "test"
+          view('blog/login', engine: 'html.erb', layout: 'layout.html')
+        end
+
+        r.post do
+          # Code to login
+          user_name = r.params['blog_user_name'].to_s
+          password = r.params['blog_password_name'].to_s
+          message = ''
+          user_name_check = @@line_db[user_name]
+
+          if user_name_check.nil?
+            message = 'User does not exist'
+          else
+            user_password_check = @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].get(0)
+            password_check = user_password_check[user_name]
+            if password_check
+              session['user'] = user_name
+              session['password'] = password
+              r.redirect "/blog/#{user_name}/view"
+            else
+              message = 'Incorrect password'
+            end
+          end
+          "#{message}"
+        end
+      end
+    end
+
+    r.on '_ADMIN_SIGNUP_PROCESS_' do
+      r.is do
+        r.get do
+          user_name = r.params['user_name'].to_s.downcase
+          password = r.params['user_password'].to_s
+          admin_password = r.params['admin_pass'].to_s
+          message = 'User creation failed.'
+          user_name_check = @@line_db[user_name]
+          if (user_name_check.nil? && user_name != '' && password != '' && (admin_password == "859CDFE#F4E85"))
+            @@line_db.add_db!(user_name.downcase)
+            @@line_db.update_databases
+            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table') # load the blog database
+            @@line_db['user_blog_database'].pad.new_table!(database_name: 'user_name_database', database_table: 'user_name_table') # load the user blog database
+            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table')
+            puts "...Loading blog_pinned_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_pinned_table")
+            puts "...Loading blog_profile_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_profile_table")
+            puts  "...Loading blog_statistics_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_statistics_table")
+            puts "...Loading blog_profile_table..."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_profile_table")
+            @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].set(0) do |hash|
+              hash[user_name] = password
+            end
+            @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].save_everything_to_files!
+            message = 'User created successfully!'
+          end
+          # Define the folder to be zipped
+          puts Dir.pwd
+          folder_path = "/root/midscore_io/db"
+
+          # Define the location where the zip file will be placed
+          zip_location = "/root/midscore_io/db_backup"
+
+          # Create the zip file name
+          zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
+
+          # Create the system call to zip the folder
+          system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+          "#{message}"
+        end
+      end
+    end
+
+
+    r.on 'signup' do
+      r.is do
+        r.get do
+
+          #log("signup attempt made; signups are closed (view)")
+          view('blog/signup', engine: 'html.erb', layout: 'layout.html') # keep signups closed for now; open for our own personal purposes but needs to be closed for the public
+          #"Signups are closed; see an admin please."
+        end
+
+        r.post do
+          # Code to sign up
+          # use the LineDB to create a new database for the user
+          # use the LineDB to create a new table for the user
+          #log("signup attempt made; signups are closed (post)")
+          #r.redirect "https://onemoonpla.net/"
+          user_name = r.params['blog_user_name'].to_s.downcase
+          password = r.params['blog_password_name']
+          message = 'User creation failed.'
+          user_name_check = @@line_db[user_name]
+          if user_name_check.nil?
+            @@line_db.add_db!(user_name.downcase)
+            @@line_db.update_databases
+            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table') # load the blog database
+            @@line_db['user_blog_database'].pad.new_table!(database_name: 'user_name_database', database_table: 'user_name_table') # load the user blog database
+            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table')
+            puts "...Loading blog_pinned_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_pinned_table")
+            puts "...Loading blog_profile_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_profile_table")
+            puts  "...Loading blog_statistics_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_statistics_table")
+            puts "...Loading blog_profile_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_profile_table")
+            @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].set(0) do |hash|
+              hash[user_name] = password
+            end
+            @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].save_everything_to_files!
+            message = 'User created successfully!'
+            sleep(11)
+          elsif !user_name_check.nil? && session['admin']
+            @@line_db.add_db!(user_name.downcase)
+            @@line_db.update_databases
+            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table') # load the blog database
+            @@line_db['user_blog_database'].pad.new_table!(database_name: 'user_name_database', database_table: 'user_password_table') # load the user blog database
+            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table')
+            puts "...Loading blog_pinned_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_pinned_table")
+            puts "...Loading blog_profile_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_profile_table")
+            puts  "...Loading blog_statistics_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_statistics_table")
+            puts "...Loading blog_profile_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "blog_database", database_table: "blog_profile_table")
+
+            @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].set(0) do |hash|
+              hash[user_name] = password
+            end
+            @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].save_everything_to_files!
+            message = 'User created successfully! Admin override.'
+            sleep(11)
+          end
+          # r.redirect "https://#{r.host}/blog/login"
+          puts Dir.pwd
+          folder_path = "/root/midscore_io/db"
+
+          # Define the location where the zip file will be placed
+          zip_location = "/root/midscore_io/db_backup"
+
+          # Create the zip file name
+          zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
+
+          # Create the system call to zip the folder
+          system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+          sleep(11)
+          message
+        end
+      end
+    end
+
+    # for something like, "aritywolf", pre-emptively making dynamicable blog posters.
+    r.on String do |user|
+      user_failcheck(user, r)
+    #  require_user_login_to_view?(user, r) # redirect to login if not logged in, or redirect to view if logged in
+    #  private_poster?(user, r) # redirect to blog_view if private, or redirect to blog username if public
+
+      r.is do
+        r.redirect("#{domain_name(r)}/blog/#{user}/view")
+      end
+
+      r.on "pin" do
+
+        r.is do
+          logged_in?(r, user)
+          r.post do
+            @@line_db[user].pad["blog_database", "blog_pinned_table"].set(0) do |hash|
+              hash["blog_post_title"] = r.params["blog_post_title"].to_s
+              #hash["blog_post_content"] = r.params["blog_post_content"]
+              hash['blog_post_author'] = r.params['blog_post_author']
+              hash["blog_post_tags"] = r.params["blog_post_tags"].to_s
+              hash["blog_post_date"] = r.params["blog_post_date"].to_s
+              hash["blog_post_body"] = r.params["blog_post_body"].to_s
+              hash['blog_post_comments'] = r.params['blog_post_comments']
+              hash['blog_post_status'] = r.params['blog_post_status']
+              hash['blog_status_locked'] = r.params['blog_status_locked']
+              # hash["blog_post_id"] = r.params["blog_post_id"]
+            end
+            @@line_db[user].pad["blog_database", "blog_pinned_table"].save_everything_to_files!
+            r.redirect("#{domain_name(r)}/blog/#{user}/pin")
+
+            end
+          r.get do
+            @user = user
+            @r = r
+            @type = user_logged_in_check?(@r, @user)
+            #     @@line_db[db].pad.new_table!(database_name: "blog_database", database_table: "blog_pinned_table")
+
+            @title = "#{@user} pinned posts"
+            @post = @@line_db[@user].pad["blog_database", "blog_pinned_table"][0]
+            view("blog/pin", engine: 'html.erb', layout: 'layout.html')
+          end
+        end
+      end
+
+
+
+
+      r.on 'tag' do
+        r.is String do |tag|
+          r.get do
+            @user = user
+            @r = r
+            @tag = tag.gsub(/%20/, ' ')
+            @title = "#{@user} with tag #{@tag} in posts"
+            @posts = @@line_db[@user].pad["blog_database", "blog_table"][:all]
+            @tagged_posts = []
+
+            @posts.each_with_index do |post, index|
+             if post["blog_post_tags"] && post["blog_post_tags"].include?(@tag)
+                _post = index
+                # parse title, descriptions (optional), and tags
+                @tagged_posts << _post
+                #break
+              end
+            end
+          @tagged =  @tagged_posts.map do |id|
+              @@line_db[@user].pad['blog_database', 'blog_table'].get(id)
+            end
+          #  @post = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)
+
+            view("blog/tag", engine: 'html.erb', layout: 'layout.html')
+          end
+        end
+
+      end
+
+
+      r.on 'edit' do
+        logged_in?(r, user)
+        r.is Integer do |id|
+          redirect_if_id_not_in_db?(id, user, r.params['override'], r)
+          r.get do
+            @id = id
+            @r = r
+            @user = user
+            @post = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)
+            log("post: #{@post}")
+            @markdown_body = @post['blog_post_body_markdown']
+            if @markdown_body
+              log("markdown body exists: #{@markdown_body}")
+              @body = @markdown_body
+            else
+              log("markdown body does not exist")
+              @body = @post['blog_post_body']
+            end
+            # @body = @markdown_body if @markdown_body
+            @title = "Edit Blog Post - #{@post['title']} - #{@user}"
+            #markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true, fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
+            #@body = @body
+            #@body = @markdown_body if @markdown_body
+          #  hash['blog_post_rendered_type'] = r.params['rendered_type'].to_s  # add rendering type
+
+          #  hash['timestamp'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
+          ##endhash['blog_post_rendered_type'] = @rendered_type.to_s # add rendering type
+          @rendered_type = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)['blog_post_rendered_type']
+          log("blog post rendering type = #{@rendered_type}")
+          @@line_db[@user].pad['blog_database', 'blog_table'].save_everything_to_files!
+          case @rendered_type
+            when 'wysiwyg'
+              log("wysiwyg rendering type")
+              @view = 'blog/edit'
+              @rendered_type = 'wysiwyg'
+            when 'markdown'
+              log("markdown rendering type")
+              @view = 'blog/edit_markdown'
+              @rendered_type = 'markdown'
+            when 'html'
+              log("html rendering type")
+              @view = 'blog/edit_html'
+              @rendered_type = 'html'
+              # else
+              #   view('blog/new', engine: 'html.erb', layout: 'layout.html')
+            else
+              @view = 'blog/edit'
+              @rendered_type = 'wysiwyg'
+            end
+
+            puts Dir.pwd
+          folder_path = "/root/midscore_io/db"
+
+          # Define the location where the zip file will be placed
+          zip_location = "/root/midscore_io/db_backup"
+
+          # Create the zip file name
+          zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
+
+          # Create the system call to zip the folder
+          system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+          log("rendered type: #{@rendered_type}")
+            view(@view, engine: 'html.erb', layout: 'layout.html')
+          end
+        end
+
+        r.post do
+          # for post edits, check to see if markdown is enabled
+          # when you first post, you are sending markdown, but when you edit, you are sending html
+          # so, if you are editing, you need to convert the html to markdown
+          @user = user
+          @r = r
+          @_params = {}
+          valid = true
+          message = ""
+          # Code to edit a blog post
+          @_params['blog_post_title'] = r.params['blog_post_title'].to_s
+          @_params['blog_post_body'] = r.params['blog_post_body']
+          @_params['blog_post_tags'] = r.params['blog_post_tags'].to_s
+          @_params['blog_post_date'] = r.params['blog_post_date'].to_s
+          @_params['blog_post_author'] = r.params['blog_post_author'].to_s
+        #  @_params['blog_post_category'] = r.params['blog_post_category'].to_s
+          @_params['blog_post_body_markdown'] = r.params['blog_post_body_markdown'].to_s
+          @_params['blog_post_comments'] = r.params['blog_post_comments'].to_s
+          @_params['blog_post_status'] = r.params['blog_post_status'].to_s
+          @_params['blog_status_locked'] = r.params['blog_status_locked'].to_s
+          @rendered_type = @_params['rendered_type'] = r.params['rendered_type'].to_s
+          @_params['id'] = r.params['id'].to_i
+          parse_blog_status = r.params['blog_status_locked'].to_s
+          if parse_blog_status == '0'
+            @_params['blog_status_locked'] = false
+          elsif parse_blog_status == '1'
+            @_params['blog_status_locked'] = true
+          end
+          if (@_params['blog_post_title'] != "" && @_params['blog_post_body'] != "" && @_params['blog_post_tags'] != "" && @_params['blog_post_date'] != "" && @_params['blog_post_author'] != "")
+            valid = true
+          else
+            valid = false
+          end
+          @body = @_params['blog_post_body']
+          if @rendered_type == 'markdown'
+            log("Rendering markdown")
+            markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true, fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
+            @body =   @_params['blog_post_body_markdown']
+            log(@body)
+            @markdown_body = @body.to_s # save markdown body for later
+            @body = markdown.render(@body) if @rendered_type == 'markdown'
+
+          end
+
+          if valid
+            @@line_db[@user].pad['blog_database', 'blog_table'].set(@_params['id'].to_i) do |hash|
+              hash['blog_post_title'] = @_params['blog_post_title']
+              hash['blog_post_body'] = @body # the rendered html
+              log("blog post rendering type = #{@rendered_type}")
+              hash['blog_post_body_markdown'] = @_params['blog_post_body_markdown'] if @rendered_type == 'markdown' # the markdown body
+              hash['blog_post_tags'] = @_params['blog_post_tags']
+              hash['blog_post_date'] = @_params['blog_post_date']
+              hash['blog_post_author'] = @_params['blog_post_author']
+              #hash['blog_post_category'] = @_params['blog_post_category']
+              hash['blog_post_comments'] = @_params['blog_post_comments']
+              hash['blog_post_status'] = @_params['blog_post_status']
+              hash['blog_status_locked'] = @_params['blog_status_locked']
+              hash['id'] = @_params['id']
+            end
+            @@line_db[@user].pad['blog_database', 'blog_table'].save_everything_to_files!
+
+            # "done"
+            # id = @_params["id"].to_i
+            #  "id: #{r.params["id"]}"
+            puts Dir.pwd
+          folder_path = "/root/midscore_io/db"
+
+          # Define the location where the zip file will be placed
+          zip_location = "/root/midscore_io/db_backup"
+
+          # Create the zip file name
+          zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
+
+          # Create the system call to zip the folder
+          system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+
+            r.redirect("/blog/#{@user}/edit/#{@_params['id']}")
+          else
+            message = "Something was left blank; please fill in all fields."
+          end
+
+        end
+      end
+
+      r.on 'delete' do
+        logged_in?(r, user)
+        r.is Integer do |id|
+          r.get do
+            @r = r
+            @user = user
+            @id = id
+            @title = "LOCK Blog Post - #{@user} - #{@id}"
+            # Code to delete a blog post
+            @@line_db[@user].pad['blog_database', 'blog_table'].set(id) do |hash|
+              hash['blog_status_locked'] = !hash['blog_status_locked']
+              @locked = hash['blog_status_locked']
+            end
+            @@line_db[@user].pad['blog_database', 'blog_table'].save_everything_to_files!
+            # "#{@locked}"
+            puts Dir.pwd
+          folder_path = "/root/midscore_io/db"
+
+          # Define the location where the zip file will be placed
+          zip_location = "/root/midscore_io/db_backup"
+
+          # Create the zip file name
+          zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
+
+          # Create the system call to zip the folder
+          system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+            r.redirect("/blog/#{user}/delete")
+          end
+        end
+
+        r.get do
+          @r = r
+          @title = "Delete Blog Post - #{@user}"
+          @user = user
+          @posts = @@line_db[@user].pad['blog_database', 'blog_table'].data_arr
+          view('blog/delete', engine: 'html.erb', layout: 'layout.html')
+        end
+      end
+
+      r.is 'list' do
+        r.get do
+          @user = user
+          @r = r
+          @title = "List of Blog Posts - #{@user}"
+          @posts = @@line_db[@user].pad['blog_database', 'blog_table'].data_arr
+          view('blog/list', engine: 'html.erb', layout: 'layout.html')
+        end
+      end
+
+      r.is 'new' do
+        logged_in?(r, user)
+        r.get do
+          @user = user
+          @r = r
+          @title = 'New Blog Post'
+          @possible_rendering_types = ['wysiwyg', 'markdown', 'html']
+          @rendered_type = @r.params['rendered_type'].to_s
+          #log()
+          @rendered_type = 'wysiwyg' if @rendered_type == ''
+          @rendered_type = 'wysiwyg' if !@possible_rendering_types.include?(@rendered_type)
+
+      #    log("new: #{@rendered_type}")
+          case @rendered_type
+          when 'wysiwyg'
+            @view = 'blog/new'
+            #log("new: (@rendered_type) '#{@rendered_type}' chosen")
+          when 'markdown'
+            @view = 'blog/new_markdown'
+            #log("new: (@rendered_type) '#{}' chosen")
+          when 'html'
+            @view = 'blog/new_html'
+          #  log("new: (@rendered_type) '#{@rendered_type}' chosen")
+            # else
+            #   view('blog/new', engine: 'html.erb', layout: 'layout.html')
+          else
+            @view = 'blog/new'
+          #  @rendered_type = 'wysiwyg'
+            log("new: (@rendered_type) '#{@rendered_type}' chosen")
+          end
+
+
+          log("new: (@view) '#{@view}' chosen")
+          #if @rendered_type == 'wysiwyg'
+
+          view("#{@view}", engine: 'html.erb', layout: 'layout.html')
+        end
+
+        r.post do
+          @user = user
+          @r = r
+          valid = false
+          message = ""
+          @_params = {}
+
+          #  "test"
+          # Code to create a new blog post
+
+          @latest_id = @@line_db[@user].pad['blog_database', 'blog_table'].latest_id
+          @_params['blog_post_title'] = r.params['blog_post_title'].to_s
+          #@_params['blog_post_title'] = r.params['blog_post_title'].to_s
+          @_params['blog_post_body'] = r.params['blog_post_body'].to_s
+          @_params['blog_post_tags'] = r.params['blog_post_tags'].to_s
+          @_params['blog_post_date'] = r.params['blog_post_date'].to_s
+          @_params['blog_post_author'] = r.params['blog_post_author'].to_s
+          @_params['blog_post_body_markdown'] = r.params['blog_post_body_markdown'].to_s
+          #@_params['blog_post_category'] = r.params['blog_post_category'].to_s
+          @_params['blog_post_comments'] = r.params['blog_post_comments'].to_s
+          @_params['blog_post_status'] = r.params['blog_post_status'].to_s
+          @_params['blog_status_locked'] = false
+          if (@_params['blog_post_title'] != "" && (@_params['blog_post_body'] != "" ||@_params['blog_post_body_markdown'] != "") && @_params['blog_post_tags'] != "" && @_params['blog_post_date'] != "" && @_params['blog_post_author'] != "" && @_params['blog_post_category'] != "")
+            valid = true
+          else
+            valid = false
+          end
+
+          if valid
+
+          @body = r.params['blog_post_body'].to_s
+          # choose renderer between wysiwyg, markdown, or html
+          # markdown -> html
+          @possible_rendering_types = ['wysiwyg', 'markdown', 'html']
+          @rendered_type = r.params['rendered_type'].to_s # need to pass rendered_types param from get new to post new
+          log("blog upload then halt 483 post rendered type: #{@rendered_type}")
+          @rendered_type = 'wysiwyg' if @rendered_type == ''
+          @rendered_type = 'wysiwyg' if !@possible_rendering_types.include?(@rendered_type)
+          log("blog line 483 post rendered type: #{@rendered_type}")
+          if @rendered_type == 'markdown'
+            log("Rendering markdown")
+            markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true, fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
+            @body = r.params['blog_post_body_markdown'].to_s
+            @markdown_body = @body.to_s # save markdown body for later
+            @body = markdown.render(@markdown_body)
+
+          end
+
+          # wysiwyg -> html
+          # html -> html
+
+
+          @@line_db[@user].pad['blog_database', 'blog_table'].add do |hash|
+            hash['blog_post_title'] = @_params['blog_post_title']
+            hash['blog_post_body'] = @body
+            hash['blog_post_body_markdown'] = @markdown_body if @rendered_type == 'markdown'
+            hash['blog_post_tags'] = @_params['blog_post_tags']
+            hash['blog_post_date'] = @_params['blog_post_date']
+            hash['blog_post_author'] = @_params['blog_post_author']
+            #hash['blog_post_category'] = @_params['blog_post_category']
+            hash['blog_post_comments'] = @_params['blog_post_comments']
+            hash['blog_post_status'] = @_params['blog_post_status']
+            hash['id'] = @latest_id
+            hash['blog_status_locked'] = @_params['blog_status_locked']
+
+            hash['blog_post_rendered_type'] = @rendered_type.to_s # add rendering type
+            log("rendered type added: #{hash['blog_post_rendered_type']}")
+            hash['timestamp'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
+          end
+          @@line_db[@user].pad['blog_database', 'blog_table'].save_everything_to_files!
+
+          # @params["blog_post_day"] = r.params["blog_post_day"]
+          # @params["blog_post_month"] = r.params["blog_post_month"]
+          # @params["blog_post_year"] = r.params["blog_post_year"]
+
+          # output a string that contains all the above params:
+          # "#{@@line_db["blog"].pad["blog_database", "blog_table"].latest_id}"
+          r.redirect "/blog/#{@user}/view/#{@latest_id}"
+          else
+            message = "Please fill out all fields. Fields not filled out: #{@_params}"
+          end
+        end
+      end
+
+      r.on 'private_toggle' do
+        r.is do
+          r.get do
+            @username_session = session["user"]
+            if @username_session == user
+              @@line_db[user].pad["blog_database", "blog_profile_table"].set(0) do |hash|
+                if hash['private_view'] == nil
+                  hash['private_view'] = true
+                else
+                  hash['private_view'] = !hash['private_view']
+                end
+              end
+              puts Dir.pwd
+          folder_path = "/root/midscore_io/db"
+
+          # Define the location where the zip file will be placed
+          zip_location = "/root/midscore_io/db_backup"
+
+          # Create the zip file name
+          zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
+
+          # Create the system call to zip the folder
+          system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+              @@line_db[user].pad["blog_database", "blog_profile_table"].save_everything_to_files!
+            end
+            r.redirect("#{domain_name(r)}/blog/#{user}/view")
+          end
+        end
+      end
+
+      r.on 'view' do
+        private_view?(r, user)
+        # make a view based on markdown, html, or wysiwyg; if markdown marked, derender html in markdown
+# markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true, fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
+# @body = markdown.render(@body)
+# get the blog statistic table's entry for this user
+        #@@line_db[db].pad.new_table!(database_name: "blog_database", database_table: "blog_statistics_table")
+        r.is do
+          r.get do
+            @user = user
+            @session = session
+            # @@line_db[@user]
+            @pin = @@line_db[user].pad["blog_database", "blog_pinned_table"][0]
+            @r = r
+            @title = "All Blog Posts by #{@user}"
+            @posts = @@line_db[@user].pad['blog_database', 'blog_table'][:all]
+            @tagged_posts = []
+            @tagged = []
+            @tags = @posts.map do |post|
+              if post["blog_post_tags"]
+                 post["blog_post_tags"].split(', ')
+               end
+             end.flatten.uniq[0..-2]
+            @desc_view = r.params['desc']
+            #@page_views = @@line_db[@user].pad['blog_database', 'blog_statistics_table'][0]['page_views']
+            #@page_views = 0 if @page_views == nil
+            # add page views to the database per post
+
+              #post['page_views'] = 0 if post['page_views'] == nil
+              #post['page_views'] += 1
+              @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(0) do |hash|
+              #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+                if hash['page_views'] == nil
+                  hash['page_views'] = 0
+                else
+                  hash['page_views'] += 1
+                end
+                @page_views = hash['page_views']
+              end
+
+
+            ### Efficient save method
+            #@@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_everything_to_files!
+            ### inefficient save method
+            #@@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_everything_to_files!
+            #
+
+            @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
+
+
+
+           #@tagged =  @tagged_posts.map do |id|
+           #     @@line_db[@user].pad['blog_database', 'blog_table'].get(id)
+           #    end
+            # "#{@@line_db[@user]}"
+
+
+            @posts = @posts.reverse
+            # get the blog post rendered type, and determine whether to render in plaih html or markdown
+            view('blog/view_all', engine: 'html.erb', layout: 'layout.html')
+            #"#{@page_counts}"
+          end
+        end
+
+        r.is Integer do |id|
+          private_view?(r, user)
+          redirect_if_id_not_in_db?(id, user, r.params['override'], r)
+          r.get do
+            @id = id
+            @user = user
+            @r = r
+            @rendered_type = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)['blog_post_rendered_type']
+            @parse_markdown_to_html = false
+            @parse_markdown_to_html = true if @rendered_type == 'markdown'
+            begin
+              @id_check = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)['id']
+              'This entry does not exist in the database.' if @id_check.nil?
+              if @id_check && @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)['blog_status_locked'] == true
+                'This entry is locked.'
+              end
+            rescue StandardError
+              'Something went wrong or was tampered with. As a word of caution, this is a beta version of the blog system.'
+            end
+            @post = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)
+            @body = @post['blog_post_body']
+            #@markdown_body = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)['blog_post_body_markdown'] if @parse_markdown_to_html == true
+            #@body = # @markdown_body if @parse_markdown_to_html == true
+            @title = "Blog Post - #{@post['blog_post_title'] || 'Untitled...'} - #{@user}(#{@id}) - #{@post['blog_post_date']}"
+                #@@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(0) do |hash|
+            #  hash['page_views'] = @page_views + 1
+            @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(0) do |hash|
+              #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+              if hash['page_views'] == nil
+                hash['page_views'] = 0
+              else
+                hash['page_views'] += 1
+              end
+              @page_views = hash['page_views']
+            end
+            #entry = @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+            #partition_entry =
+            @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
+            #@page_views += 1
+            # calculate page views per post
+
+
+            # GET LATEST entry id in the database, run it through get to get the latest partition to save, then save up to that partition location
+            #
+
+            #@@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_files!(@entries_to_save)
+
+
+
+            ### Efficient save method
+            #@@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_everything_to_files!
+            ### INEFFICIENT save method
+            #@@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_everything_to_files!
+            #
+
+            view('blog/view', engine: 'html.erb', layout: 'layout.html')
+          end
+        end
+
+
+
+
+
+        r.is String, Integer, Integer, Integer do |month, day, year, time|
+          r.get do
+            @title = 'Blog Post'
+            @user = user
+            @r = r
+            @post = find_post(month, day, year)
+            view('blog/view_dates', engine: 'html.erb', layout: 'layout.html')
+          end
+        end
+        # r route for
+      end
+    end
+  end
+end
+
+def find_post(month, day, year)
+  # Code to retrieve the blog post based on the month, day, and year
+end
+
+# Q: how to merge git changes?
+# A: git merge <branch_name>

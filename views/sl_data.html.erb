@@ -1,0 +1,19 @@
+<% 0.upto(@@sl_db.max_partition_archive_id) do |archive_id| %>
+  <% @all = @@sl_db.load_from_archive!(partition_archive_id: archive_id) %>
+    <% @all.data_arr.each do |hash| %>
+      <% if @area == hash['sim_name'] %>
+        <% hash.each do |key, value| %>
+              <%= parse(key, value) %>
+              <br>
+        <% end %>
+      <% elsif (@area == '' || @area == 'all' || @area == nil) %>
+        <% hash.each do |key, value| %>
+              <%= parse(key, value) %>
+              <br>
+        <% end %>
+      <% end %>
+    <% end %>
+          <hr>
+
+      </p><br> <br>
+<% end %>

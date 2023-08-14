@@ -2,32 +2,41 @@ class CGMFS
 
 
 # require 'date'
-def calculate_moon_phase(date)
-  current_date = Date.parse(date)
-  jd = current_date.jd
-  age = BigDecimal("#{(jd - 2451545.0) / 29.530588853}")
-  phase = age % 1
-  if phase < 0.05
-    name = "New Moon"
-    ascii_moon = "🌑"
-  elsif phase < 0.25
-    name = "Waxing Crescent"
-    ascii_moon = "🌒"
-  elsif phase < 0.5
-    name = "First Quarter"
-    ascii_moon = "🌗"
-  elsif phase < 0.75
-    name = "Waxing Gibbous"
-    ascii_moon = "🌘"
-  elsif phase < 0.95
-    name = "Full Moon"
-    ascii_moon = "🌕"
-  else
-    name = "Waning Gibbous"
-    ascii_moon = "🌖"
-  end
-  return name, ascii_moon, phase
+# Define a method to calculate the moon phase for a given Unix timestamp
+def moon_phase(timestamp)
+  # Convert Unix timestamp to Julian Day Number
+  jd = Date.jd(timestamp / 86400).jd
+
+  # Calculate the number of days since the last new moon
+  days_since_new_moon = (jd - 2451550.1) % 29.53058867
+
+  # Calculate the current moon phase as an index from 0 to 7
+  current_phase_index = (days_since_new_moon / 3.691812).round
+
+  # Define an array of emoji representing the different moon phases
+  moon_phases = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"]
+
+  # Define an array of descriptions for the different moon phases
+  moon_phase_descriptions = [
+    "New Moon",
+    "Waxing Crescent",
+    "First Quarter",
+    "Waxing Gibbous",
+    "Full Moon",
+    "Waning Gibbous",
+    "Last Quarter",
+    "Waning Crescent"
+  ]
+
+  # Return the emoji and description representing the current moon phase
+  return {
+    emoji: moon_phases[current_phase_index],
+    description: moon_phase_descriptions[current_phase_index]
+  }
 end
+
+# Example usage:
+
 
 
 

@@ -41,10 +41,16 @@
   <br />
   <a href="<%= domain_name(@r) %>/blog/<%= @user %>"><img border="0" src="/banner.png" alt="One Moon Planet logo"></a><br>
   <a href="<%= domain_name(@r) %>/blog">(📃)</a><br>
-  <!-- moon phase (author: https://github.com/g00dv1n/moon-phase-widget/) -->
-
+  <br />
   </center>
   </div>
+  <center>
+  <div id="moon_phase">
+  <% phase = moon_phase(Time.now.to_i) %>
+  <font size="16"><%= phase[:emoji] %></font><br />
+  <%= phase[:description] %><br />
+  </div>
+  </center>
   <br />
     <%= yield %>
     <script src="assets/prism.js"></script>

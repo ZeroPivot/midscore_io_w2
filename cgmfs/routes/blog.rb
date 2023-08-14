@@ -12,7 +12,7 @@ def calculate_moon_phase(date)
     ascii_moon = "🌑"
   elsif phase < 0.25
     name = "Waxing Crescent"
-    ascii_moon = "🌖"
+    ascii_moon = "🌒"
   elsif phase < 0.5
     name = "First Quarter"
     ascii_moon = "🌗"
@@ -24,7 +24,7 @@ def calculate_moon_phase(date)
     ascii_moon = "🌕"
   else
     name = "Waning Gibbous"
-    ascii_moon = "🌘"
+    ascii_moon = "🌖"
   end
   return name, ascii_moon, phase
 end

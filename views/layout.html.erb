@@ -43,15 +43,6 @@
   <a href="<%= domain_name(@r) %>/blog">(📃)</a><br>
   <!-- moon phase (author: https://github.com/g00dv1n/moon-phase-widget/) -->
 
-
-  <div id="moon-phase">
-    <% name, ascii_moon, phase = calculate_moon_phase(Time.now.to_s) %><br />
-    <%= ascii_moon %><br />
-    <% phase = phase.to_f;  phase=phase*10**2; phase = phase.round(2); %>
-    <%= phase.to_s + '%' %><br />
-    <%= name %><br />
-  </div>
-
   </center>
   </div>
   <br />

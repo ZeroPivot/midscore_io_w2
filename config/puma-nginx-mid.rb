@@ -74,7 +74,7 @@ threads 0, 8
 #
 # bind 'tcp://0.0.0.0:80'
 
-bind 'unix:///root/midscore_web/config/puma.sock'
+bind http://'0.0.0.0'/
 # bind 'unix:///var/run/puma.sock'
 # bind 'unix:///var/run/puma.sock?umask=0111'
 # bind 'ssl://127.0.0.1:9292?key=path_to_key&cert=path_to_cert'
@@ -112,7 +112,7 @@ restart_command '/root/midscore_web/restart_puma'
 #
 # The default is "0".
 #
-workers 4
+workers 0
 
 # Code to run immediately before the master starts workers.
 #

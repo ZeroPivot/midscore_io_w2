@@ -17,9 +17,9 @@ class CGMFS
         r.redirect 'https://thefieldtesters.net/blog/the-field-testers'
       end
 
-     # if (r.host == 'midscore.io')
-     #   r.redirect 'https://midscore.io/index.html'
-     # end
+     if (r.host == 'midscore.io')
+       r.redirect 'https://midscore.io/index.html'
+     end
 
 
 

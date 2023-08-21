@@ -13,7 +13,7 @@
     <br><label for="blog_post_tags"><font size="2">🏷️,🏷️,...</font></label><br>
     <textarea id="blog_post_tags" rows="20" cols="30" name="blog_post_tags"><%= @post["blog_post_tags"] %></textarea>
     <input type="hidden" name="blog_status_locked" value="<%= @post["blog_status_locked"] ? "1" : "0" %>"><br>
-    <input type="hidden" name="blog_post_editor_type" value="<%= %>" id="blog_post_editor_type">
+    <input type="hidden" name="blog_post_editor_type" value="" id="blog_post_editor_type">
         <input type="hidden" name="rendered_type" id="rendered_type" value="<%= @rendered_type %>">
     <textarea class="blog_post_body" id="blog_post_body" name="blog_post_body" rows="60" cols="100"><%= @body %></textarea>
   </fieldset>

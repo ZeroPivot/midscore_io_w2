@@ -4,6 +4,17 @@ class CGMFS
 # require 'date'
 # Define a method to calculate the moon phase for a given Unix timestamp
 def moon_phase(timestamp)
+
+ new_moon = 0
+  waxing_crescent = 1
+  first_quarter = 2
+  waxing_gibbuous = 3
+  full_moon = 4
+  waning_gibbuous = 5
+ last_quarter = 6
+  waning_crescent = 7
+
+
   # Convert Unix timestamp to Julian Day Number
   jd = Date.jd(timestamp / 86400).jd
 
@@ -11,7 +22,7 @@ def moon_phase(timestamp)
   days_since_new_moon = (jd - 2451550.1) % 29.53058867
 
   # Calculate the current moon phase as an index from 0 to 7
-  current_phase_index = (days_since_new_moon / 3.691812).round
+  current_phase_index = (days_since_new_moon / 3.691812)
 
   # Define an array of emoji representing the different moon phases
   moon_phases = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"]
@@ -31,7 +42,8 @@ def moon_phase(timestamp)
   # Return the emoji and description representing the current moon phase
   return {
     emoji: moon_phases[current_phase_index],
-    description: moon_phase_descriptions[current_phase_index]
+    description: moon_phase_descriptions[current_phase_index],
+    indice: current_phase_index
   }
 end
 

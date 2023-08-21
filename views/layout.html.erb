@@ -49,6 +49,8 @@
   <% phase = moon_phase(Time.now.to_i) %>
   <font size="16"><%= phase[:emoji] %></font><br />
   <%= phase[:description] %><br />
+  Sign-ups currently available during the New and Half Moons<br />
+  <%= "<a=\"https://archyeen.me/blog/signup">SIGNUP♠️</a>\"" if (phase[:indice].zero? ||| phase[:indice] == 4 %>
   </div>
   </center>
   <br />

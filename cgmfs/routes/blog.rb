@@ -5,15 +5,6 @@ class CGMFS
 # Define a method to calculate the moon phase for a given Unix timestamp
 def moon_phase(timestamp)
 
- new_moon = 0
-  waxing_crescent = 1
-  first_quarter = 2
-  waxing_gibbuous = 3
-  full_moon = 4
-  waning_gibbuous = 5
- last_quarter = 6
-  waning_crescent = 7
-
 
   # Convert Unix timestamp to Julian Day Number
   jd = Date.jd(timestamp / 86400).jd
@@ -712,13 +703,13 @@ end
           @possible_rendering_types = ['wysiwyg', 'markdown', 'html']
           @rendered_type = @r.params['rendered_type'].to_s
           #log()
-          @rendered_type = 'wysiwyg' if @rendered_type == ''
-          @rendered_type = 'wysiwyg' if !@possible_rendering_types.include?(@rendered_type)
+          @rendered_type = 'wmarkdown' if @rendered_type == ''
+          @rendered_type = 'markdown' if !@possible_rendering_types.include?(@rendered_type)
 
       #    log("new: #{@rendered_type}")
           case @rendered_type
           when 'wysiwyg'
-            @view = 'blog/new'
+            @view = 'blog/new_wysiwyg'
             #log("new: (@rendered_type) '#{@rendered_type}' chosen")
           when 'markdown'
             @view = 'blog/new_markdown'

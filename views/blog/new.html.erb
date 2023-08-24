@@ -38,7 +38,7 @@
     });
   </script>
   <center>
-  RENDER TYPE: *WYSIWYG* | <a href="/blog/<%= @user %>/new/?rendered_type=markdown">MARKDOWN</a> | <a href="/blog/<%= @user %>/new/?rendered_type=html">HTML</a>
+  RENDER TYPE: *MARKDOWN* | <a href="/blog/"<%= @user %>/new/?rendered_type=wysiwyg>WYSIWYG</a> | <a href="/blog/<%= @user %>/new/?rendered_type=html">HTML</a>
   (WARNING: switching via clicking will erase all content in the editor!!!)
 </center>
 <% data = @@line_db[@user].pad["blog_database", "blog_table"].data_arr %>

@@ -16894,3 +16894,11 @@ request referrer:
 request user_agent: Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm) Chrome/103.0.5060.134 Safari/537.36
 AJAX request?: false
 Timestamp: 2023-07-03 05:55:25 +0000
+Artywalf.net -> hudl.ink:8080 Redirection Request:
+request path: /artywalfnet ; request host: hudl.ink
+request hash: #<CGMFS::RodaRequest GET /artywalfnet>
+request ip: 207.46.13.224
+request referrer: 
+request user_agent: Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm) Chrome/103.0.5060.134 Safari/537.36
+AJAX request?: false
+Timestamp: 2023-08-24 06:47:41 +0000

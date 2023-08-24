@@ -50,7 +50,18 @@
   <font size="16"><%= phase[:emoji] %></font><br />
   <%= phase[:description] %><br />
   Sign-ups currently available during the New and Half Moons<br />
-  <%= "<a=\"https://archyeen.me/blog/signup">SIGNUP♠️</a>\"" if (phase[:indice].zero? ||| phase[:indice] == 4 %>
+<br />
+ <br />
+<% pacific_time = Time.now.getlocal('-07:00') %>
+<% gregorian_date_time = DateTime.parse(pacific_time.to_s) %>
+<% julian_day = Date.new(gregorian_date_time.year, gregorian_date_time.month, gregorian_date_time.day).jd %>
+<% julian_weekday = Date.new(gregorian_date_time.year, gregorian_date_time.month, gregorian_date_time.day).strftime('%A') %>
+<%= "<font>Pacific Standard (SecondLifeTtime): #{pacific_time}</font>" %><br />
+<%= "<font>Gregorian date and time: #{gregorian_date_time}</font>" %> <br />
+<%= "<font>Julian full Date: #{julian_day}</font>" %> <br />
+<%= "<font>Julian Week Day: #{julian_weekday}</font>" %> <br />
+
+  <%= "<a href=\"https://archyeen.me/blog/signup\">🏳️‍🌈SIGNUP♠️\</a>" if phase[:indice].to_i.zero? or phase[:indice].to_i == 4 %>
   </div>
   </center>
   <br />

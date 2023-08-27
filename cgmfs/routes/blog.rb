@@ -903,7 +903,10 @@ end
             # "#{@@line_db[@user]}"
 
 
-            @posts = @posts.reverse
+
+            @reversed_posts = r.params['reverse']
+            @posts = @posts.reverse if @reversed_posts == '' # is nil in view_all.erb.html out of pass by reference convention...
+            @posts = @posts.reverse if @reversed_posts == '1'
             # get the blog post rendered type, and determine whether to render in plaih html or markdown
             view('blog/view_all', engine: 'html.erb', layout: 'layout.html')
             #"#{@page_counts}"

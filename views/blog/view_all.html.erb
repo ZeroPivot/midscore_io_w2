@@ -6,6 +6,11 @@
 <% if @session["user"] == @user %>
   <a href="<%= domain_name(@r) %>/blog/<%= @user %>/private_toggle"><%= "(🔐)" if blog_lock_status == true %><%= "(🔓)" if blog_lock_status == false  || blog_lock_status == nil %></a><br>
 <% end %>
+<% if @reversed_posts == nil %>
+  <%= "<a href='#{domain_name(@r)}/blog/#{@user}/view/?reverse=1'>(🔀)</a>" %><br />
+<% elsif @reversed_posts == '1' %>
+   <%= "<a href='#{domain_name(@r)}/blog/#{@user}/view/'>(🔀)</a>" %><br />
+<% end %>
   <div class="node" style="text-align: center;">
       <a href="<%= domain_name(@r) %>/blog/<%= @user %>/pin"><b>📌</b></a><br>
       <%= "✍️&nbsp;" + @pin["blog_post_author"].to_s + "<br />" if @pin["blog_post_author"] != "" %>
@@ -42,7 +47,7 @@
         🏷️<%= tags2posts(post["blog_post_tags"], @user, @r) %><br>
         <a target="_blank" rel="noopener noreferrer" href="/blog/render/?id=<%= post['id'] %>&user=<%= @user %>">(🪟)</a>
         <% if session["user"] == @user %>
-         📝<%= "<a href='#{domain_name(@r)}/blog/#{@user}/edit/#{post["id"]}'>Edit</a>" %>
+         📝<%= "<a href='#{domain_name(@r)}/blog/#{@user}/edit/#{post["id"]}'>Edit</a>" %><br />
         <% end %>
         <hr>
         <% if !@desc_view %>
@@ -50,6 +55,7 @@
           <p><%= post["blog_post_body"] %></p>
           </div>
         <% end %>
+
         </center>
 
     </div>

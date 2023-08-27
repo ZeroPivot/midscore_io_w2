@@ -1,5 +1,4 @@
 <% blog_lock_status = @@line_db[@user].pad["blog_database", "blog_profile_table"][0]['private_view'] %>
-
 <div style="text-align: right;">
   <a href="<%= domain_name(@r) %>/blog/<%= @user %>/view/?desc=1">(❌)</a><a href="<%= domain_name(@r) %>/blog/<%= @user %>/view/">(✅)</a><br>
   <b><a href="<%= domain_name(@r) %>/blog/<%= @user %>/new">(📝)</a></b><br>
@@ -11,19 +10,16 @@
 <% elsif @reversed_posts == '1' %>
    <%= "<a href='#{domain_name(@r)}/blog/#{@user}/view/'>(🔀)</a>" %><br />
 <% end %>
-  <div class="node" style="text-align: center;">
+    <div class="node" style="text-align: center;">
       <a href="<%= domain_name(@r) %>/blog/<%= @user %>/pin"><b>📌</b></a><br>
       <%= "✍️&nbsp;" + @pin["blog_post_author"].to_s + "<br />" if @pin["blog_post_author"] != "" %>
       <%= "📅&nbsp;" + @pin["blog_post_date"].to_s + "<br />" if @pin["blog_post_date"] != "" %>
       <%= "📰&nbsp;" + @pin["blog_post_title"].to_s  + "<br />" if @pin["blog_post_title"] != "" %>
-
       <%= "<br />" + @pin["blog_post_body"].to_s + "<hr>" if @pin["blog_post_body"] != "" %>
       <a href="<%= domain_name(@r) %>/blog/render/?id=pin&user=<%= @user %>">(🪟)</a>
-
     </div>
  <br>
  <br>
-
   <div class="node" style="text-align: center;">
     🏷️<br><% @tags.each do |tag| %>
       <a href="<%= domain_name(@r) %>/blog/<%= @user %>/tag/<%= tag %>"><b>[<%= tag %>]</b></a>&nbsp;
@@ -31,11 +27,9 @@
     </div>
     <br><br>
   <div class="container">
-
       <% @posts.each_with_index do |post, index| %>
       <% lock_status = post["blog_status_locked"] %>
       <% if post["id"] && !lock_status %>
-
     <div class="node" style="text-align: center;">
         <div class="text" id='entry' style='border:2px darkgray solid; font-size:16px; display: inline-block;'>
         <center>
@@ -55,14 +49,11 @@
           <p><%= post["blog_post_body"] %></p>
           </div>
         <% end %>
-
         </center>
-
     </div>
   </div>
  </div>
         <br> <br>
       <% else %>
-
       <% end %>
   <% end %>

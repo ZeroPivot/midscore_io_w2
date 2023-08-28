@@ -903,7 +903,7 @@ end
             # "#{@@line_db[@user]}"
 
 
-
+            @desc_posts = r.params['desc']
             @reversed_posts = r.params['reverse']
             @posts = @posts.reverse if @reversed_posts == nil # is nil in view_all.erb.html out of pass by reference convention...
 

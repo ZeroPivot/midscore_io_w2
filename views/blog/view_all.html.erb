@@ -1,6 +1,16 @@
 <% blog_lock_status = @@line_db[@user].pad["blog_database", "blog_profile_table"][0]['private_view'] %>
 <div style="text-align: right;">
   <a href="<%= domain_name(@r) %>/blog/<%= @user %>/view/?desc=1">(❌)</a><a href="<%= domain_name(@r) %>/blog/<%= @user %>/view/">(✅)</a><br>
+  <% if @reversed_posts == nil %>
+  <%= "<a href='#{domain_name(@r)}/blog/#{@user}/view/?reverse=1'>(🔀)</a>" %><br />
+<% elsif @reversed_posts == '1' %>
+   <%= "<a href='#{domain_name(@r)}/blog/#{@user}/view/'>(🔀)</a>" %><br />
+<% end %>
+<% if @reversed_posts == nil && @desc_posts == nil %>
+  <%= "<a href='#{domain_name(@r)}/blog/#{@user}/view/?reverse=1&desc=1'>(❌🔀✅)</a>" %><br/>
+<% elsif @reversed_posts == '1' %>
+   <%= "<a href='#{domain_name(@r)}/blog/#{@user}/view/'>(✅🔀❌)</a>" %><br />
+<% end %>
   <b><a href="<%= domain_name(@r) %>/blog/<%= @user %>/new">(📝)</a></b><br>
 <% if @session["user"] == @user %>
   <a href="<%= domain_name(@r) %>/blog/<%= @user %>/private_toggle"><%= "(🔐)" if blog_lock_status == true %><%= "(🔓)" if blog_lock_status == false  || blog_lock_status == nil %></a><br>

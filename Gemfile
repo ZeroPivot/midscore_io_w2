@@ -68,3 +68,4 @@ gem 'telegram-bot-ruby'
 
 
 gem "ruby-openai" #for gpt-4
+gem 'lunartic' #for moon phase

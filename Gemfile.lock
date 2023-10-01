@@ -18,13 +18,13 @@ GEM
   specs:
     aasm (5.5.0)
       concurrent-ruby (~> 1.0)
-    actionview (7.0.7.2)
-      activesupport (= 7.0.7.2)
+    actionview (7.0.8)
+      activesupport (= 7.0.8)
       builder (~> 3.1)
       erubi (~> 1.4)
       rails-dom-testing (~> 2.0)
       rails-html-sanitizer (~> 1.1, >= 1.2.0)
-    activesupport (7.0.7.2)
+    activesupport (7.0.8)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
@@ -90,8 +90,9 @@ GEM
       rubocop
       smart_properties
     erubi (1.12.0)
-    excon (0.102.0)
-    faraday (2.7.10)
+    excon (0.103.0)
+    faraday (2.7.11)
+      base64
       faraday-net_http (>= 2.0, < 3.1)
       ruby2_keywords (>= 0.0.4)
     faraday-multipart (1.0.4)
@@ -133,6 +134,7 @@ GEM
     loofah (2.21.3)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
+    lunartic (0.2.1)
     mechanize (2.9.1)
       addressable (~> 2.8)
       domain_name (~> 0.5, >= 0.5.20190701)
@@ -150,7 +152,7 @@ GEM
       mime-types-data (~> 3.2015)
     mime-types-data (3.2023.0808)
     mini_portile2 (2.8.4)
-    minitest (5.19.0)
+    minitest (5.20.0)
     mongo (2.19.1)
       bson (>= 4.14.1, < 5.0.0)
     multipart-post (2.3.0)
@@ -188,7 +190,7 @@ GEM
     redcarpet (3.6.0)
     redis (5.0.7)
       redis-client (>= 0.9.0)
-    redis-client (0.16.0)
+    redis-client (0.17.0)
       connection_pool
     regexp_parser (2.8.1)
     rerun (0.14.0)
@@ -202,9 +204,9 @@ GEM
     reverse_markdown (2.1.1)
       nokogiri
     rexml (3.2.6)
-    roda (3.71.0)
+    roda (3.72.0)
       rack
-    rubocop (1.56.1)
+    rubocop (1.56.3)
       base64 (~> 0.1.1)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
@@ -255,7 +257,7 @@ GEM
       virtus (>= 1.0.0)
     thor (1.2.2)
     thread_safe (0.3.6)
-    tilt (2.2.0)
+    tilt (2.3.0)
     twitter (8.0.0)
       addressable (~> 2.3)
       buftok (~> 0.3.0)
@@ -294,6 +296,7 @@ DEPENDENCIES
   fastimage
   free-image
   htmlbeautifier
+  lunartic
   mechanize
   mongo
   nokogiri

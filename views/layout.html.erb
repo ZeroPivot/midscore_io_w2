@@ -29,7 +29,7 @@
     <meta name="author" content="ArityWolf">
     <meta property="og:image" content="<%= domain_name(@r) %>/card_banner.jpg">
     <meta name="twitter:card" content="summary_large_image"> <!-- changed 2021-04-15 -->
-    <meta name="twitter:site" content="@ArityWolf">
+    <meta name="twitter:site" content="@FieldYeen">
     <meta name="twitter:title" content="<%= @title %>">
     <!-- <meta name="twitter:description" content="<%#= escape_html description %>" /> -->
     <link rel="stylesheet" href="<%= domain_name(@r) %>/assets/style.css">
@@ -44,26 +44,7 @@
   <br />
   </center>
   </div>
-  <center>
-  <div id="moon_phase">
-  <% phase = moon_phase(Time.now.to_i) %>
-  <font size="16"><%= phase[:emoji] %></font><br />
-  <%= phase[:description] %><br />
-  Sign-ups currently available during the New and Half Moons<br />
-<br />
- <br />
-<% pacific_time = Time.now.getlocal('-07:00') %>
-<% gregorian_date_time = DateTime.parse(pacific_time.to_s) %>
-<% julian_day = Date.new(gregorian_date_time.year, gregorian_date_time.month, gregorian_date_time.day).jd %>
-<% julian_weekday = Date.new(gregorian_date_time.year, gregorian_date_time.month, gregorian_date_time.day).strftime('%A') %>
-<%= "<font>Pacific Standard (SecondLifeTtime): #{pacific_time}</font>" %><br />
-<%= "<font>Gregorian date and time: #{gregorian_date_time}</font>" %> <br />
-<%= "<font>Julian full Date: #{julian_day}</font>" %> <br />
-<%= "<font>Julian Week Day: #{julian_weekday}</font>" %> <br />
-
-  <%= "<a href=\"https://archyeen.me/blog/signup\">🏳️‍🌈SIGNUP♠️\</a>" if phase[:indice].to_i.zero? or phase[:indice].to_i == 4 %>
   </div>
-  </center>
   <br />
     <%= yield %>
     <script src="assets/prism.js"></script>

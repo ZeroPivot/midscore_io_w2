@@ -1,44 +1,109 @@
+module Math
+  def self.radians angle
+    angle / 180.0 * Math::PI
+  end
+end
+
 class CGMFS
 
 
-# require 'date'
-# Define a method to calculate the moon phase for a given Unix timestamp
-def moon_phase(timestamp)
 
 
-  # Convert Unix timestamp to Julian Day Number
-  jd = Date.jd(timestamp / 86400).jd
+  def get_mdy(date)
+    date=Time.parse(date).strftime("%m/%d/%Y")
+    date = date.split("/")
+    month = date[0].to_i
+    day = date[1].to_i
+    year = date[2].to_i
+    return month, day, year
+  end
 
-  # Calculate the number of days since the last new moon
-  days_since_new_moon = (jd - 2451550.1) % 29.53058867
 
-  # Calculate the current moon phase as an index from 0 to 7
-  current_phase_index = (days_since_new_moon / 3.691812)
+  MOON_PHASES = {
+  new: {
+    percentage: 0,
+    emoji: "🌑",
+    type: "New",
+  },
+  waxing_crescent: {
+    percentage: 37.5,
+    emoji: "🌒",
+    type: "Waxing Crescent",
+  },
+  first_quarter: {
+    percentage: 50,
+    emoji: "🌓",
+    type: "First Quarter",
+  },
+  waxing_gibbous: {
+    percentage: 62.5,
+    emoji: "🌔",
+    type: "Waxing Gibbous",
+  },
+  full: {
+    percentage: 100,
+    emoji: "🌕",
+    type: "Full",
+  },
+  waning_gibbous: {
+    percentage: 62.5,
+    emoji: "🌖",
+    type: "Waning Gibbous",
+  },
+  last_quarter: {
+    percentage: 50,
+    emoji: "🌗",
+    type: "Last Quarter",
+  },
+  waning_crescent: {
+    percentage: 37.5,
+    emoji: "🌘",
+    type: "Waning Crescent",
+  },
+}
 
-  # Define an array of emoji representing the different moon phases
-  moon_phases = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"]
+def calculate_moon_illumination_percentage(date)
+  # Calculate the number of days since the previous new moon.
+  days_since_new_moon = (date - date.beginning_of_month).to_i
 
-  # Define an array of descriptions for the different moon phases
-  moon_phase_descriptions = [
-    "New Moon",
-    "Waxing Crescent",
-    "First Quarter",
-    "Waxing Gibbous",
-    "Full Moon",
-    "Waning Gibbous",
-    "Last Quarter",
-    "Waning Crescent"
-  ]
+  # Calculate the lunar age.
+  lunar_age = days_since_new_moon / 29.530589
 
-  # Return the emoji and description representing the current moon phase
-  return {
-    emoji: moon_phases[current_phase_index],
-    description: moon_phase_descriptions[current_phase_index],
-    indice: current_phase_index
-  }
+  # Calculate the moon's illumination percentage.
+  moon_illumination_percentage = (lunar_age - lunar_age.floor) * 100
+
+  return moon_illumination_percentage
+end
+
+def get_moon_phase(percentage)
+  if percentage < 37.5
+    return MOON_PHASES[:new]
+  elsif percentage < 50
+    return MOON_PHASES[:waxing_crescent]
+  elsif percentage < 62.5
+    return MOON_PHASES[:waxing_gibbous]
+  elsif percentage < 100
+    return MOON_PHASES[:full]
+  elsif percentage < 87.5
+    return MOON_PHASES[:waning_gibbous]
+  elsif percentage < 75
+    return MOON_PHASES[:last_quarter]
+  elsif percentage < 62.5
+    return MOON_PHASES[:waning_crescent]
+  else
+    return MOON_PHASES[:new]
+  end
 end
 
 # Example usage:
+  # MoonIllumination.age
+  # MoonIllumination.percent
+  # MoonIllumination.fraction
+  # MoonIllumination.emoji
+  # MoonIllumination.age(DateTime.new(2017, 1, 1, 0, 0, 0))
+  # MoonIllumination.percent(DateTime.new(2017, 1, 1, 0, 0, 0))
+  # MoonIllumination.fraction(DateTime.new(2017, 1, 1, 0, 0, 0))
+  # MoonIllumination.emoji(DateTime.new(2017, 1, 1, 0, 0, 0))
 
 
 
@@ -377,7 +442,7 @@ end
             end
             @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].save_everything_to_files!
             message = 'User created successfully!'
-            sleep(11)
+            #sleep(11)
           elsif !user_name_check.nil? && session['admin']
             @@line_db.add_db!(user_name.downcase)
             @@line_db.update_databases
@@ -398,7 +463,7 @@ end
             end
             @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].save_everything_to_files!
             message = 'User created successfully! Admin override.'
-            sleep(11)
+            #sleep(11)
           end
           # r.redirect "https://#{r.host}/blog/login"
           puts Dir.pwd
@@ -412,7 +477,7 @@ end
 
           # Create the system call to zip the folder
           system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
-          sleep(11)
+          #sleep(11)
           message
         end
       end

@@ -4,6 +4,80 @@ module Math
   end
 end
 
+# BEGIN: 6f7b8d9hjkl3
+require 'date'
+
+class MoonIllumination
+  def self.age(date = DateTime.now)
+    phase(date)[:age]
+  end
+
+  def self.percent(date = DateTime.now)
+    phase(date)[:percent]
+  end
+
+  def self.fraction(date = DateTime.now)
+    phase(date)[:fraction]
+  end
+
+  def self.emoji(date = DateTime.now)
+    phase(date)[:emoji]
+  end
+
+  private
+
+  def self.phase(date)
+    # Calculation based on https://www.subsystems.us/uploads/9/8/9/4/98948044/moonphase.pdf
+    year = date.year
+    month = date.month
+    day = date.day
+    hour = date.hour
+    minute = date.minute
+    second = date.second
+
+    # Convert to Julian date
+    julian_date = 367 * year - ((7 * (year + ((month + 9) / 12))) / 4) + ((275 * month) / 9) + day + 1721013.5 + ((hour + (minute / 60.0) + (second / 3600.0)) / 24.0)
+
+    # Calculate moon phase
+    phase = (julian_date - 2451550.1) / 29.530588853
+    phase -= phase.to_i
+
+    # Calculate age of moon
+    age = phase * 29.53
+
+    # Calculate percent illuminated
+    percent = (phase * 100).round(2)
+
+    # Calculate fraction illuminated
+    fraction = (phase * 2).round(2)
+
+    # Determine emoji based on phase
+    if phase < 0.125
+      emoji = "🌑"
+    elsif phase < 0.25
+      emoji = "🌒"
+    elsif phase < 0.375
+      emoji = "🌓"
+    elsif phase < 0.5
+      emoji = "🌔"
+    elsif phase < 0.625
+      emoji = "🌕"
+    elsif phase < 0.75
+      emoji = "🌖"
+    elsif phase < 0.875
+      emoji = "🌗"
+    else
+      emoji = "🌘"
+    end
+
+    { age: age.round(2), percent: percent, fraction: fraction, emoji: emoji }
+  end
+end
+# END: 6f7b8d9hjkl3
+
+
+
+
 class CGMFS
 
 
@@ -18,82 +92,6 @@ class CGMFS
     return month, day, year
   end
 
-
-  MOON_PHASES = {
-  new: {
-    percentage: 0,
-    emoji: "🌑",
-    type: "New",
-  },
-  waxing_crescent: {
-    percentage: 37.5,
-    emoji: "🌒",
-    type: "Waxing Crescent",
-  },
-  first_quarter: {
-    percentage: 50,
-    emoji: "🌓",
-    type: "First Quarter",
-  },
-  waxing_gibbous: {
-    percentage: 62.5,
-    emoji: "🌔",
-    type: "Waxing Gibbous",
-  },
-  full: {
-    percentage: 100,
-    emoji: "🌕",
-    type: "Full",
-  },
-  waning_gibbous: {
-    percentage: 62.5,
-    emoji: "🌖",
-    type: "Waning Gibbous",
-  },
-  last_quarter: {
-    percentage: 50,
-    emoji: "🌗",
-    type: "Last Quarter",
-  },
-  waning_crescent: {
-    percentage: 37.5,
-    emoji: "🌘",
-    type: "Waning Crescent",
-  },
-}
-
-def calculate_moon_illumination_percentage(date)
-  # Calculate the number of days since the previous new moon.
-  days_since_new_moon = (date - date.beginning_of_month).to_i
-
-  # Calculate the lunar age.
-  lunar_age = days_since_new_moon / 29.530589
-
-  # Calculate the moon's illumination percentage.
-  moon_illumination_percentage = (lunar_age - lunar_age.floor) * 100
-
-  return moon_illumination_percentage
-end
-
-def get_moon_phase(percentage)
-  if percentage < 37.5
-    return MOON_PHASES[:new]
-  elsif percentage < 50
-    return MOON_PHASES[:waxing_crescent]
-  elsif percentage < 62.5
-    return MOON_PHASES[:waxing_gibbous]
-  elsif percentage < 100
-    return MOON_PHASES[:full]
-  elsif percentage < 87.5
-    return MOON_PHASES[:waning_gibbous]
-  elsif percentage < 75
-    return MOON_PHASES[:last_quarter]
-  elsif percentage < 62.5
-    return MOON_PHASES[:waning_crescent]
-  else
-    return MOON_PHASES[:new]
-  end
-end
 
 # Example usage:
   # MoonIllumination.age

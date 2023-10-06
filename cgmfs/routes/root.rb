@@ -21,7 +21,9 @@ class CGMFS
        r.redirect 'https://midscore.io/index.html'
      end
 
-
+     if (r.host == "thaiamerican.market")
+      r.redirect 'https://thaiamerican.market/tam/index.html'
+     end
 
 
 

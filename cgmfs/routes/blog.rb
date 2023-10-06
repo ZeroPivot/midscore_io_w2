@@ -5,7 +5,7 @@ module Math
 end
 
 # BEGIN: 6f7b8d9hjkl3
-require 'date'
+
 
 class MoonIllumination
   def self.age(date = DateTime.now)

@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["TM Lee".freeze]
-  s.date = "2023-10-06"
+  s.date = "2023-11-03"
   s.description = "TimeDifference is the missing Ruby method to calculate difference between two given time. You can do a Ruby time difference in year, month, week, day, hour, minute, and seconds.".freeze
   s.email = ["tmlee.ltm@gmail.com".freeze]
   s.files = [".gitignore".freeze, ".travis.yml".freeze, "CHANGELOG.md".freeze, "Gemfile".freeze, "Gemfile.activesupport32".freeze, "LICENSE".freeze, "README.md".freeze, "Rakefile".freeze, "lib/time_difference.rb".freeze, "spec/spec_helper.rb".freeze, "spec/time_difference_spec.rb".freeze, "time_difference.gemspec".freeze]

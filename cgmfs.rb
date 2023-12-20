@@ -1,8 +1,8 @@
-# rubocop:disable Lint/ConstantDefinitionInBlock
+
 # rubocop:disable Style/StringLiterals
 # VERSION v0.0.1 - kejento.net edited edition
 # EDITS: request_deflection(r) is disabled
-
+# rubocop:enable Lint/ConstantDefinitionInBlock # rubocop:disable Lint/RedundantCopEnableDirective
 require 'roda'
 require 'json'
 require 'fileutils'
@@ -13,6 +13,7 @@ require 'open-uri'
 require 'openai'
 require 'date'
 require 'bigdecimal'
+
 
 
 #require 'rack'

@@ -1,3 +1,6 @@
+# rubocop:disable Metrics/MethodLength
+# rubocop:disable Metrics/BlockLength
+# rubocop:disable Metrics/ClassLength
 module Math
   def self.radians angle
     angle / 180.0 * Math::PI
@@ -1060,3 +1063,6 @@ end
 
 # Q: how to merge git changes?
 # A: git merge <branch_name>
+# rubocop:enable Metrics/ClassLength
+# rubocop:enable Metrics/BlockLength
+# rubocop:enable Metrics/MethodLength

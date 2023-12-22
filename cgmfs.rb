@@ -49,7 +49,7 @@ DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
 
 
-$dog_blog_version = "v4.4.5-production-linux-puma-line-db-ruby-3.3.0" #used in layout.html.erb
+$dog_blog_version = "v4.4.6-production-linux-puma-line-db-ruby-3.3.0" #used in layout.html.erb
 
 
 DO_TELEGRAM_LOGGING = true # telegram logging

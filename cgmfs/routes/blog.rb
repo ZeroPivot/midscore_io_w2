@@ -611,7 +611,6 @@ class CGMFS
               @rendered_type = 'wysiwyg'
             end
 
-            puts Dir.pwd
           folder_path = "/root/midscore_io/db"
 
           # Define the location where the zip file will be placed
@@ -691,7 +690,7 @@ class CGMFS
             # "done"
             # id = @_params["id"].to_i
             #  "id: #{r.params["id"]}"
-            puts Dir.pwd
+
           folder_path = "/root/midscore_io/db"
 
           # Define the location where the zip file will be placed
@@ -726,7 +725,7 @@ class CGMFS
             end
             @@line_db[@user].pad['blog_database', 'blog_table'].save_everything_to_files!
             # "#{@locked}"
-            puts Dir.pwd
+           
           folder_path = "/root/midscore_io/db"
 
           # Define the location where the zip file will be placed

@@ -2,7 +2,7 @@
 # require 'roda'
 # require 'sequel'
 
-DB = Sequel.connect('sqlite://gallery.db') # replace with LineDB
+#DB #= Sequel.connect('sqlite://gallery.db') # replace with LineDB
 
 class CGMFS
   plugin :indifferent_params

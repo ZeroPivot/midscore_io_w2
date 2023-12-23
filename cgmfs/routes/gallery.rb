@@ -1,8 +1,8 @@
 # rubocop:disable Metrics/BlockLength
-require 'roda'
-require 'sequel'
+# require 'roda'
+# require 'sequel'
 
-DB = Sequel.connect('sqlite://gallery.db')
+DB = Sequel.connect('sqlite://gallery.db') # replace with LineDB
 
 class CGMFS
   plugin :indifferent_params
@@ -23,7 +23,7 @@ class CGMFS
       end
     end
 
-    r.on 'folder', Integer do |folder_id|
+    r.on 'folder', String, Integer do |username, folder_id|
       r.get do
         # Retrieve a specific folder
         folder = DB[:folders].first(id: folder_id)
@@ -37,7 +37,7 @@ class CGMFS
       end
     end
 
-    r.on 'folder', Integer, 'edit' do |folder_id|
+    r.on 'folder', String, Integer, 'edit' do |username, folder_id|
       r.get do
         # Retrieve the edit page for a specific folder
         folder = DB[:folders].first(id: folder_id)
@@ -51,7 +51,7 @@ class CGMFS
       end
     end
 
-    r.on Integer do |gallery_id|
+    r.on String, Integer do |username, gallery_id|
       r.get do
         # Retrieve a specific gallery
         gallery = DB[:galleries].first(id: gallery_id)

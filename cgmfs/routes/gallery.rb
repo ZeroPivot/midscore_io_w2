@@ -12,7 +12,7 @@ class CGMFS
     r.is do
       r.get do
         # Retrieve all galleries
-        galleries = DB[:galleries].all
+          galleries = DB[:galleries].all
         { galleries: galleries }
       end
 
@@ -30,7 +30,7 @@ class CGMFS
         { folder: folder }
       end
 
-      r.put do
+      r.post do
         # Update a specific folder
         updated_folder = DB[:folders].where(id: folder_id).update(title: r.params['title'])
         { folder_id: folder_id, message: 'Folder updated successfully' }
@@ -65,8 +65,32 @@ class CGMFS
         { message: 'Image uploaded successfully' }
       end
     end
+
+
+    r.on 'signup' do
+      r.post do
+        # Handle user signup
+        # Create a new user record in the database
+        { message: 'User signed up successfully' }
+      end
+    end
+
+    r.on 'login' do
+      r.post do
+        # Handle user login
+        # Authenticate user credentials
+        { message: 'User logged in successfully' }
+      end
+    end
+
+    r.on 'logout' do
+      r.post do
+        # Handle user logout
+        # Clear user session
+        { message: 'User logged out successfully' }
+      end
+    end
   end
 end
-
 
 # rubocop:enable Metrics/BlockLength

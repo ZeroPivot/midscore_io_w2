@@ -7,7 +7,7 @@ GIT
 
 GIT
   remote: https://github.com/cloudinary/cloudinary_gem
-  revision: 8dae1c060cc4d377a701416265e94e112ae691c3
+  revision: ffa23272512ffbb225f4ae44cfedd12207fb204b
   specs:
     cloudinary (1.28.0)
       aws_cf_signer
@@ -53,7 +53,7 @@ GEM
       erubi (~> 1.4)
       parser (>= 2.4)
       smart_properties
-    bigdecimal (3.1.4)
+    bigdecimal (3.1.5)
     bson (4.15.0)
     buftok (0.3.0)
     builder (3.2.4)
@@ -98,15 +98,15 @@ GEM
       smart_properties
     erubi (1.12.0)
     event_stream_parser (1.0.0)
-    excon (0.105.0)
-    faraday (2.7.12)
+    excon (0.108.0)
+    faraday (2.8.1)
       base64
       faraday-net_http (>= 2.0, < 3.1)
       ruby2_keywords (>= 0.0.4)
     faraday-multipart (1.0.4)
       multipart-post (~> 2)
     faraday-net_http (3.0.2)
-    fastimage (2.2.7)
+    fastimage (2.3.0)
     ffi (1.16.3)
     ffi-compiler (1.0.1)
       ffi (>= 1.0.0)
@@ -173,7 +173,7 @@ GEM
     nokogiri (1.15.5)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    parallel (1.23.0)
+    parallel (1.24.0)
     parser (3.2.2.4)
       ast (~> 2.4.1)
       racc
@@ -198,12 +198,12 @@ GEM
     redcarpet (3.6.0)
     redis (5.0.8)
       redis-client (>= 0.17.0)
-    redis-client (0.19.0)
+    redis-client (0.19.1)
       connection_pool
     regexp_parser (2.8.3)
     rerun (0.14.0)
       listen (~> 3.0)
-    resolv (0.2.2)
+    resolv (0.3.0)
     rest-client (2.1.0)
       http-accept (>= 1.7.0, < 2.0)
       http-cookie (>= 1.0.2, < 2.0)
@@ -212,7 +212,7 @@ GEM
     reverse_markdown (2.1.1)
       nokogiri
     rexml (3.2.6)
-    roda (3.74.0)
+    roda (3.75.0)
       rack
     rubocop (1.59.0)
       json (~> 2.3)
@@ -326,4 +326,4 @@ DEPENDENCIES
   yaml
 
 BUNDLED WITH
-   2.5.0.dev
+   2.5.3

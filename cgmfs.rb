@@ -144,8 +144,6 @@ class CGMFS < Roda
     @@line_db[db].pad.new_table!(database_name: "blog_database", database_table: "blog_profile_table")
     puts  "...Loading blog_statistics_table."
     @@line_db[db].pad.new_table!(database_name: "blog_database", database_table: "blog_statistics_table")
-    puts "...Loading blog_profile_table."
-    @@line_db[db].pad.new_table!(database_name: "blog_database", database_table: "blog_profile_table")
     puts "Done."
     b = Time.now
     puts "Time taken to load #{db}: #{b - a} seconds."
@@ -153,6 +151,24 @@ class CGMFS < Roda
   a2 = Time.now
   puts "Done loading all databases and tables!"
   puts "Time taken to load all databases: #{a2 - a1} seconds."
+
+
+=begin
+  # start line_db's dog blog:: gallery system
+  @@line_db_gallery = LineDB.new(parent_folder: "./db/dog_gallery", database_folder_name: "dog_gallery_db",
+  database_file_name: "./db/dog_gallery/dog_gallery_users.db")
+  @@line_db_gallery.databases.each do |db|
+    # requirements for gallery_db:
+    # gallery_database: contains hashes
+    @@line_db_gallery[db].pad.new_table!(database_name: "gallery_database", database_table: "gallery_table")
+    @@line_db_gallery[db].pad.new_table!(database_name: "gallery_folders_database", database_table: "gallery_folders_table")
+    @@line_db_gallery[db].pad.new_table!(database_name: "gallery_profile_database", database_table: "gallery_profile_table")
+    # for gallery statistics
+    @@line_db_gallery[db].pad.new_table!(database_name: "gallery_statistics_database", database_table: "gallery_statistics_table")
+    puts "Done loading gallery database: #{db}."
+  end
+  # end line_db's dog blog:: gallery system
+=end
 
 
 

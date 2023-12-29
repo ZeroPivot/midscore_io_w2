@@ -45,7 +45,6 @@ gem 'puma'
 gem 'rerun'
 # gem "rmagick"
 gem 'roda'
-gem 'ruby-debug-ide'
 #gem 'ruby-vips'
 # gem "sequel" # database that has the same author as roda
 # gem "shotgun"

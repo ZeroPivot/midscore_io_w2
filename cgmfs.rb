@@ -49,6 +49,8 @@ DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 $dog_blog_version = "v3.2.5" #used in layout.html.erb
 
 
+
+
 DO_TELEGRAM_LOGGING = true # telegram logging
 
 # redirect aritywolf.net to aritywolf's blog on onemoonpla.net; aritywolf.net already is a domain name on onemoonpla.net, among others you can find on digitalocean

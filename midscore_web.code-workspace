@@ -2,6 +2,10 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"name": "partitioned_array",
+			"path": "lib/partitioned_array"
 		}
 	],
 	"settings": {  "ruby.rubocop.executePath": "/root/.rbenv/shims/",
@@ -13,7 +17,7 @@
 		"options": "--tag-file=.tags --recursive --force --exclude=/assets/ --exclude=.bundle --exclude=.git/ --exclude=coverage/ --exclude=.arcanist-extensions/ --exclude=log/ --exclude=tmp/ --exclude=bin/",
 		"fileName": ".tags"
 	},
-	
+
 		"ruby.rubocop.suppressRubocopWarnings": true,
 		"solargraph.useBundler": true,
 	"ruby.rubocop.useBundler": true,

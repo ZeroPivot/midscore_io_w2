@@ -46,7 +46,7 @@ DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
 
 
-$dog_blog_version = "v5.0.0" #used in layout.html.erb
+$dog_blog_version = "v3.2.5" #used in layout.html.erb
 
 
 DO_TELEGRAM_LOGGING = true # telegram logging

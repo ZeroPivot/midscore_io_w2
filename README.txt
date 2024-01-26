@@ -9,7 +9,11 @@
 
 def CGMFS: comicman (comic manager) gallery filesystem
 
-
+# Current version: 3.2.5
+required usernames in ./db/db_list.txt:
+ urls_redir
+ blog
+ user_blog_database
 
 
 VERSION $dog_blog_version = "4.1.5f-production-linux-puma-line_db" #used in layout.html.erb (2023-04-27)
@@ -39,7 +43,7 @@ Added Resolv gem to layout.html.erb (the only layout used in the onemoonpla.net 
 
 Bundler maintains most gems but not certain ones; check which ones do not work when we get the TIME of DAY.
 
-layout.html.erb: 
+layout.html.erb:
 QUICK HACK to get the client's reversed DNS name
 https://stackoverflow.com/questions/2993/reverse-dns-in-ruby
 
@@ -64,7 +68,7 @@ Version 1.0.0 includes:
 * blog system (/blog)
 * url string shortener system (/r/admin/view -> /r/shortened_url)
 * tested partitioned array data structure
-* URL integer increment shortener (urls make (/admin); (for loggin in/admin/login?password='gUilmon95458a); out of date on this server and used only on HUdl.ink) 
+* URL integer increment shortener (urls make (/admin); (for loggin in/admin/login?password='gUilmon95458a); out of date on this server and used only on HUdl.ink)
 if r.params['password'] == 'gUilmon95458a'
 * note: out of date on hudl.ink but we don't care. (we will be using the new system)
 
@@ -112,7 +116,7 @@ Premise:
   - In second life, be capable of transferring data in base64 from the second life server to hudl.ink.
   - The system will be divided into multiple groups. Each group will be assigned a number and you have a choice
      of selecting by their id or their name, as per the capabilities of Roda.
-   - ex: 
+   - ex:
  First, also to get your bearings on CGMFS, you can try the following:
    - 1) Using the PartitionedArray class, implement a basic data pushing system for second life.
    - 1a) Underlying question: do you want to get to do more direct second life programming or do you want to create

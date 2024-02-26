@@ -8,17 +8,17 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["TM Lee".freeze]
-  s.date = "2024-01-26"
+  s.date = "2024-02-26"
   s.description = "TimeDifference is the missing Ruby method to calculate difference between two given time. You can do a Ruby time difference in year, month, week, day, hour, minute, and seconds.".freeze
   s.email = ["tmlee.ltm@gmail.com".freeze]
   s.files = [".gitignore".freeze, ".travis.yml".freeze, "CHANGELOG.md".freeze, "Gemfile".freeze, "Gemfile.activesupport32".freeze, "LICENSE".freeze, "README.md".freeze, "Rakefile".freeze, "lib/time_difference.rb".freeze, "spec/spec_helper.rb".freeze, "spec/time_difference_spec.rb".freeze, "time_difference.gemspec".freeze]
   s.homepage = "".freeze
   s.licenses = ["MIT".freeze]
-  s.rubygems_version = "3.5.5".freeze
+  s.rubygems_version = "3.5.6".freeze
   s.summary = "TimeDifference is the missing Ruby method to calculate difference between two given time. You can do a Ruby time difference in year, month, week, day, hour, minute, and seconds.".freeze
   s.test_files = ["spec/spec_helper.rb".freeze, "spec/time_difference_spec.rb".freeze]
 
-  s.installed_by_version = "3.5.5".freeze if s.respond_to? :installed_by_version
+  s.installed_by_version = "3.5.6".freeze if s.respond_to? :installed_by_version
 
   s.specification_version = 4
 

@@ -22,15 +22,11 @@
   </form>
     <font size="2">View The Blog Entry <a href="/blog/<%= @user %>/view/<%= @id %>">HERE</a></font><br>
     <font size="2">View All Blog Entries <a href="/blog/<%= @user %>/view">HERE</a><br></font>
-    <script>
+      <script>
     tinymce.init({
       selector: '#blog_post_body',
-      plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen powerpaste advtable advcode editimage tableofcontents mergetags inlinecss',
-      toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-      mergetags_list: [
-        { value: 'First.Name', title: 'First Name' },
-        { value: 'Email', title: 'Email' },
-      ]
+      plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount linkchecker',
+      toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
     });
   </script>
   </div>

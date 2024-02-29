@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= @title %></title>
+</head>
+<body>
+
+  <% gallery_id = 0 %>
+   <% @gallery.iterate do |hash| %>
+    <% unless hash.nil? %>
+      <%= "<center><a href=\"#{domain_name(@r)}/gallery/view/#{@user}/id/#{gallery_id}\">#{hash['title']}</a></center><br>" %>
+    <% end %>
+    <% gallery_id += 1 %>
+   <% end %>
+</body>
+</html>

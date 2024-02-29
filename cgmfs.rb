@@ -1,7 +1,6 @@
 # rubocop:disable Style/StringLiterals
 # VERSION v0.0.1 - kejento.net edited edition
 # EDITS: request_deflection(r) is disabled
-# rubocop:disable Lint/RedundantCopEnableDirective
 require 'roda'
 require 'json'
 require 'fileutils'
@@ -44,12 +43,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-
-
-$dog_blog_version = "v3.2.5" #used in layout.html.erb
-
-
-
+$dog_blog_version = "v3.3.0" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 
@@ -145,6 +139,8 @@ class CGMFS < Roda
     @@line_db[db].pad.new_table!(database_name: "blog_database", database_table: "blog_profile_table")
     puts "...Loading blog_statistics_table."
     @@line_db[db].pad.new_table!(database_name: "blog_database", database_table: "blog_statistics_table")
+    puts "...Loading gallery_database + gallery_table."
+    @@line_db[db].pad.new_table!(database_name: "gallery_database", database_table: "gallery_table")
     puts "Done."
     b = Time.now
     puts "Time taken to load #{db}: #{b - a} seconds."
@@ -160,8 +156,6 @@ class CGMFS < Roda
   #     # requirements for gallery_db:
   #     # gallery_database: contains hashes
   #     @@line_db_gallery[db].pad.new_table!(database_name: "gallery_database", database_table: "gallery_table")
-  #     @@line_db_gallery[db].pad.new_table!(database_name: "gallery_folders_database", database_table: "gallery_folders_table")
-  #     @@line_db_gallery[db].pad.new_table!(database_name: "gallery_profile_database", database_table: "gallery_profile_table")
   #     # for gallery statistics
   #     @@line_db_gallery[db].pad.new_table!(database_name: "gallery_statistics_database", database_table: "gallery_statistics_table")
   #     puts "Done loading gallery database: #{db}."

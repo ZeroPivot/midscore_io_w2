@@ -265,6 +265,11 @@ GEM
       thor (~> 1.0)
       tilt (~> 2.0)
       yard (~> 0.9, >= 0.9.24)
+    sorbet (0.5.11276)
+      sorbet-static (= 0.5.11276)
+    sorbet-static (0.5.11276-aarch64-linux)
+    sorbet-static (0.5.11276-universal-darwin)
+    sorbet-static (0.5.11276-x86_64-linux)
     statemachine (2.3.0)
     telegram-bot-ruby (2.0.0)
       dry-struct (~> 1.6)
@@ -332,6 +337,7 @@ DEPENDENCIES
   rubocop
   ruby-openai
   solargraph
+  sorbet
   statemachine
   telegram-bot-ruby
   telegram_bot

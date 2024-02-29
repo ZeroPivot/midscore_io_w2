@@ -64,7 +64,7 @@ gem 'erb_lint'
 gem 'htmlbeautifier'
 gem 'redcarpet'
 gem 'telegram-bot-ruby'
-
+gem 'sorbet'
 
 gem "ruby-openai" #for gpt-4
 gem "rubocop"

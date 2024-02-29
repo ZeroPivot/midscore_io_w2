@@ -1,3 +1,5 @@
+# rubocop:disable Style/RedundantInterpolation
+# rubocop:disable Layout/LineLength
 # rubocop:disable Metrics/MethodLength
 # rubocop:disable Metrics/BlockLength
 # rubocop:disable Metrics/ClassLength
@@ -215,7 +217,12 @@ class CGMFS
   #     end
   #   end
   # end
+  #
 
+
+
+  ########## BLOG section ##########
+  #
   hash_branch 'blog' do |r| # ss: screenshot
     @start_rendering_time = Time.now.to_f
     r.hash_branches
@@ -230,16 +237,11 @@ class CGMFS
         log("ID: #{@id}")
         @user = r.params['user'].to_s
         if @id == 'pin'
-          log('ID is pin')
           # @pin = @@line_db[@user].pad['blog_database', 'blog_pinned_table'].get(0)
           @body = @@line_db[@user].pad['blog_database', 'blog_pinned_table'].get(0)['blog_post_body'] # get pinned post
-          log('1')
           @title = @@line_db[@user].pad['blog_database', 'blog_pinned_table'].get(0)['blog_post_title']
-          log('2')
         else
-          log('ID is an integer')
           @post = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id.to_i)
-
           @rendered_type = @post['blog_post_rendered_type']
           @body = @post['blog_post_body']
         end
@@ -250,7 +252,6 @@ class CGMFS
                                                                       fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
           @body = @post['blog_post_body']
           @markdown_body = @post['blog_post_body_markdown'] # save markdown body for later
-          log(@body)
           @markdown_body = @body.to_s # save markdown body for later
           @body = markdown.render(@markdown_body) if @rendered_type == 'markdown'
 
@@ -1013,3 +1014,5 @@ end
 # rubocop:enable Metrics/ClassLength
 # rubocop:enable Metrics/BlockLength
 # rubocop:enable Metrics/MethodLength
+# rubocop:enable Layout/LineLength
+# rubocop:enable Style/RedundantInterpolation

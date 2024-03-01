@@ -16,7 +16,7 @@
                         <p>(Upload Time) <%= image['date'] %></p>
                         <p>(Views) <%= image['views'] %></p>
                         <p>(Filename/Permalink/Full Resolution) <a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{image['file']}" %>"><%= image['file'] %></a></p>
-                        <p><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{image['id']}" %>"><img src="<%= "#{domain_name(@r)}/gallery/#{@user}/thumbnail_#{image['file']}" %>" alt="<%= @title %>"></a></p>
+                        <p><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{index}" %>"><img src="<%= "#{domain_name(@r)}/gallery/#{@user}/thumbnail_#{image['file']}" %>" alt="<%= @title %>"></a></p>
                         <p>(Filename) <%= image['file'] %></p>
                     </div>
                 <% end %>

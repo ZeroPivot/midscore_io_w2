@@ -1,0 +1,43 @@
+<style>
+    .image {
+        border: 1px solid white;
+        overflow: auto;
+        width: 50%;
+        height: 50%;
+        float: left;
+        box-sizing: border-box;
+    }
+
+    @media screen and (max-width: 768px) {
+        .image {
+            width: 100%;
+            height: auto;
+            float: none;
+        }
+    }
+</style>
+
+<form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
+    <input type="text" id="search_tags" name="search_tags" placeholder="Search tags">
+    <input type="submit" value="Search">
+</form>
+<% if !@only_search %>
+    <br>
+    <br>
+    <h1>For <%= @user %>'s tags: <%= @search_params %></h1> <!-- todo: work on tag version of tags list (this) -->
+    <div class="image-container">
+        <% @images_to_find.each do |image| %>
+            <% next if image.nil? %>
+
+            <div class="image">
+                <p><strong>(🧾)</strong> <%= image['title'] %></p>
+                <p><strong>(🏷️)</strong> <%= image['tags'] %></p>
+                <p><strong>(⌚)</strong> <%= image['date'] %></p>
+                <p><strong>(♾️)</strong> <%= image['views'] %></p>
+                <p><strong>(🖼️)</strong> <a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{image['file']}" %>">(⏬➡️💾)</a></p>
+                <p><strong>(🔗)</strong> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{image['id']}" %>"><img src="<%= "#{domain_name(@r)}/gallery/#{@user}/thumbnail_#{image['file']}" %>" alt="<%= @title %>"></a></p>
+                <p><strong>(📌)</strong> <a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{image['id']}" %>">(📝)</a></p>
+            </div>
+        <% end %>
+    </div>
+<% end %>

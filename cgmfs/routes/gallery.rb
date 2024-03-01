@@ -122,7 +122,7 @@ class CGMFS
         end
 
         if uploadable
-          @@line_db[@user].pad['gallery_database', 'gallery_table'].add do |hash|
+         id = @@line_db[@user].pad['gallery_database', 'gallery_table'].add do |hash|
             hash['file'] = original_to_new_filename
             hash['views'] = 0
             hash['title'] = title
@@ -136,6 +136,11 @@ class CGMFS
             hash['extension'] = file_extension
             hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
           end
+          # set the id of the image to the id of the image in the database
+          @@line_db[@user].pad['gallery_database', 'gallery_table'].set(id) do |hash|
+            hash['id'] = id
+          end
+
         end
         # change to more efficient form later.
         @@line_db[@user].pad['gallery_database', 'gallery_table'].save_everything_to_files! if uploadable
@@ -163,13 +168,47 @@ class CGMFS
         @image = @gallery.get(@id)
         # add one to page view, and save by partition:
         @image['views'] += 1
-        #@gallery.save_everything_to_files!
-        #partition_to_save = @gallery.get(@id, hash: true)["db_index"]
-        #@gallery.save_partition_to_file!(partition_to_save)
+        # @gallery.save_everything_to_files!
+        # partition_to_save = @gallery.get(@id, hash: true)["db_index"]
+        # @gallery.save_partition_to_file!(partition_to_save)
         @gallery.save_partition_by_id_to_file!(@id)
 
-
         view('blog/gallery/view_user_gallery_image_id', engine: 'html.erb', layout: 'layout.html')
+      end
+    end
+
+    r.is 'view', String, 'tags', 'search' do |user| # view the tags list
+      user_failcheck(user, r)
+      r.get do
+        @only_search = false
+        @search_params = r.params['search_tags']
+        @user = user
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @tags_array = []
+        @images = @gallery.data_arr.map { |image| image }
+        @tags = @images.map { |image| image['tags'] }.flatten
+        @tags.each do |tag|
+          next if tag.nil?
+
+          tag.split(', ').each do |split_tag|
+            @tags_array << split_tag
+          end
+        end
+        @tags_array = @tags_array.uniq
+        @images = @gallery.data_arr.map { |image| image }
+        @image_tags = @images.map { |image| image['tags'] }
+        # remove nils in tags
+        @image_tags = @image_tags.reject { |tag| tag.nil? }
+        if @search_params
+          @search_params_set = @search_params.split(', ').compact.to_set
+          # get rid of nil tags in @images_set
+          @images_to_find = @images.select { |image| image['tags'] && @search_params_set & image['tags'].split(', ').to_set == @search_params_set }
+          @images_to_find = @images_to_find.to_a
+        else
+          @only_search = true
+        end
+
+        view('blog/gallery/view_user_gallery_image_tags_search', engine: 'html.erb', layout: 'layout.html')
       end
     end
 
@@ -177,19 +216,33 @@ class CGMFS
       user_failcheck(user, r)
       r.get do
         @user = user
+        @tags_array = []
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-        @tags = @gallery.data_arr.map { |image| image['tags'] }
+        search_params = r.params['search_tags']
+        log(search_params)
+        # search the gallery database and join the results with the tags in search_params and the tags in @gallery
+        # get all the unique tags from each gallery post:
+
+        @images = @gallery.data_arr.map { |image| image }
         # remove nils in tags
-        @tags = @tags.compact
-        @split_tags = @tags.map { |tag| tag.split(', ') }.uniq
-        log(@split_tags)
-        # use @split_tags to find every unique tag in the @gallery.data_arr:
-        # get all the unique tags from each gallery post:
+        @tags = @images.map { |image| image['tags'] }.flatten
+        @tags.each do |tag|
+          next if tag.nil?
 
+          tag.split(', ').each do |tag|
+            @tags_array << tag
+          end
+        end
+        @tags_array = @tags_array.uniq
+        @images_set = @images.to_set
+        # remove an image from the set if it does not contain tags
+        @images_set = @images_set.reject { |image| image['tags'].nil? }
 
-
-
-        # get all the unique tags from each gallery post:
+        # search query for tags
+        #
+        # get the tags from the gallery databas
+        # get the tags from the image database
+        @split_tags = @tags_array
         view('blog/gallery/view_user_gallery_image_tags', engine: 'html.erb', layout: 'layout.html')
       end
     end
@@ -204,8 +257,6 @@ class CGMFS
         view('blog/gallery/view_user_gallery_image_tag', engine: 'html.erb', layout: 'layout.html')
       end
     end
-
-
 
     # /gallery/edit/user/id/ID
     r.is 'edit', String, 'id', Integer do |user, id| # edit the gallery list
@@ -252,25 +303,20 @@ class CGMFS
             uploadable = false
           end
         else
-          original_to_new_filename =  @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['file']
+          original_to_new_filename = @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['file']
           file_size = @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['size']
           file_extension = @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['extension']
         end
 
-        if uploadable
-          @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|
-            hash['file'] = original_to_new_filename
-            hash['title'] = @title
-            hash['description'] = @description
-            hash['tags'] = @tags
-            hash['size'] = file_size
-            hash['extension'] = file_extension
-            hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
-          end
+        @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|
+          hash['file'] = original_to_new_filename
+          hash['title'] = @title
+          hash['description'] = @description
+          hash['tags'] = @tags
+          hash['size'] = file_size
+          hash['extension'] = file_extension
+          hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
         end
-
-
-
 
         @gallery.save_partition_by_id_to_file!(@id)
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}"

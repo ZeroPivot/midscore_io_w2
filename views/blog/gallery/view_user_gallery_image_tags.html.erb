@@ -1,3 +1,9 @@
+ <form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
+            <input type="text" id="search_tags" name="search_tags" placeholder="Search tags">
+            <input type="submit" value="Search">
+        </form>
+        <br>
+        <br>
 <div>
     <br>
     <h1>For <%= @user %>'s tags</h1> <!-- todo: work on tag version of tags list (this) -->
@@ -5,14 +11,16 @@
         <br>
         <% @split_tags.each do |tag| %>
             <div style="display: inline-block; width: auto;">
-                <center><h2><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tag/#{tag.join}" %>"><%= tag.join %></a></h2></center>
+                <center><h2><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tag/#{tag}" %>"><%= tag %></a></h2></center>
                 <br />
                 <br>
                 <br>
                 <div>
                     <% @gallery.data_arr.each_with_index do |image, index| %>
                         <% break if @gallery.latest_id < index %>
-                        <% if (image['tags'] && image['tags'].split(", ").include?(tag.join)) %>
+
+
+                        <% if (image['tags'] && image['tags'].split(", ").include?(tag)) %>
                             <div style="border: 1px solid white;">
                                 <p><strong>(🧾)</strong> <%= image['title'] %></p>
                                 <p><strong>(🏷️)</strong> <%= image['tags'] %></p>
@@ -29,3 +37,4 @@
         <% end %>
     </div>
 </div>
+

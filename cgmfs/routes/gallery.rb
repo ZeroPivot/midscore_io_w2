@@ -173,32 +173,33 @@ class CGMFS
         # get the image temp file parameters through roda:
         uploadable = false
         uploaded_filehandle = r.params['file']
-        original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}"
-        file_contents = uploaded_filehandle[:tempfile].read
-        file_size = file_contents.size
-        file_extension = File.extname(uploaded_filehandle[:filename])
-        # list all possible file types in File.extname:
-        # .jpg, .jpeg, .png, .gif, .bmp, .zip, .tar, .gz, .rar, .7z, .mp3, .wav, .flac, .ogg, .mp4, .avi, .mkv, .mov, .wmv, .flv, .webm, .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .rtf, .html, .htm, .xml, .json, .csv, .tsv, .md, .markdown, .rb, .py, .js, .css, .scss, .sass, .less, .php, .java, .c, .cpp, .h, .hpp, .cs, .go, .swift, .kt, .kts, .rs, .pl, .sh, .bat, .exe, .dll, .so, .dylib, .app, .apk, .ipa, .deb, .rpm, .msi, .dmg, .iso, .img, .bin, .cue, .mdf, .mds, .nrg, .vcd, .toast, .dmg, .toast, .vcd, .nrg, .mds, .mdf, .cue, .bin, .img, .iso, .rpm, .msi, .deb, .ipa, .apk, .app, .dylib, .so, .dll, .exe, .bat, .sh, .pl, .rs, .kts, .kt, .swift, .go, .cs, .hpp, .h, .cpp, .c, .java, .php, .less, .sass, .scss, .css, .js, .py, .rb, .markdown, .md, .tsv, .csv, .json, .xml, .htm, .html, .rtf, .txt, .pptx, .ppt, .xlsx, .xls, .docx, .doc, .pdf, .webm, .flv, .wmv, .mov, .mkv, .avi, .mp4, .ogg, .flac, .wav, .mp3, .7z, .rar, .gz, .
-        #
-        if ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].include?(file_extension) # add .zip later, et al.
-          uploadable = true
-          FileUtils.mkdir_p("public/gallery/#{@user}")
-          File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
+        if (uploaded_filehandle)
+          original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}"
+          file_contents = uploaded_filehandle[:tempfile].read
+          file_size = file_contents.size
+          file_extension = File.extname(uploaded_filehandle[:filename])
+          # list all possible file types in File.extname:
+          # .jpg, .jpeg, .png, .gif, .bmp, .zip, .tar, .gz, .rar, .7z, .mp3, .wav, .flac, .ogg, .mp4, .avi, .mkv, .mov, .wmv, .flv, .webm, .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .rtf, .html, .htm, .xml, .json, .csv, .tsv, .md, .markdown, .rb, .py, .js, .css, .scss, .sass, .less, .php, .java, .c, .cpp, .h, .hpp, .cs, .go, .swift, .kt, .kts, .rs, .pl, .sh, .bat, .exe, .dll, .so, .dylib, .app, .apk, .ipa, .deb, .rpm, .msi, .dmg, .iso, .img, .bin, .cue, .mdf, .mds, .nrg, .vcd, .toast, .dmg, .toast, .vcd, .nrg, .mds, .mdf, .cue, .bin, .img, .iso, .rpm, .msi, .deb, .ipa, .apk, .app, .dylib, .so, .dll, .exe, .bat, .sh, .pl, .rs, .kts, .kt, .swift, .go, .cs, .hpp, .h, .cpp, .c, .java, .php, .less, .sass, .scss, .css, .js, .py, .rb, .markdown, .md, .tsv, .csv, .json, .xml, .htm, .html, .rtf, .txt, .pptx, .ppt, .xlsx, .xls, .docx, .doc, .pdf, .webm, .flv, .wmv, .mov, .mkv, .avi, .mp4, .ogg, .flac, .wav, .mp3, .7z, .rar, .gz, .
+          #
+          if ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].include?(file_extension) # add .zip later, et al.
+            uploadable = true
+            FileUtils.mkdir_p("public/gallery/#{@user}") unless
+            File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
+          else
+            uploadable = false
+          end
         else
-          uploadable = false
+          original_to_new_filename =  @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['file']
+          file_size = @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['size']
+          file_extension = @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['extension']
         end
 
         if uploadable
           @@line_db[@user].pad['gallery_database', 'gallery_table'].add do |hash|
             hash['file'] = original_to_new_filename
-            hash['views'] = @image['views']
-            hash['title'] = @image
-            hash['description'] = @image['description']
-            hash['downloads'] = 0
-            hash['shares'] = 0
-            hash['comments'] = 0
-            hash['likes'] = 0
-            hash['tags'] = @image['tags']
+            hash['title'] = @title
+            hash['description'] = @description
+            hash['tags'] = @tags
             hash['size'] = file_size
             hash['extension'] = file_extension
             hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s

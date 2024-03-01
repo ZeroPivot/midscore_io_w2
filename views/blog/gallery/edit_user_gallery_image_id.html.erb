@@ -1,0 +1,32 @@
+# /root/midscore_io/views/blog/gallery/edit_user_gallery_id.html.erb
+<%# # /gallery/edit/user/id/ID %>
+<%# Add your HTML and ERB code here for the edit page %>
+<script src="https://cdn.tiny.cloud/1/rzzngc2l3yjv4zi3457y3qjfv92codj2bb91rnem3fsyl4x3/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<h1>Edit User Gallery ID (<%= @id %>)</h1>
+
+<form action="/gallery/edit/<%= @user %>/id/<%= @id %>" method="post">
+    <input type="hidden" name="_method" value="patch">
+
+    <!-- Add your form fields here -->
+    <label for="title">Title:</label>
+    <input type="text" name="title" id="title" value="<%= @title %>">
+    <br>
+    <label for="tags">Tags:</label>
+    <input type="text" name="tags" id="tags" value="<%= @tags %>">
+    <br>
+    <label for="file">File:</label>
+    <input type="file" name="file" id="file">
+    <br>
+    <label for="description">Description:</label>
+    <textarea name="description" id="description"><%= @description %></textarea>
+    <br>
+    <button type="submit">Save!</button>
+</form>
+
+ <script>
+    tinymce.init({
+      selector: '#description',
+      plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount linkchecker',
+      toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+    });
+  </script>

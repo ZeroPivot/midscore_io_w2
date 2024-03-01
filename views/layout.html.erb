@@ -43,7 +43,7 @@
   <font size="16"><%= MoonIllumination.emoji %></font><br />
   <a href="<%= domain_name(@r) %>/blog">(📃)</a>,<a href="<%= domain_name(@r) %>/gallery">(🖼️)</a><br>
   <% if session['user'] %>
-   (👤[<a href="/gallery/upload">🔢</a>]) <%= session['user'] %><br>
+   (👤[<a href="/gallery/upload">(🔢)</a>; <a href="/blog/<%= session['user'] %>/new">(📝)</a>|<a href="/gallery/view/<%= session['user'] %>">(🖼️)</a>],[<a href="/blog/<%= session['user'] %>">(📃)</a>]) <%= session['user'] %><br>
   <% end %>
   <br />
   </center>

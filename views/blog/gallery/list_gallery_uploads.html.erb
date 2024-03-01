@@ -7,6 +7,14 @@
   </head>
   <body>
   <center>
+    <form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
+    <input type="text" id="search_tags" name="search_tags" placeholder="Search tags" required> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>">(🏷️,🏷️,...)</a>
+    <input type="submit" value="Search">
+    </form>
+
+    <br>
+    <br>
+    <h1>For <%= @user %>'s gallery</h1>
     <table padding="11" border="1">
     <tr>
       <% @gallery.iterate do |hash| %> <!-- for now, this does it from ascending order -->

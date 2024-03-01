@@ -115,7 +115,7 @@ class CGMFS
           uploadable = true
           FileUtils.mkdir_p("public/gallery/#{@user}")
           File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
-          create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 265, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
+          create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
           resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1024, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
         else
           uploadable = false
@@ -202,59 +202,31 @@ class CGMFS
         if @search_params
           @search_params_set = @search_params.split(', ').compact.to_set
           # get rid of nil tags in @images_set
-          @images_to_find = @images.select { |image| image['tags'] && @search_params_set & image['tags'].split(', ').to_set == @search_params_set }
+          @tags_to_reject = @search_params_set.select { |tag| tag.start_with?('-') }
+
+          # remove the '--' from the tags to reject
+          @tags_to_reject = @tags_to_reject.map { |tag| tag[2..-1] }
+
+          @search_params_set.reject! { |tag| tag.start_with?('--') }
+          @images_to_find = @images.select do |image|
+            image['tags'] &&
+              @search_params_set.subset?(image['tags'].split(', ').to_set)
+          end
+
+          @tags_to_reject.each do |rejected_tag|
+            @images_to_find = @images_to_find.reject do |image|
+              image['tags'].split(', ').include?(rejected_tag)
+            end
+
+          end
+
+
           @images_to_find = @images_to_find.to_a
         else
           @only_search = true
         end
 
         view('blog/gallery/view_user_gallery_image_tags_search', engine: 'html.erb', layout: 'layout.html')
-      end
-    end
-
-    r.is 'view', String, 'tags' do |user| # view the tags list
-      user_failcheck(user, r)
-      r.get do
-        @user = user
-        @tags_array = []
-        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-        search_params = r.params['search_tags']
-        log(search_params)
-        # search the gallery database and join the results with the tags in search_params and the tags in @gallery
-        # get all the unique tags from each gallery post:
-
-        @images = @gallery.data_arr.map { |image| image }
-        # remove nils in tags
-        @tags = @images.map { |image| image['tags'] }.flatten
-        @tags.each do |tag|
-          next if tag.nil?
-
-          tag.split(', ').each do |tag|
-            @tags_array << tag
-          end
-        end
-        @tags_array = @tags_array.uniq
-        @images_set = @images.to_set
-        # remove an image from the set if it does not contain tags
-        @images_set = @images_set.reject { |image| image['tags'].nil? }
-
-        # search query for tags
-        #
-        # get the tags from the gallery databas
-        # get the tags from the image database
-        @split_tags = @tags_array
-        view('blog/gallery/view_user_gallery_image_tags', engine: 'html.erb', layout: 'layout.html')
-      end
-    end
-
-    r.is 'view', String, 'tag', String do |user, tag| # view the gallery list
-      user_failcheck(user, r)
-      r.get do
-        @user = user
-        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-        @tag = tag
-        @images = @gallery.data_arr.select { |image| image['tags'].split(', ').include?(@tag) }
-        view('blog/gallery/view_user_gallery_image_tag', engine: 'html.erb', layout: 'layout.html')
       end
     end
 
@@ -295,7 +267,7 @@ class CGMFS
           #
           if ['.jpg', '.jpeg', '.png', '.bmp'].include?(file_extension) # add .zip later, et al.
             uploadable = true
-            FileUtils.mkdir_p("public/gallery/#{@user}") unless
+            FileUtils.mkdir_p("public/gallery/#{@user}")
             File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
             create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 500, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
             resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1024, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")

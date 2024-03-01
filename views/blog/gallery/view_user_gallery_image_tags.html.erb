@@ -1,7 +1,7 @@
- <form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
-            <input type="text" id="search_tags" name="search_tags" placeholder="Search tags">
-            <input type="submit" value="Search">
-        </form>
+ <center><form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
+    <input type="text" id="search_tags" name="search_tags" placeholder="Search tags" required> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>">(🏷️,🏷️,...)</a>
+    <input type="submit" value="Search">
+    </form></center>
         <br>
         <br>
 <div>
@@ -11,7 +11,7 @@
         <br>
         <% @split_tags.each do |tag| %>
             <div style="display: inline-block; width: auto;">
-                <center><h2><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tag/#{tag}" %>"><%= tag %></a></h2></center>
+                <center><h2><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search/?search_tags=#{tag}" %>"><%= tag %></a></h2></center>
                 <br />
                 <br>
                 <br>

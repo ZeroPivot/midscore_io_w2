@@ -6,6 +6,11 @@
     <title><%= @user %> - @image['title'] %></title>
 </head>
 <body>
+      <center><form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
+    <input type="text" id="search_tags" name="search_tags" placeholder="Search tags"> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>">(🏷️,🏷️,...)</a>
+    <input type="submit" value="Search">
+    </form></center>
+        <br>
     <center><img src="<%= "#{domain_name(@r)}/gallery/#{@user}/resized_#{@image["file"]}" %>" alt="<%= @title %>"></center><br>
     <center><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}" %>">Back to Gallery</a></center>
     <center><a href="<%= "#{domain_name(@r)}/gallery" %>">Back to Gallery List</a></center>

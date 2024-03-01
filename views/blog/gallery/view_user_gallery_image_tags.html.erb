@@ -1,0 +1,24 @@
+<h1>For <%= @user %>'s tags</h1>
+<br>
+<h1> Tags: </h1>
+<% @split_tags.each do |tag| %>
+    <p><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tag/#{tag.join}" %>"><%= tag.join %></a></p>
+    <br />
+    <br>
+    <br>
+    <% @gallery.data_arr.each_with_index do |image, index| %>
+        <% break if @gallery.latest_id < index %> <!-- this is a hack to prevent the program from parsing every entry in @data_arr -->
+                <% if (image['tags'] && image['tags'].split(", ").include?(tag.join)) %> <!-- basically, you would have an include x times for viewing multiple tags, and don't forget relational algebra and set theory -->
+                    <div class="image-tag">
+                        <h2><%= image['title'] %></h2>
+                        <p>(Tags)<%= image['tags'] %></p>
+                        <p>(Description) <%= image['description'] %></p>
+                        <p>(Upload Time) <%= image['date'] %></p>
+                        <p>(Views) <%= image['views'] %></p>
+                        <p>(Filename/Permalink/Full Resolution) <a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{image['file']}" %>"><%= image['file'] %></a></p>
+                        <p><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{image['id']}" %>"><img src="<%= "#{domain_name(@r)}/gallery/#{@user}/thumbnail_#{image['file']}" %>" alt="<%= @title %>"></a></p>
+                        <p>(Filename) <%= image['file'] %></p>
+                    </div>
+                <% end %>
+    <% end %>
+<% end %>

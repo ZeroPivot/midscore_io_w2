@@ -6,7 +6,7 @@
     <title><%= @user %> - @image['title'] %></title>
 </head>
 <body>
-    <center><img src="<%= "#{domain_name(@r)}/gallery/#{@user}/#{@image["file"]}" %>" alt="<%= @title %>"></center><br>
+    <center><img src="<%= "#{domain_name(@r)}/gallery/#{@user}/resized_#{@image["file"]}" %>" alt="<%= @title %>"></center><br>
     <center><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}" %>">Back to Gallery</a></center>
     <center><a href="<%= "#{domain_name(@r)}/gallery" %>">Back to Gallery List</a></center>
     <center><a href="<%= "#{domain_name(@r)}/" %>">Back to Main Page</a></center>
@@ -19,7 +19,7 @@
     <center>(Tags) <%= @image['tags'] %></center>
     <center>(Upload Time) <%= @image['date'] %></center>
     <center>(Views) <%= @image['views'] %></center>
-    <center>(Filename/Permalink) <a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{@image['file']}" %>"><%= @image['file'] %></a></center>
+    <center>(Filename/Permalink/Full Resolution) <a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{@image['file']}" %>"><%= @image['file'] %></a></center>
     <br><br>
     <center><a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{@id}" %>">Edit</a></center>
     <center><a href="<%= "#{domain_name(@r)}/gallery/delete/#{@user}/id/#{@id}" %>">Delete</a></center>

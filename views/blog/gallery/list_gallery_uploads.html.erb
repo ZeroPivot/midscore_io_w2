@@ -1,16 +1,39 @@
-<!DOCTYPE html>
-<html>
-<head>
+    <% gallery = []
+       latest_id = @gallery.latest_id %>
+  <!DOCTYPE html>
+  <html>
+  <head>
     <title><%= @title %></title>
-</head>
-<body>
+  </head>
+  <body>
+  <center>
+    <table padding="11" border="1">
+    <tr>
+      <% @gallery.iterate do |hash| %> <!-- for now, this does it from ascending order -->
+        <%
+         gallery << hash
+         %>
 
-  <% gallery_id = 0 %>
-   <% @gallery.iterate do |hash| %>
-    <% unless hash.nil? %>
-      <%= "<center><a href=\"#{domain_name(@r)}/gallery/view/#{@user}/id/#{gallery_id}\">#{hash['title']}</a></center><br>" %>
-    <% end %>
-    <% gallery_id += 1 %>
-   <% end %>
-</body>
-</html>
+       <% end %>
+
+    <% latest_id.downto(0) do |id| %>
+      <% hash = gallery[id] %>
+      <% unless hash.nil? %>
+        <% if id % 4 == 0 %>
+        </tr><tr>
+        <% end %>
+        <td>
+        <div id="gallery_images">
+          <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= id %>" border="0">
+          <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= hash['file'] %>" alt="<%= @title %>">
+          </a>
+        </div>
+        </td>
+
+      <% end %>
+      <% end %>
+    </tr>
+    </table>
+  </center>
+  </body>
+  </html>

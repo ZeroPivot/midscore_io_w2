@@ -30,6 +30,36 @@ class CGMFS
     # return "https://" + r.host
   end
 
+  def create_image_thumbnail!(image_path:, thumbnail_size:, thumbnail_path:)
+    # use free-image gem
+    image = FreeImage::Bitmap.open(image_path)
+    thumbnail = image.make_thumbnail(thumbnail_size, true)
+    extension = File.extname(image_path)
+    case extension
+    when '.jpg', '.jpeg'
+      thumbnail.save(thumbnail_path, :jpeg)
+    when '.png'
+      thumbnail.save(thumbnail_path, :png)
+    when '.bmp'
+      thumbnail.save(thumbnail_path, :bmp)
+    end
+  end
+
+  def resize_image!(image_path:, size:, resized_image_path:)
+    # use free-image gem
+    image = FreeImage::Bitmap.open(image_path)
+    resized = image.make_thumbnail(size, true) # figure out a way to scale images according to dimensions and to get a best fit of what the multiplier should be in image.rescale(x,y)
+    extension = File.extname(image_path)
+    case extension
+    when '.jpg', '.jpeg'
+      resized.save(resized_image_path, :jpeg)
+    when '.png'
+      resized.save(resized_image_path, :png)
+    when '.bmp'
+      resized.save(resized_image_path, :bmp)
+    end
+  end
+
   # /gallery
   hash_branch 'gallery' do |r|
     @start_rendering_time = Time.now.to_f
@@ -77,13 +107,16 @@ class CGMFS
         file_contents = uploaded_filehandle[:tempfile].read
         file_size = file_contents.size
         file_extension = File.extname(uploaded_filehandle[:filename])
+
         # list all possible file types in File.extname:
         # .jpg, .jpeg, .png, .gif, .bmp, .zip, .tar, .gz, .rar, .7z, .mp3, .wav, .flac, .ogg, .mp4, .avi, .mkv, .mov, .wmv, .flv, .webm, .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .rtf, .html, .htm, .xml, .json, .csv, .tsv, .md, .markdown, .rb, .py, .js, .css, .scss, .sass, .less, .php, .java, .c, .cpp, .h, .hpp, .cs, .go, .swift, .kt, .kts, .rs, .pl, .sh, .bat, .exe, .dll, .so, .dylib, .app, .apk, .ipa, .deb, .rpm, .msi, .dmg, .iso, .img, .bin, .cue, .mdf, .mds, .nrg, .vcd, .toast, .dmg, .toast, .vcd, .nrg, .mds, .mdf, .cue, .bin, .img, .iso, .rpm, .msi, .deb, .ipa, .apk, .app, .dylib, .so, .dll, .exe, .bat, .sh, .pl, .rs, .kts, .kt, .swift, .go, .cs, .hpp, .h, .cpp, .c, .java, .php, .less, .sass, .scss, .css, .js, .py, .rb, .markdown, .md, .tsv, .csv, .json, .xml, .htm, .html, .rtf, .txt, .pptx, .ppt, .xlsx, .xls, .docx, .doc, .pdf, .webm, .flv, .wmv, .mov, .mkv, .avi, .mp4, .ogg, .flac, .wav, .mp3, .7z, .rar, .gz, .
         #
-        if ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].include?(file_extension) # add .zip later, et al.
+        if ['.jpg', '.jpeg', '.png', '.bmp'].include?(file_extension) # add .zip later, et al.
           uploadable = true
           FileUtils.mkdir_p("public/gallery/#{@user}")
           File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
+          create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 265, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
+          resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1024, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
         else
           uploadable = false
         end
@@ -106,7 +139,7 @@ class CGMFS
         end
         # change to more efficient form later.
         @@line_db[@user].pad['gallery_database', 'gallery_table'].save_everything_to_files! if uploadable
-        r.redirect "#{domain_name(r)}/gallery/view/#{session['user']}" if uploadable
+        r.redirect "#{domain_name(r)}/gallery/view/#{@user}" if uploadable
         "<html><body>Upload failed. Please try again. <a href='#{domain_name(r)}/gallery/upload'>Upload</a></html></body>"
       end
     end
@@ -131,14 +164,49 @@ class CGMFS
         # add one to page view, and save by partition:
         @image['views'] += 1
         #@gallery.save_everything_to_files!
-        partition_to_save = @gallery.get(@id, hash: true)["db_index"]
-        @gallery.save_partition_to_file!(partition_to_save)
-
+        #partition_to_save = @gallery.get(@id, hash: true)["db_index"]
+        #@gallery.save_partition_to_file!(partition_to_save)
+        @gallery.save_partition_by_id_to_file!(@id)
 
 
         view('blog/gallery/view_user_gallery_image_id', engine: 'html.erb', layout: 'layout.html')
       end
     end
+
+    r.is 'view', String, 'tags' do |user| # view the tags list
+      user_failcheck(user, r)
+      r.get do
+        @user = user
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @tags = @gallery.data_arr.map { |image| image['tags'] }
+        # remove nils in tags
+        @tags = @tags.compact
+        @split_tags = @tags.map { |tag| tag.split(', ') }.uniq
+        log(@split_tags)
+        # use @split_tags to find every unique tag in the @gallery.data_arr:
+        # get all the unique tags from each gallery post:
+
+
+
+
+        # get all the unique tags from each gallery post:
+        view('blog/gallery/view_user_gallery_image_tags', engine: 'html.erb', layout: 'layout.html')
+      end
+    end
+
+    r.is 'view', String, 'tag', String do |user, tag| # view the gallery list
+      user_failcheck(user, r)
+      r.get do
+        @user = user
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @tag = tag
+        @images = @gallery.data_arr.select { |image| image['tags'].split(', ').include?(@tag) }
+        view('blog/gallery/view_user_gallery_image_tag', engine: 'html.erb', layout: 'layout.html')
+      end
+    end
+
+
+
     # /gallery/edit/user/id/ID
     r.is 'edit', String, 'id', Integer do |user, id| # edit the gallery list
       user_failcheck(user, r)
@@ -166,7 +234,7 @@ class CGMFS
         # get the image temp file parameters through roda:
         uploadable = false
         uploaded_filehandle = r.params['file']
-        if (uploaded_filehandle)
+        if uploaded_filehandle
           original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}"
           file_contents = uploaded_filehandle[:tempfile].read
           file_size = file_contents.size
@@ -174,10 +242,12 @@ class CGMFS
           # list all possible file types in File.extname:
           # .jpg, .jpeg, .png, .gif, .bmp, .zip, .tar, .gz, .rar, .7z, .mp3, .wav, .flac, .ogg, .mp4, .avi, .mkv, .mov, .wmv, .flv, .webm, .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .rtf, .html, .htm, .xml, .json, .csv, .tsv, .md, .markdown, .rb, .py, .js, .css, .scss, .sass, .less, .php, .java, .c, .cpp, .h, .hpp, .cs, .go, .swift, .kt, .kts, .rs, .pl, .sh, .bat, .exe, .dll, .so, .dylib, .app, .apk, .ipa, .deb, .rpm, .msi, .dmg, .iso, .img, .bin, .cue, .mdf, .mds, .nrg, .vcd, .toast, .dmg, .toast, .vcd, .nrg, .mds, .mdf, .cue, .bin, .img, .iso, .rpm, .msi, .deb, .ipa, .apk, .app, .dylib, .so, .dll, .exe, .bat, .sh, .pl, .rs, .kts, .kt, .swift, .go, .cs, .hpp, .h, .cpp, .c, .java, .php, .less, .sass, .scss, .css, .js, .py, .rb, .markdown, .md, .tsv, .csv, .json, .xml, .htm, .html, .rtf, .txt, .pptx, .ppt, .xlsx, .xls, .docx, .doc, .pdf, .webm, .flv, .wmv, .mov, .mkv, .avi, .mp4, .ogg, .flac, .wav, .mp3, .7z, .rar, .gz, .
           #
-          if ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].include?(file_extension) # add .zip later, et al.
+          if ['.jpg', '.jpeg', '.png', '.bmp'].include?(file_extension) # add .zip later, et al.
             uploadable = true
             FileUtils.mkdir_p("public/gallery/#{@user}") unless
             File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
+            create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 500, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
+            resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1024, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
           else
             uploadable = false
           end

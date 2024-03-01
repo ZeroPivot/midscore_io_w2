@@ -43,7 +43,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "v3.3.0" # used in layout.html.erb
+$dog_blog_version = "v3.3.1a" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 

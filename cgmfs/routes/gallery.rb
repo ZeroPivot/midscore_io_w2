@@ -162,13 +162,6 @@ class CGMFS
         @title = r.params['title']
         @description = r.params['description']
         @tags = r.params['tags']
-        @image = @gallery.set(@id) do |hash|
-          hash['title'] = @title
-          hash['description'] = @description
-          hash['tags'] = @tags
-          hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
-        end
-
 
         # get the image temp file parameters through roda:
         uploadable = false
@@ -195,7 +188,7 @@ class CGMFS
         end
 
         if uploadable
-          @@line_db[@user].pad['gallery_database', 'gallery_table'].add do |hash|
+          @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|
             hash['file'] = original_to_new_filename
             hash['title'] = @title
             hash['description'] = @description

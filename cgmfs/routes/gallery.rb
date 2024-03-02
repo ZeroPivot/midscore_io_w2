@@ -1,4 +1,4 @@
-# rubocop:disable Metrics/BlockLength, Layout/LineLength, Metrics/ClassLength
+# rubocop:disable Metrics/BlockLength, Layout/LineLength, Metrics/ClassLength, Metrics/MethodLength
 class CGMFS
   def user_failcheck(username, r)
     return if @@line_db.databases.include?(username)
@@ -240,7 +240,7 @@ class CGMFS
 
         # search the gallery database and join the results with the tags in search_params and the tags in @gallery
         # get all the unique tags from each gallery post
-     
+
 
         @images = @gallery.data_arr.map { |image| image }
         # remove nils in tags
@@ -332,4 +332,4 @@ class CGMFS
     end
   end
 end
-# rubocop:enable Metrics/BlockLength, Layout/LineLength, Metrics/ClassLength
+# rubocop:enable Metrics/BlockLength, Layout/LineLength, Metrics/ClassLength, Metrics/MethodLength

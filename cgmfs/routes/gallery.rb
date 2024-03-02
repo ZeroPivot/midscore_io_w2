@@ -230,6 +230,42 @@ class CGMFS
       end
     end
 
+
+    r.is 'view', String, 'tags' do |user| # view the tags list
+      user_failcheck(user, r)
+      r.get do
+        @user = user
+        @tags_array = []
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+
+        # search the gallery database and join the results with the tags in search_params and the tags in @gallery
+        # get all the unique tags from each gallery post
+     
+
+        @images = @gallery.data_arr.map { |image| image }
+        # remove nils in tags
+        @tags = @images.map { |image| image['tags'] }.flatten
+        @tags.each do |tag|
+          next if tag.nil?
+
+          tag.split(', ').each do |split_tag|
+            @tags_array << split_tag
+          end
+        end
+        @tags_array = @tags_array.uniq
+        @images_set = @images.to_set
+        # remove an image from the set if it does not contain tags
+        @images_set = @images_set.reject { |image| image['tags'].nil? }
+
+        # search query for tags
+        #
+        # get the tags from the gallery databas
+        # get the tags from the image database
+        @split_tags = @tags_array
+        view('blog/gallery/view_user_gallery_image_tags', engine: 'html.erb', layout: 'layout.html')
+      end
+    end
+
     # /gallery/edit/user/id/ID
     r.is 'edit', String, 'id', Integer do |user, id| # edit the gallery list
       user_failcheck(user, r)

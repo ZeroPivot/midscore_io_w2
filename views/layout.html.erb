@@ -1,3 +1,5 @@
+<!-- hitch cookie (with get param variable set to a unique tag) -->
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,8 +26,7 @@
     <meta property="og:image:width" content="500"><!-- added 2021-04-07 -->
     <meta property="og:image:height" content="500"> <!-- added 2021-04-07 -->
     <meta name="description" content="Post By <%= domain_name(@r) %>">
-    <meta name="keywords" content="pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, aritywolf nsfw, artywalf, aritywolf sfw, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, sim, simulwolf, wolf, one moon planet, onemoonplanet, onemoonpla.net, onemoonpla net, blog, aritywolf, simul, simulwolf, gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art">
-    <meta property="og:image" content="<%= domain_name(@r) %>/card_banner.jpg">
+    <meta name="keywords" content="pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, aritywolf nsfw, artywalf, aritywolf sfw, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, sim, simulwolf, wolf, one moon planet, onemoonplanet, onemoonpla.net, onemoonpla net, blog, aritywolf, simul, simulwolf, gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art">
     <meta name="author" content="ArityWolf">
     <meta property="og:image" content="<%= domain_name(@r) %>/card_banner.jpg">
     <meta name="twitter:card" content="summary_large_image"> <!-- changed 2021-04-15 -->
@@ -39,7 +40,17 @@
   <div>
   <center>
   <br />
-  <a href="<%= domain_name(@r) %>/blog/<%= @user %>"><img border="0" src="/banner.png" alt="One Moon Planet logo"></a><br>
+  <% begin %>
+    <% ip_address = Resolv.getname(request.ip) %>
+  <% rescue => e %>
+    <% ip_address = nil %>
+  <% end %>
+
+
+  <a href="<%= domain_name(@r) %>/blog/<%= @user %>">
+    <img border="0" src="/banner.png" alt="One Moon Planet logo" style="width: 100%; height: auto;">
+  </a><br>
+    <center><font size="3"><div size="5" id="ip_addr_resolv">🏘️<b>[<%= request.ip %>➡️<%= ip_address || '📱' %>]</b></div></font></center>
   <font size="16"><%= MoonIllumination.emoji %></font><br />
   <a href="<%= domain_name(@r) %>/blog">(📃)</a>,<a href="<%= domain_name(@r) %>/gallery">(🖼️)</a><br>
   <% if session['user'] %>
@@ -59,6 +70,14 @@
   <b>Rendering Time:</b> <%= ((stop_rendering_time - @start_rendering_time.to_f)).round(5) %> seconds [<%= ((stop_rendering_time - @start_rendering_time.to_f)*1000).round(5) %> milliseconds]<br><br>
   <br>
   Server Time: <%= TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s %><br><br>
+<% if !@page_views %>
+  <% File.open("/root/midscore_io/views/page_views.txt", "r+") do |file| %>
+    <% @page_views = file.read.to_i %>
+    <% @page_views += 1 %>
+    <% file.rewind %>
+    <% file.write(@page_views) %>
+  <% end %>
+<% end %>
   Experimental DogBlogGallery-N System [<%= $dog_blog_version %>] - ♾️<%= @page_views %> (for an invite, contact OneMoonDogg on <a href="https://t.me/OneMoonDogg">Telegram</a>) <br><br>
   ©️2024 OneMoonDogg, et. al. - All Rights Reserved<br>
   <a href="<%= domain_name(@r) %>/blog/logout">[➖🔒]</a><br><br>

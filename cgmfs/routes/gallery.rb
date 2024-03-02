@@ -60,6 +60,20 @@ class CGMFS
     end
   end
 
+  def parse_tags(user:, tag_string:, r: @r)
+    # parse the tags from the string
+    tags = tag_string.split(', ')
+    # output html that uses the user and tag_string to redirect to the tag
+    output = ""
+    tags.each_with_index do |tag, index|
+      output << "<a href='#{domain_name(r)}/gallery/view/#{user}/tags/search/?search_tags=#{tag}'>#{tag}</a>"
+      output << ", " unless index == tags.size - 1
+
+    end
+    output
+
+  end
+
   # /gallery
   hash_branch 'gallery' do |r|
     @start_rendering_time = Time.now.to_f
@@ -116,7 +130,7 @@ class CGMFS
           FileUtils.mkdir_p("public/gallery/#{@user}")
           File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
           create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
-          resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1024, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+          resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 3000, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
         else
           uploadable = false
         end
@@ -306,7 +320,7 @@ class CGMFS
             FileUtils.mkdir_p("public/gallery/#{@user}")
             File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
             create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 500, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
-            resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1024, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+            resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 3000, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
           else
             uploadable = false
           end

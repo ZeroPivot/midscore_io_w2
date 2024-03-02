@@ -405,6 +405,8 @@ class CGMFS
               hash[user_name] = password
             end
             @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].save_everything_to_files!
+            puts "...Loading gallery_database + gallery_table."
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "gallery_database", database_table: "gallery_table")
             message = 'User created successfully!'
             # sleep(11)
           elsif !user_name_check.nil? && session['admin']

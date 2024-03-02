@@ -7,7 +7,7 @@
         float: left;
         box-sizing: border-box;
     }
-    
+
     @media screen and (max-width: 768px) {
         .image {
             width: 100%;
@@ -17,21 +17,21 @@
     }
 </style>
 <center><form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
-    <input type="text" id="search_tags" name="search_tags" placeholder="Search tags"> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>">(🏷️,🏷️,...)</a>
+    <input type="text" id="search_tags" name="search_tags" placeholder="Search tags" required> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/" %>">(🏷️,🏷️,...)</a>
     <input type="submit" value="Search">
 </form>
 </center>
 <% if !@only_search %>
     <br>
     <br>
-    <h1>For <%= @user %>'s tags: <%= @search_params %></h1> <!-- todo: work on tag version of tags list (this) -->
+    <h1>For <%= @user %>'s tags: <%= parse_tags(user: @user, tag_string: @search_params) %></h1> <!-- todo: work on tag version of tags list (this) -->
     <div class="image-container">
         <% @images_to_find.each do |image| %>
             <% next if image.nil? %>
 
             <div class="image">
                 <p><strong>(🧾)</strong> <%= image['title'] %></p>
-                <p><strong>(🏷️)</strong> <%= image['tags'] %></p>
+                <p><strong>(🏷️)</strong> <%=  parse_tags(user: @user, tag_string: image["tags"], r: @r) %></p>
                 <p><strong>(⌚)</strong> <%= image['date'] %></p>
                 <p><strong>(♾️)</strong> <%= image['views'] %></p>
                 <p><strong>(🖼️)</strong> <a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{image['file']}" %>">(⏬➡️💾)</a></p>

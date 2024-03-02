@@ -41,6 +41,12 @@ class CGMFS
       end
     end
 
+    r.is 'clear' do
+    r.get do
+      `ruby db_init.rb`
+    end
+    end
+
     r.is 'get_numerology_of_combined_chat' do
       r.get do
         num_map = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9,

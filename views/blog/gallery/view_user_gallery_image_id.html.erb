@@ -1,32 +1,130 @@
-
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title><%= @user %> - @image['title'] %></title>
+    <script>
+    function toggleImageSize() {
+        var image = document.getElementById("gallery-image");
+        if (image.style.width === "50%") {
+            image.style.width = "auto";
+            image.style.height = "auto";
+        } else {
+            image.style.width = "50%";
+            image.style.height = "auto";
+        }
+    }
+
+    function fitToScreenSize() {
+        var image = document.getElementById("gallery-image");
+        image.style.width = "100%";
+        image.style.height = "auto";
+    }
+
+    window.onload = function() {
+        var image = document.getElementById("gallery-image");
+        image.style.width = "50%";
+    };
+</script>
+    <title><%= @user %> - <%= @image['title'] %></title>
+    <style>
+        .table {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table-row {
+            display: table-row;
+        }
+        .table-header {
+            display: table-cell;
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            background-color: #f2f2f2;
+        }
+        .table-data {
+            display: table-cell;
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            background-color: black;
+            color: gray;
+        }
+        .emoji {
+            font-size: 20px;
+            margin-right: 5px;
+        }
+    </style>
+    <style>
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
-      <center><form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
-    <input type="text" id="search_tags" name="search_tags" placeholder="Search tags"> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>">(🏷️,🏷️,...)</a>
-    <input type="submit" value="Search">
-    </form></center>
-        <br>
-    <center><img src="<%= "#{domain_name(@r)}/gallery/#{@user}/resized_#{@image["file"]}" %>" alt="<%= @title %>"></center><br>
-    <center><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}" %>">Back to Gallery</a></center>
-    <center><a href="<%= "#{domain_name(@r)}/gallery" %>">Back to Gallery List</a></center>
-    <center><a href="<%= "#{domain_name(@r)}/" %>">Back to Main Page</a></center>
-    <br />
-    <br />
-    <center>(Title) <%= @image['title'] %></center>
-    <br><br>
-    <center>(Description) <%= @image['description'] %></center>
-    <br><br>
-    <center>(Tags) <%= @image['tags'] %></center>
-    <center>(Upload Time) <%= @image['date'] %></center>
-    <center>(Views) <%= @image['views'] %></center>
-    <center>(Filename/Permalink/Full Resolution) <a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{@image['file']}" %>"><%= @image['file'] %></a></center>
-    <br><br>
-    <center><a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{@id}" %>">Edit</a></center>
-    <center><a href="<%= "#{domain_name(@r)}/gallery/delete/#{@user}/id/#{@id}" %>">Delete</a></center>
+    <div>
+        <form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
+            <input type="text" id="search_tags" name="search_tags" placeholder="Search tags" required>
+            <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/" %>">(🏷️,🏷️,...)</a>
+            <input type="submit" value="Search">
+        </form>
+    </div>
+    <br>
+    <div class="image-container">
+        <img id="gallery-image" src="<%= "#{domain_name(@r)}/gallery/#{@user}/resized_#{@image["file"]}" %>" onclick="toggleImageSize()" alt="<%= @title %>">
+    </div>
+    <center><button onclick="fitToScreenSize()">(🗜️)</button></center>
+    <div class="table">
+        <div class="table-row">
+            <div class="table-header"><strong>(🧾)</strong></div>
+            <div class="table-data"><%= @image['title'] %></div>
+        </div>
+        <div class="table-row">
+            <div class="table-header"><strong>(📝)</strong></div>
+            <div class="table-data"><%= @image['description'] %></div>
+        </div>
+        <div class="table-row">
+            <div class="table-header"><strong>(🏷️,🏷️,..)</strong></div>
+            <div class="table-data"><%= parse_tags(user: @user, tag_string: @image['tags']) %></div>
+        </div>
+        <div class="table-row">
+            <div class="table-header"><strong>(⌚)</strong></div>
+            <div class="table-data"><%= @image['date'] %></div>
+        </div>
+        <div class="table-row">
+            <div class="table-header"><strong>(♾️)</strong></div>
+            <div class="table-data"><%= @image['views'] %></div>
+        </div>
+          <div class="table-row">
+            <div class="table-header"><strong>(⏬💾)</strong></div>
+            <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{@image["file"]}" %>">DOWNLOAD</a></div>
+        </div>
+        <div class="table-row">
+            <div class="table-header"><strong>(📝)</strong></div>
+            <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{@image["id"]}" %>">ADMIN: EDIT</a></div>
+        </div>
+    </div>
+      <br>
+    <center>
+
+        <script>
+            function fitToScreenSize() {
+                var image = document.getElementById("gallery-image");
+                if (image.style.width === "100%") {
+                    image.style.width = "50%";
+                } else {
+                    image.style.width = "100%";
+                }
+                image.style.height = "auto";
+            }
+        </script>
+    </center>
 </body>
 </html>

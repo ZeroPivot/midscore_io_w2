@@ -3,8 +3,8 @@ Midscorian Blog System<br /><br />
  <a href="<%= domain_name(@r)  %>/blog/login">📃Login</a><br /><br />
 <br />
 <% @@line_db.databases.each do |blogname| %>
- <% if blogname == "user_blog_database" || blogname == "urls_redir" %>
-  <%# pass %>  
+ <% if blogname == "user_blog_database" || blogname == "urls_redir"  || blogname == "blog" %>
+  <%# pass %>
  <% else %>
    <a href="<%= domain_name(@r) %>/blog/<%= blogname %>"><%= blogname %></a><br />
  <% end %>

@@ -4,11 +4,17 @@
   <html>
   <head>
     <title><%= @title %></title>
+    <style>
+       img {
+        max-width: 100%;
+        height: auto;
+    }
+    </style>
   </head>
   <body>
   <center>
     <form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
-    <input type="text" id="search_tags" name="search_tags" placeholder="Search tags" required> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>">(🏷️,🏷️,...)</a>
+    <input type="text" id="search_tags" name="search_tags" placeholder="Search tags" required> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/" %>">(🏷️,🏷️,...)</a>
     <input type="submit" value="Search">
     </form>
 

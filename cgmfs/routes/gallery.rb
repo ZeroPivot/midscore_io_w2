@@ -117,6 +117,20 @@ class CGMFS
         description = r.params['description']
         tags = r.params['tags']
         title = r.params['title']
+        reusable_tags = r.params['reusable_tags']
+         if reusable_tags == 'on'
+          session['last_tags'] = tags
+          session['reusable_tags'] = true
+         else
+          session['last_tags'] = ""
+          session['reusable_tags'] = false
+         end
+
+
+
+        description = "no description" if description.empty?
+        tags = "none" if tags.empty?
+        title = "untitled" if title.empty?
         original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}"
         file_contents = uploaded_filehandle[:tempfile].read
         file_size = file_contents.size
@@ -293,6 +307,9 @@ class CGMFS
         @title = @image['title']
         @description = @image['description']
         @tags = @image['tags']
+        @file = @image['file']
+
+
 
         view('blog/gallery/edit_user_gallery_image_id', engine: 'html.erb', layout: 'layout.html')
       end
@@ -303,6 +320,10 @@ class CGMFS
         @title = r.params['title']
         @description = r.params['description']
         @tags = r.params['tags']
+
+        @description = "no description" if @description.empty?
+        @tags = "none" if @tags.empty?
+        @title = "untitled" if @title.empty?
 
         # get the image temp file parameters through roda:
         uploadable = false

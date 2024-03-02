@@ -46,7 +46,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "v3.3.2.8" # used in layout.html.erb
+$dog_blog_version = "v3.3.2.9" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 
@@ -104,7 +104,7 @@ class CGMFS < Roda
 
   @@telegram_logger = TelegramLogger.new
   if DO_TELEGRAM_LOGGING
-    @@telegram_logger.send_message("SERVER MESSAGE: Midscore I/o Server has been [re-]started!\nTIME BOOTED: #{Time.now} (server time)")
+    @@telegram_logger.send_message("SERVER MESSAGE: Server has been [re-]started!\nTIME BOOTED: #{Time.now} (server time)")
   end
   # @@sl_db.load_last_entry_from_file!
   # @@sl_db.load_max_partition_archive_from_file!

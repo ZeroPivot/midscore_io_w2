@@ -31,7 +31,8 @@
 
             <div class="image">
                 <p><strong>(🧾)</strong> <%= image['title'] %></p>
-                <p><strong>(🏷️)</strong> <%=  parse_tags(user: @user, tag_string: image["tags"], r: @r) %></p>
+                <p><strong>(🆔)</strong> <%= image['id'] %></p>
+                <p><strong>(🏷️)</strong> <%= parse_tags(user: @user, tag_string: image["tags"], r: @r) %></p>
                 <p><strong>(⌚)</strong> <%= image['date'] %></p>
                 <p><strong>(♾️)</strong> <%= image['views'] %></p>
                 <p><strong>(🖼️)</strong> <a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{image['file']}" %>">(⏬➡️💾)</a></p>

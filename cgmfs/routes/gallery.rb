@@ -136,15 +136,17 @@ class CGMFS
         file_size = file_contents.size
         file_extension = File.extname(uploaded_filehandle[:filename])
 
+        file_type = FastImage.type(uploaded_filehandle[:tempfile])
+
         # list all possible file types in File.extname:
         # .jpg, .jpeg, .png, .gif, .bmp, .zip, .tar, .gz, .rar, .7z, .mp3, .wav, .flac, .ogg, .mp4, .avi, .mkv, .mov, .wmv, .flv, .webm, .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .rtf, .html, .htm, .xml, .json, .csv, .tsv, .md, .markdown, .rb, .py, .js, .css, .scss, .sass, .less, .php, .java, .c, .cpp, .h, .hpp, .cs, .go, .swift, .kt, .kts, .rs, .pl, .sh, .bat, .exe, .dll, .so, .dylib, .app, .apk, .ipa, .deb, .rpm, .msi, .dmg, .iso, .img, .bin, .cue, .mdf, .mds, .nrg, .vcd, .toast, .dmg, .toast, .vcd, .nrg, .mds, .mdf, .cue, .bin, .img, .iso, .rpm, .msi, .deb, .ipa, .apk, .app, .dylib, .so, .dll, .exe, .bat, .sh, .pl, .rs, .kts, .kt, .swift, .go, .cs, .hpp, .h, .cpp, .c, .java, .php, .less, .sass, .scss, .css, .js, .py, .rb, .markdown, .md, .tsv, .csv, .json, .xml, .htm, .html, .rtf, .txt, .pptx, .ppt, .xlsx, .xls, .docx, .doc, .pdf, .webm, .flv, .wmv, .mov, .mkv, .avi, .mp4, .ogg, .flac, .wav, .mp3, .7z, .rar, .gz, .
         #
-        if ['.jpg', '.jpeg', '.png', '.bmp'].include?(file_extension) # add .zip later, et al.
+        if ['.jpg', '.jpeg', '.png', '.bmp', '.gif'].include?(file_extension) && [:jpeg, :png, :gif].include?(file_type) # add .zip later, et al.
           uploadable = true
           FileUtils.mkdir_p("public/gallery/#{@user}")
           File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
           create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
-          resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1024, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+          resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1920, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
         else
           uploadable = false
         end
@@ -324,6 +326,8 @@ class CGMFS
         @description = "no description" if @description.empty?
         @tags = "none" if @tags.empty?
         @title = "untitled" if @title.empty?
+
+
 
         # get the image temp file parameters through roda:
         uploadable = false

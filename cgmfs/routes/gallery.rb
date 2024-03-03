@@ -239,13 +239,12 @@ class CGMFS
 
           @search_params_set.reject! { |tag| tag.start_with?('--') }
           @images_to_find = @images.select do |image|
-            image['tags'] &&
-              @search_params_set.subset?(image['tags'].split(', ').to_set)
+            image['tags'] && @search_params_set.subset?(image['tags'].split(', ').to_set)
           end
 
           @tags_to_reject.each do |rejected_tag|
             @images_to_find = @images_to_find.reject do |image|
-              image['tags'].split(', ').include?(rejected_tag)
+              image['tags']&.split(', ')&.include?(rejected_tag)
             end
 
           end

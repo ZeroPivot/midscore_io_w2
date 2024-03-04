@@ -47,7 +47,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "v3.3.3.6 - Codename: \"Stinktail\"" # used in layout.html.erb
+$dog_blog_version = "v3.3.3.7 - Codename: \"Stinktail\"" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 
@@ -76,6 +76,9 @@ class CGMFS < Roda
   # plugin :csrf, :raise=>true, :skip=>['POST:/api/screens']
   # <%= assets(:css) %>
   # <%= assets(:js) %>
+  # # hot to fconfig user.name and user.email in git
+  # git config --global user.name "John Doe"
+  # git config --global user.email
 
   # PARTITION_AMOUNT = 2 # The initial, + 1
   # OFFSET = 1 # This came with the math, but you can just state the PARTITION_AMOUNT in total and not worry about the offset in the end

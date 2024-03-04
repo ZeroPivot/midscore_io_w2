@@ -11,7 +11,15 @@
     }
     </style>
     <br>
-    <h1>For <%= @user %>'s tags</h1> <!-- todo: work on tag version of tags list (this) -->
+    <h1>For <%= @user %>'s tags <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}" %>">(⬅️)</a> </h1> <!-- todo: work on tag version of tags list (this) --><br>
+
+     <div style="text-align: center;">
+        <h1>
+            <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/?view_all_images_with_tags=true" %>">(➕)</a>
+            <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/" %>">(➖)</a>
+        </h1>
+    </div>
+
     <div>
         <br>
         <div style="border: 1px solid black; font-family: Consolas; margin: 0 auto;">
@@ -24,6 +32,17 @@
         </div>
         <br>
     </div>
+
+    <div style="text-align: center;">
+        <h1>
+            <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/?view_all_images_with_tags=true" %>">(➕)</a>
+            <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/" %>">(➖)</a>
+        </h1>
+    </div>
+
+    <% if @view_all_images_with_tags == "true" %>
+
+
         <% @split_tags.each do |tag| %>
             <div style="display: inline-block; width: auto;">
                 <center><h2><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search/?search_tags=#{tag}" %>"><%= tag %></a></h2></center>
@@ -50,6 +69,9 @@
                 </div>
             </div>
         <% end %>
+        <% end %>
     </div>
+
 </div>
+
 

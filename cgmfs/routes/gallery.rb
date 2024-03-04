@@ -266,7 +266,7 @@ class CGMFS
         @user = user
         @tags_array = []
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-
+        @view_all_images_with_tags = r.params['view_all_images_with_tags']
         # search the gallery database and join the results with the tags in search_params and the tags in @gallery
         # get all the unique tags from each gallery post
 

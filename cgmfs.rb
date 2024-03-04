@@ -38,9 +38,10 @@ LOCAL = false
 ## enable Resolv to use DNS (../views/layout.html.erb)
 $dns_enabled = false # enable dns
 
-File.open("server_main_domain_name.txt", "r") do |f|
-  SERVER_MAIN_DOMAIN_NAME = f.read.chomp
-end
+SERVER_MAIN_DOMAIN_NAME = File.open("server_main_domain_name.txt", "r") { |f| f.read.chomp }
+
+# how to zip a file in terminal
+# zip -r archive_name.zip folder_to_compress
 
 SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'

@@ -114,10 +114,10 @@ class CGMFS
         # get the image temp file parameters through roda:
         uploadable = false
         uploaded_filehandle = r.params['file']
-        description = r.params['description']
-        tags = r.params['tags']
-        title = r.params['title']
-        reusable_tags = r.params['reusable_tags']
+        description = r.params['description'] || ""
+        tags = r.params['tags'] || ""
+        title = r.params['title'] || ""
+        reusable_tags = r.params['reusable_tags'] || ""
          if reusable_tags == 'on'
           session['last_tags'] = tags
           session['reusable_tags'] = true

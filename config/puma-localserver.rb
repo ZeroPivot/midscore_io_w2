@@ -66,7 +66,7 @@ stdout_redirect '/media/aritywolf/NAS-SERVER-SSD/midscore_io/log/stdout',
 #
 # The default is "0, 16".
 #
-threads 0, 4
+threads 0, 16
 
 # Bind the server to "url". "tcp://", "unix://" and "ssl://" are the only
 # accepted protocols.

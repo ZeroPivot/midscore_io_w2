@@ -1,5 +1,5 @@
 ---
-pid: 203680
-control_url: unix:///tmp/puma-status-1709479706813-203680
-control_auth_token: 8ddeb105c11411baa7f7d119953578c8
-running_from: "/root/midscore_io"
+pid: 208378
+control_url: unix:///tmp/puma-status-1709525038444-208378
+control_auth_token: ba594200dac7b3234682bebf3e6c36be
+running_from: "/media/aritywolf/NAS-SERVER-SSD/midscore_io"

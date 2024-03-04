@@ -76,7 +76,7 @@
     <% @page_views += 1 %>
     <% file.rewind %>
     <% file.write(@page_views) %>
-  <% end %>
+  <% end unless LOCAL %>
 <% end %>
   DogBlogGallery-N [<%= $dog_blog_version %>] - ♾️<%= @page_views %> -- ©️2024 <a href="https://onemoonpla.net/blog/onemoondogg/">Axel ''Stinktail'' Shep</a><br>
   <br><br>

@@ -365,7 +365,7 @@ class CGMFS
         end
 
         @gallery.save_partition_by_id_to_file!(@id)
-        r.redirect "#{domain_name(r)}/gallery/view/#{@user}"
+        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
       end
     end
   end

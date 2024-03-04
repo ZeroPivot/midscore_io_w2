@@ -1,9 +1,7 @@
 <!-- hitch cookie (with get param variable set to a unique tag) -->
-
 <!DOCTYPE html>
 <html>
 <head>
-
   <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3Z9H8R3VLC"></script>
 <script>
@@ -47,10 +45,10 @@
   <% rescue => e %>
     <% ip_address = nil %>
   <% end %>
-
-
   <a href="<%= domain_name(@r) %>/blog/<%= @user %>">
-    <img border="0" src="/banner.png" alt="One Moon Planet logo" style="width: 100%; height: auto;">
+    <div style="font-size: 72px; overflow-wrap: break-word;">
+      1️⃣🌓🌎
+    </div>
   </a><br>
     <center><font size="3"><div size="5" id="ip_addr_resolv">🏘️<b>[<%= request.ip %>➡️<%= ip_address || '📱' %>]</b></div></font></center>
   <font size="16"><%= MoonIllumination.emoji %></font><br />

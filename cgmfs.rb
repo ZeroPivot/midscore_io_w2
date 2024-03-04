@@ -13,7 +13,8 @@ require 'date'
 require 'bigdecimal'
 require 'free-image'
 require 'fastimage'
-require 'set'
+require 'securerandom'
+
 
 # require 'rack'
 # require 'rack/csrf'
@@ -47,7 +48,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "v3.3.39 - Codename: \"The Stimky Whiff\"" # used in layout.html.erb
+$dog_blog_version = "v3.3.4.1pre0 - Codename: \"The Stimky Whiff\"" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 
@@ -73,6 +74,9 @@ class CGMFS < Roda
   # Documentation: https://roda.jeremyevans.net/rdoc/classes/Roda/RodaPlugins/Assets.html
   # https://rubydoc.info/gems/roda-cj/1.0.3/Roda/RodaPlugins/Csrf
   plugin :assets, css: ['style.css'], js: ['script.js']
+  plugin :json
+  plugin :json_parser
+  
   # plugin :csrf, :raise=>true, :skip=>['POST:/api/screens']
   # <%= assets(:css) %>
   # <%= assets(:js) %>

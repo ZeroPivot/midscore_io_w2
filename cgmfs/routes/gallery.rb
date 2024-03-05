@@ -85,6 +85,113 @@ class CGMFS
       end
     end
 
+
+
+    r.on 'upload', 'url' do
+      # get user session in roda
+      @user = session['user']
+      logged_in?(r, @user)
+      user_failcheck(@user, r)
+
+      r.get do
+        view('blog/gallery/new_url', engine: 'html.erb', layout: 'layout.html')
+      end
+
+      r.post do
+        uploadable = false
+        uploaded_filehandle = r.params['file']
+        description = "url upload - #{r.params['url']} - Time: #{Time.now.to_s}"
+        tags = "url_upload"
+        title = "url upload - #{Time.now.to_s}"
+
+        # Code to upload an image to the gallery, with an option to introduce the upload location and retrieve via URL
+        # 1. Upload the image to the server
+        # 2. Save the image to the database
+        # 3. Redirect to the gallery view
+        # 4. Add a delete option
+        # 5. Add a view option
+        # 6. Add a download option
+        # 7. Add a share option
+        # 8. Add a comment option
+        # 9. Add a like option
+        # 10. Add a tag option
+        # 11. Add a search option
+        # 12. Add a sort option
+        # 13. Add a filter option
+
+
+        original_to_new_filename = "#{Time.now.to_f}_url_upload_#{@user}"
+        file_contents = URI.open(uploaded_filehandle).read
+        # Write the file to a temporary gallery location
+        file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
+        File.open(file_path, 'w') do |file|
+          file.write(file_contents)
+        end
+
+
+
+
+        file_size = file_contents.size
+        file_extension = File.extname(uploaded_filehandle)
+
+        file_type = FastImage.type(uploaded_filehandle)
+        if [:jpeg, :png, :gif].include?(file_type)
+          uploadable = true
+          FileUtils.mkdir_p("public/gallery/#{@user}")
+          # Rename the file to include the extension
+          original_to_new_filename += file_extension
+          file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
+          File.rename(file_path, new_file_path)
+          file_path = new_file_path
+
+          create_image_thumbnail!(image_path: file_path, thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
+          resize_image!(image_path: file_path, size: 1920, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+        else
+          uploadable = false
+          # delete the file
+          File.delete(file_path)
+        end
+
+
+
+
+
+        if uploadable
+          id = @@line_db[@user].pad['gallery_database', 'gallery_table'].add do |hash|
+            hash['file'] = original_to_new_filename
+            hash['views'] = 0
+            hash['title'] = title
+            hash['description'] = description
+            hash['downloads'] = 0
+            hash['shares'] = 0
+            hash['comments'] = 0
+            hash['likes'] = 0
+            hash['tags'] = tags
+            hash['size'] = file_size
+            hash['extension'] = file_extension
+            hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
+          end
+
+          # set the id of the image to the id of the image in the database
+          @@line_db[@user].pad['gallery_database', 'gallery_table'].set(id) do |hash|
+            hash['id'] = id
+          end
+        end
+      end
+
+
+      # change to more efficient form later.
+      @@line_db[@user].pad['gallery_database', 'gallery_table'].save_everything_to_files! if uploadable
+      r.redirect "#{domain_name(r)}/gallery/view/#{@user}" if uploadable
+      "<html><body>Upload failed. Please try again. <a href='#{domain_name(r)}/gallery/upload/url'>Upload</a></html></body>"
+    end
+
+
+
+
+
+
+
     r.on 'upload' do
       # get user session in roda
       @user = session['user']

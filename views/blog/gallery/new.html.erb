@@ -1,9 +1,11 @@
-    <script src="https://cdn.tiny.cloud/1/rzzngc2l3yjv4zi3457y3qjfv92codj2bb91rnem3fsyl4x3/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-  <center>
-    <form action="<%= "#{domain_name(@r)}/gallery/upload" %>" method="post" enctype="multipart/form-data">
+      <script src="https://cdn.tiny.cloud/1/rzzngc2l3yjv4zi3457y3qjfv92codj2bb91rnem3fsyl4x3/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <center>
+      <form action="<%= "#{domain_name(@r)}/gallery/upload" %>" method="post" enctype="multipart/form-data">
      <fieldset>
-       <label for="file">File:</label>
-      <input type="file" name="file" id="file" required>
+      <label for="url">URL:</label>
+      <input type="text" name="url" id="url"> <br>
+      <label for="file">File:</label>
+      <input type="file" name="file" id="file">
       <br>
 
       <label for="title">Title:</label>

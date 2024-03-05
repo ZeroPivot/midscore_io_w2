@@ -24,7 +24,11 @@
   <br>
   <input type="submit" value="save">
 </form>
-
+<br>
+<form action="/gallery/delete/<%= @user %>/id/<%= @id %>" method="post">
+  <input type="hidden" name="_method" value="delete">
+  <input type="submit" value="Delete Entry!">
+</form>
 <script>
   tinymce.init({
     selector: '#description',

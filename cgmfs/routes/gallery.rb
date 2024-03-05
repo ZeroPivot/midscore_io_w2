@@ -196,16 +196,36 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @id = id
         @image = @gallery.get(@id)
-        # add one to page view, and save by partition:
-        @image['views'] += 1
-        # @gallery.save_everything_to_files!
-        # partition_to_save = @gallery.get(@id, hash: true)["db_index"]
-        # @gallery.save_partition_to_file!(partition_to_save)
-        @gallery.save_partition_by_id_to_file!(@id)
 
-        view('blog/gallery/view_user_gallery_image_id', engine: 'html.erb', layout: 'layout.html')
+        if @image
+          # add one to page view, and save by partition:
+          @image['views'] += 1
+          @gallery.save_partition_by_id_to_file!(@id)
+          view('blog/gallery/view_user_gallery_image_id', engine: 'html.erb', layout: 'layout.html')
+        else
+          "No gallery post found with id #{@id}."
+        end
       end
     end
+
+
+    r.is 'delete', String, 'id', Integer do |user, id| # delete a gallery post by id
+      user_failcheck(user, r)
+      r.post do
+        @user = user
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @id = id
+        @image = @gallery.get(@id)
+        if @image
+          @gallery.data_arr[@id] = {}
+          @gallery.save_partition_by_id_to_file!(@id)
+          "Gallery post with id #{@id} deleted successfully. <a href='#{domain_name(r)}/gallery/view/#{@user}'>Back TO Gallery</a>"
+        else
+          "No gallery post found with id #{@id}."
+        end
+      end
+    end
+
 
     r.is 'view', String, 'tags', 'search' do |user| # view the tags list
       user_failcheck(user, r)
@@ -216,6 +236,7 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @tags_array = []
         @images = @gallery.data_arr.map { |image| image }
+        @images = @images.compact
         @tags = @images.map { |image| image['tags'] }.flatten
         @tags.each do |tag|
           next if tag.nil?
@@ -226,6 +247,7 @@ class CGMFS
         end
         @tags_array = @tags_array.uniq
         @images = @gallery.data_arr.map { |image| image }
+        @images = @images.compact
         @image_tags = @images.map { |image| image['tags'] }
         # remove nils in tags
         @image_tags = @image_tags.reject { |tag| tag.nil? }
@@ -272,6 +294,7 @@ class CGMFS
 
 
         @images = @gallery.data_arr.map { |image| image }
+        @images = @images.compact
         # remove nils in tags
         @tags = @images.map { |image| image['tags'] }.flatten
         @tags.each do |tag|

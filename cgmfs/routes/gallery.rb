@@ -99,7 +99,7 @@ class CGMFS
 
       r.post do
         uploadable = false
-        uploaded_filehandle = r.params['file']
+        uploaded_filehandle = r.params['url']
         description = "url upload - #{r.params['url']} - Time: #{Time.now.to_s}"
         tags = "url_upload"
         title = "url upload - #{Time.now.to_s}"
@@ -132,20 +132,28 @@ class CGMFS
 
 
         file_size = file_contents.size
-        file_extension = File.extname(uploaded_filehandle)
+
 
         file_type = FastImage.type(uploaded_filehandle)
         if [:jpeg, :png, :gif].include?(file_type)
           uploadable = true
           FileUtils.mkdir_p("public/gallery/#{@user}")
           # Rename the file to include the extension
-          original_to_new_filename += file_extension
+          file_type = FastImage.type(uploaded_filehandle)
+          file_extension = case file_type
+                           when :jpeg then '.jpg'
+                           when :png then '.png'
+                           else
+                             ''
+                           end
           file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
+          original_to_new_filename += file_extension
+          new_file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
           File.rename(file_path, new_file_path)
-          file_path = new_file_path
 
-          create_image_thumbnail!(image_path: file_path, thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
-          resize_image!(image_path: file_path, size: 1920, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+
+          create_image_thumbnail!(image_path: new_file_path, thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
+          resize_image!(image_path: new_file_path, size: 1920, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
         else
           uploadable = false
           # delete the file
@@ -177,14 +185,16 @@ class CGMFS
             hash['id'] = id
           end
         end
+        # change to more efficient form later.
+      @@line_db[@user].pad['gallery_database', 'gallery_table'].save_everything_to_files! if uploadable
+      r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{id}" if uploadable
+      "<html><body>Upload failed. Please try again. <a href='#{domain_name(r)}/gallery/upload/url'>Upload</a></html></body>"
       end
 
 
-      # change to more efficient form later.
-      @@line_db[@user].pad['gallery_database', 'gallery_table'].save_everything_to_files! if uploadable
-      r.redirect "#{domain_name(r)}/gallery/view/#{@user}" if uploadable
-      "<html><body>Upload failed. Please try again. <a href='#{domain_name(r)}/gallery/upload/url'>Upload</a></html></body>"
+ 
     end
+
 
 
 

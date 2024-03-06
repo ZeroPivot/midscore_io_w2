@@ -15,7 +15,6 @@ require 'free-image'
 require 'fastimage'
 require 'securerandom'
 require 'uri'
-require 'open-uri'
 require 'net/http'
 require 'net/https'
 

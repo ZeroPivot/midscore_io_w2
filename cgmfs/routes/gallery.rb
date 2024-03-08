@@ -15,6 +15,20 @@ class CGMFS
     r.redirect "#{domain_name(r)}/blog/login"
   end
 
+
+  def private_view?(r, user)
+    if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'].nil?
+      @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'] = false
+      @@line_db[user].pad['blog_database', 'blog_profile_table'].save_everything_to_files!
+    end
+    if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'] == true && session['user'] != user && !LOCAL # add admin access later
+      r.redirect("#{domain_name(r)}/gallery/")
+    elsif @@line_db[user].pad['blog_database',
+                              'blog_profile_table'][0]['private_view'] == true && session['user'] != user && LOCAL
+      r.redirect("#{SERVER_IP_LOCAL}/gallery/") if LOCAL
+    end
+  end
+
   def domain_name(r)
     unless r
       return SERVER_IP_LOCAL if LOCAL # cgmfs.rb
@@ -304,6 +318,8 @@ class CGMFS
     # /gallery/view/username
     r.is 'view', String do |user| # view the gallery list
       user_failcheck(user, r)
+      private_view?(r, user)
+
       r.get do
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']

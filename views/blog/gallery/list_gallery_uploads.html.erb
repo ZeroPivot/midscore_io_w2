@@ -27,11 +27,7 @@
         <%
          gallery << hash
          %>
-
        <% end %>
-    <% gallery = gallery.compact %>
-
-
     <% latest_id.downto(0) do |id| %>
       <% hash = gallery[id] %>
       <% unless hash.nil? %>

@@ -361,6 +361,26 @@ class CGMFS
 
     end
 
+
+    r.is 'view', String, 'id', Integer, 'attachments', 'delete', Integer do |user, id, attachment_id| # view the attachments list
+      user_failcheck(user, r)
+      r.get do
+        @user = user
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @id = id
+        @image = @gallery.get(@id)
+        @attachments = @image['attachments']
+        @attachments.delete_at(attachment_id)
+        @gallery.set(@id) do |hash|
+          hash['attachments'] = @attachments
+        end
+        @gallery.save_partition_by_id_to_file!(@id)
+        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
+      end
+
+    end
+
+
     r.is 'view', String, 'id', Integer, 'attachments', 'upload' do |user, id| # view the gallery list
       user_failcheck(user, r)
       r.get do
@@ -401,13 +421,15 @@ class CGMFS
 
           end
 
-          File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
+
           @gallery.save_partition_by_id_to_file!(@id)
 
         else
         @uploaded_filehandle = URI.open(@url_params).read
         @file_name = Time.now.to_f.to_s + 'attachment' + File.basename(@url_params)
-        FileUtila.mkdir_p("public/gallery/#{@user}/attachments")
+
+        FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
+        File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @id = id
         @image = @gallery.get(@id)

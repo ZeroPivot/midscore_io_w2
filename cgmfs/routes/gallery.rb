@@ -375,7 +375,7 @@ class CGMFS
           hash['attachments'] = @attachments
         end
         @gallery.save_partition_by_id_to_file!(@id)
-        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
+        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments"
       end
 
     end
@@ -425,8 +425,12 @@ class CGMFS
           @gallery.save_partition_by_id_to_file!(@id)
 
         else
-        @uploaded_filehandle = URI.open(@url_params).read
-        @file_name = Time.now.to_f.to_s + 'attachment' + File.basename(@url_params)
+
+        @uri_url = URI.open(@url_params)
+        @uploaded_filehandle = @uri_url.read
+        @meta = @uri_url.meta['content-type'].split('/').last
+        log(@meta)
+        @file_name = Time.now.to_f.to_s + 'attachment' + '.' + @meta
 
         FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
         File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }

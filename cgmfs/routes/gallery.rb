@@ -334,6 +334,7 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @id = id
         @image = @gallery.get(@id)
+        @attachments = @image['attachments']
 
         if @image
           # add one to page view, and save by partition:
@@ -344,6 +345,94 @@ class CGMFS
           "No gallery post found with id #{@id}."
         end
       end
+    end
+
+
+    r.is 'view', String, 'id', Integer, 'attachments' do |user, id| # view the attachments list
+      user_failcheck(user, r)
+      r.get do
+        @user = user
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @id = id
+        @image = @gallery.get(@id)
+        view('blog/gallery/view_user_gallery_image_id_attachments_list', engine: 'html.erb', layout: 'layout.html')
+      end
+
+
+    end
+
+    r.is 'view', String, 'id', Integer, 'attachments', 'upload' do |user, id| # view the gallery list
+      user_failcheck(user, r)
+      r.get do
+        @user = user
+        @r = r
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @id = id
+        @image = @gallery.get(@id)
+        #@attachments = @image['attachments']
+        # <%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= @attachment_id %>
+        view('blog/gallery/view_user_gallery_image_id_attachments_upload', engine: 'html.erb', layout: 'layout.html')
+      end
+
+      r.post do
+        @user = user
+        @r = r
+        @url_params = r.params['url']
+        @id = id
+
+        unless @url_params
+          @uploaded_filehandle = r.params['file'][:tempfile].read
+          @file_name = Time.now.to_f.to_s + r.params['file'][:filename]
+          FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
+          @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+          @id = id
+          @image = @gallery.get(@id)
+
+          log(@image['attachments'].to_s)
+          if !@image['attachments']
+            @attachments = []
+          else
+            @attachments = @image['attachments']
+          end
+          @attachments << { 'file_attachment_name' => @file_name, 'file_attachment_size' => @uploaded_filehandle.size, 'extension' => File.extname(@file_name), 'file_attachment_date' => TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s }
+
+          @gallery.set(@id) do |hash|
+            hash['attachments'] = @attachments
+
+          end
+
+          File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
+          @gallery.save_partition_by_id_to_file!(@id)
+
+        else
+        @uploaded_filehandle = URI.open(@url_params).read
+        @file_name = Time.now.to_f.to_s + 'attachment' + File.basename(@url_params)
+        FileUtila.mkdir_p("public/gallery/#{@user}/attachments")
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @id = id
+        @image = @gallery.get(@id)
+
+        log(@image['attachments'].to_s)
+        if !@image['attachments']
+          @attachments = []
+        else
+          @attachments = @image['attachments']
+        end
+        @attachments << { 'file_attachment_name' => @file_name, 'file_attachment_size' => @uploaded_filehandle.size, 'extension' => File.extname(@file_name), 'file_attachment_date' => TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s }
+
+        @gallery.set(@id) do |hash|
+          hash['attachments'] = @attachments
+
+        end
+
+
+        log(@url_params)
+        @gallery.save_partition_by_id_to_file!(@id)
+
+      end
+        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
+      end
+
     end
 
 

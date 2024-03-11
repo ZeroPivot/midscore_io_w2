@@ -117,10 +117,18 @@
         </div>
           <div class="table-header"><strong>(🆔)</strong></div>
             <div class="table-data"><%= @id %></div>
+
+              <div class="table-row">
+
+                <div class="table-header"><strong>(📎)</strong></div>
+                <div class="table-data">
+                       <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= @id %>/attachments/">ATTACHMENTS LIST (📎)</a>
+                </div>
+        </div>
     </div>
+        <center>  <a href = "<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}/attachments/upload" %>">UPLOAD ATTACHMENT</a> </center>
       <br>
     <center>
-
         <script>
             function fitToScreenSize() {
                 var image = document.getElementById("gallery-image");

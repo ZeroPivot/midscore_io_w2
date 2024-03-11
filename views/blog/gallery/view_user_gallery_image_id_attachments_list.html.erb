@@ -1,0 +1,7 @@
+<% if !@image['attachments'].nil? %>
+    <% @image['attachments'].each do |attachment| %>
+            <div class="attachment">
+                   * <a href="/gallery/<%= @user %>/attachments/<%= attachment['file_attachment_name'] %>"><%= attachment['file_attachment_name'] %></a>
+            </div><br />
+    <% end %>
+<% end %>

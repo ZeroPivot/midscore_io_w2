@@ -184,7 +184,7 @@ class CGMFS
 
 
         if uploadable
-          id = @@line_db[@user].pad['gallery_database', 'gallery_table'].add do |hash|
+          id = @@line_db[@user].pad['gallery_database', 'gallery_table'].add_at_last do |hash|
             hash['file'] = original_to_new_filename
             hash['views'] = 0
             hash['title'] = title
@@ -288,7 +288,7 @@ class CGMFS
         end
 
         if uploadable
-         id = @@line_db[@user].pad['gallery_database', 'gallery_table'].add do |hash|
+         id = @@line_db[@user].pad['gallery_database', 'gallery_table'].add_at_last do |hash|
             hash['file'] = original_to_new_filename
             hash['views'] = 0
             hash['title'] = title
@@ -375,6 +375,7 @@ class CGMFS
           hash['attachments'] = @attachments
         end
         @gallery.save_partition_by_id_to_file!(@id)
+        File.delete("public/gallery/#{@user}/attachments/#{@attachments[attachment_id]['file_attachment_name']}")
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments"
       end
 
@@ -471,6 +472,7 @@ class CGMFS
         @image = @gallery.get(@id)
         if @image
           @gallery.data_arr[@id] = {}
+          File.delete("public/gallery/#{@user}/#{@image['file']}")
           @gallery.save_partition_by_id_to_file!(@id)
           "Gallery post with id #{@id} deleted successfully. <a href='#{domain_name(r)}/gallery/view/#{@user}'>Back TO Gallery</a>"
         else

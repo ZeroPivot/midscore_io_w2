@@ -49,17 +49,17 @@ gem 'roda'
 # gem "sequel" # database that has the same author as roda
 # gem "shotgun"
 # gem "sinatra"
-gem 'solargraph'
+# gem 'solargraph'
 # gem "sinatra-contrib"
 gem 'statemachine'
 gem 'telegram_bot'
-gem 'time_difference', git: 'https://github.com/ZeroPivot/time_difference' # time difference algorithm (https://github.com/tmlee/time_difference)
+gem 'time_difference'
 gem 'twitter'
 gem 'tzinfo'
 gem 'webrick'
 gem 'yaml'
 # gem "padrino"
-gem 'cloudinary', git: 'https://github.com/cloudinary/cloudinary_gem'
+# gem 'cloudinary', git: 'https://github.com/cloudinary/cloudinary_gem'
 gem 'erb_lint'
 gem 'htmlbeautifier'
 gem 'redcarpet'
@@ -68,3 +68,4 @@ gem 'sorbet'
 
 gem "ruby-openai" #for gpt-4
 gem "rubocop"
+gem "yuicompressor" #for roda asset compression

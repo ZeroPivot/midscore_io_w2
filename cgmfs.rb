@@ -17,7 +17,8 @@ require 'securerandom'
 require 'uri'
 require 'net/http'
 require 'net/https'
-
+require 'yuicompressor'
+require 'roda/plugins/assets'
 
 
 # require 'rack'
@@ -52,7 +53,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "v3.3.6.7 - Codename: \"The Stimky Sniffa\"" # used in layout.html.erb
+$dog_blog_version = "v3.3.6.8 - Codename: \"The Stimky Sniffa\"" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 
@@ -72,12 +73,14 @@ class CGMFS < Roda
   plugin :public
   plugin :shared_vars
   plugin :exception_page
+
   plugin :error_handler
   plugin :sessions, secret: 'cgmfs3748w5yuieskrhfakgejgKAYUSGDYFHKGD&*R#at3wLKSGFHgfjgklsdfgjkl'
   plugin :route_csrf, check_request_methods: ['POST'], raise: true # , :check_header => false
   # Documentation: https://roda.jeremyevans.net/rdoc/classes/Roda/RodaPlugins/Assets.html
   # https://rubydoc.info/gems/roda-cj/1.0.3/Roda/RodaPlugins/Csrf
-  plugin :assets, css: ['style.css'], js: ['script.js']
+  plugin :assets, css: ['style.css', 'prism.css'], js: ['prism.js']
+  compile_assets
   plugin :json
   plugin :json_parser
 

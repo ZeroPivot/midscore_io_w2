@@ -370,12 +370,13 @@ class CGMFS
         @id = id
         @image = @gallery.get(@id)
         @attachments = @image['attachments']
-        @attachments.delete_at(attachment_id)
+
+       File.delete("public/gallery/#{@user}/attachments/#{@attachments[attachment_id]['file_attachment_name']}")
+       @attachments.delete_at(attachment_id)
         @gallery.set(@id) do |hash|
           hash['attachments'] = @attachments
         end
         @gallery.save_partition_by_id_to_file!(@id)
-        File.delete("public/gallery/#{@user}/attachments/#{@attachments[attachment_id]['file_attachment_name']}")
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments"
       end
 

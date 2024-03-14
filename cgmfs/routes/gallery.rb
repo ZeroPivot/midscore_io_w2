@@ -332,7 +332,7 @@ class CGMFS
         if r.params['skip_by'].nil?
           @skip_by = 0
         end
-        @gallery_numbers = @gallery.data_arr.size / 500
+        @gallery_numbers = @gallery.data_arr.size / 125
         if @gallery_numbers < 1
           @pages = 0
         else
@@ -349,7 +349,7 @@ class CGMFS
           end
           @pages_html << "&nbsp;" unless page_number == @pages - 1
         end
-        @gallery_range = (500*@skip_by)..(500 + 500*(@skip_by))
+        @gallery_range = (125*@skip_by)..(125 + 125*(@skip_by))
 
         @gallery = @gallery.data_arr[@gallery_range]
 
@@ -590,58 +590,63 @@ class CGMFS
         @view_all_images_with_tags = r.params['view_all_images_with_tags']
 
         @cache = @@line_db[@user].pad["cache_system_database", "cache_system_table"]
-        log("get start")
+
         @cache_hash = @cache.get(0)
-        log("get end")
-        if @cache_hash == {}
+ 
+        if @cache_hash == {} 
             @recache = true
             @cache.set(0) do |hash|
               hash['recache'] = true
             end
         end
 
-          log "recache"
+
           if !@cache.get(0)['recache']
             @cache.set(0) do |hash|
-              hash['recache'] = true
+              hash['recache'] = false
+              @recache = false
             end
-            log "recache end"
+ 
           elsif @cache.get(0)['recache']
               @recache = true
+          else
+            @recache = false
           end
-
+          log(@recache)
 
 
         if @recache
-          log("recache")
+
           @images = @gallery.data_arr.map { |image| image }
           @images = @images.compact
           @tags = @images.map { |image| image['tags'] }.flatten
           @tags.each do |tag|
             next if tag.nil?
-            log("tags split start")
+
             tag.split(', ').each do |split_tag|
               @tags_array << split_tag
             end
-            log("tags split end")
+ 
           end
           @tags_array = @tags_array.uniq
           @images_set = @images.to_set
           @images_set = @images_set.reject { |image| image['tags'].nil? }
 
           @split_tags = @tags_array
-          log "split tags each start"
+
           @split_tags.each do |tag|
             tag_quantity = @gallery.data_arr.count { |image| image['tags']&.split(", ")&.include?(tag) }
             @tags_set << "<a href='#{domain_name(@r)}/gallery/view/#{@user}/tags/search/?search_tags=#{tag}'>#{tag}(#{tag_quantity})</a>"
           end
-          log "split tags each end"
+         
+
           @cache.set(0) do |hash|
             hash['tags_set'] = @tags_set
             hash['split_tags'] = @split_tags
             hash['recache'] = false
           end
           @cache.save_everything_to_files!
+          GC.start
         else
 
 

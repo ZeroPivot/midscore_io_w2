@@ -348,6 +348,7 @@ class CGMFS
             @pages_html << "<a href='#{domain_name(r)}/gallery/view/#{@user}?skip_by=#{page_number}'>#{page_number}</a>&nbsp;&nbsp;"
           end
           @pages_html << "&nbsp;" unless page_number == @pages - 1
+          @pages_html << "<br>" if page_number % 10 == 0 && page_number != 0
         end
         @gallery_range = (125*@skip_by)..(125 + 125*(@skip_by))
 

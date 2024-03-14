@@ -381,6 +381,10 @@ class CGMFS
           hash['attachments'] = @attachments
         end
         @gallery.save_partition_by_id_to_file!(@id)
+        @line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
+          hash['recache'] = true
+        end
+        @line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments"
       end
 

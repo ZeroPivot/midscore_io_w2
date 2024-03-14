@@ -616,7 +616,7 @@ class CGMFS
 
 
         if @recache
-
+          GC.start
           @images = @gallery.data_arr.map { |image| image }
           @images = @images.compact
           @tags = @images.map { |image| image['tags'] }.flatten

@@ -36,7 +36,7 @@
         <% end %>
         <td>
         <div id="gallery_images">
-          <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= id %>" border="0">
+          <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= hash['id'] %>" border="0">
           <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= hash['file'] %>" alt="<%= @title %>">
           </a>
         </div>

@@ -310,6 +310,10 @@ class CGMFS
         end
         # change to more efficient form later.
         @@line_db[@user].pad['gallery_database', 'gallery_table'].save_everything_to_files! if uploadable
+        @@line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
+          hash['recache'] = true
+        end
+        @@line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}" if uploadable
         "<html><body>Upload failed. Please try again. <a href='#{domain_name(r)}/gallery/upload'>Upload</a></html></body>"
       end
@@ -475,6 +479,10 @@ class CGMFS
           @gallery.data_arr[@id] = {}
           File.delete("public/gallery/#{@user}/#{@image['file']}")
           @gallery.save_partition_by_id_to_file!(@id)
+          @line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
+            hash['recache'] = true
+          end
+          @line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
           "Gallery post with id #{@id} deleted successfully. <a href='#{domain_name(r)}/gallery/view/#{@user}'>Back TO Gallery</a>"
         else
           "No gallery post found with id #{@id}."
@@ -543,33 +551,69 @@ class CGMFS
       r.get do
         @user = user
         @tags_array = []
+        @tags_set = []
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @view_all_images_with_tags = r.params['view_all_images_with_tags']
-        # search the gallery database and join the results with the tags in search_params and the tags in @gallery
-        # get all the unique tags from each gallery post
 
-
-        @images = @gallery.data_arr.map { |image| image }
-        @images = @images.compact
-        # remove nils in tags
-        @tags = @images.map { |image| image['tags'] }.flatten
-        @tags.each do |tag|
-          next if tag.nil?
-
-          tag.split(', ').each do |split_tag|
-            @tags_array << split_tag
-          end
+        @cache = @@line_db[@user].pad["cache_system_database", "cache_system_table"]
+        log("get start")
+        @cache_hash = @cache.get(0)
+        log("get end")
+        if @cache_hash == {}
+            @recache = true
+            @cache.set(0) do |hash|
+              hash['recache'] = true
+            end
         end
-        @tags_array = @tags_array.uniq
-        @images_set = @images.to_set
-        # remove an image from the set if it does not contain tags
-        @images_set = @images_set.reject { |image| image['tags'].nil? }
 
-        # search query for tags
-        #
-        # get the tags from the gallery databas
-        # get the tags from the image database
-        @split_tags = @tags_array
+          log "recache"
+          if !@cache.get(0)['recache']
+            @cache.set(0) do |hash|
+              hash['recache'] = true
+            end
+            log "recache end"
+          elsif @cache.get(0)['recache']
+              @recache = true
+          end
+
+
+
+        if @recache
+          log("recache")
+          @images = @gallery.data_arr.map { |image| image }
+          @images = @images.compact
+          @tags = @images.map { |image| image['tags'] }.flatten
+          @tags.each do |tag|
+            next if tag.nil?
+            log("tags split start")
+            tag.split(', ').each do |split_tag|
+              @tags_array << split_tag
+            end
+            log("tags split end")
+          end
+          @tags_array = @tags_array.uniq
+          @images_set = @images.to_set
+          @images_set = @images_set.reject { |image| image['tags'].nil? }
+
+          @split_tags = @tags_array
+          log "split tags each start"
+          @split_tags.each do |tag|
+            tag_quantity = @gallery.data_arr.count { |image| image['tags']&.split(", ")&.include?(tag) }
+            @tags_set << "<a href='#{domain_name(@r)}/gallery/view/#{@user}/tags/search/?search_tags=#{tag}'>#{tag}(#{tag_quantity})</a>"
+          end
+          log "split tags each end"
+          @cache.set(0) do |hash|
+            hash['tags_set'] = @tags_set
+            hash['split_tags'] = @split_tags
+            hash['recache'] = false
+          end
+          @cache.save_everything_to_files!
+        else
+
+
+          @split_tags = @cache.get(0)['split_tags']
+          @tags_set = @cache.get(0)['tags_set']
+        end
         view('blog/gallery/view_user_gallery_image_tags', engine: 'html.erb', layout: 'layout.html')
       end
     end
@@ -644,6 +688,9 @@ class CGMFS
         end
 
         @gallery.save_partition_by_id_to_file!(@id)
+        @@line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
+          hash['recache'] = true
+        end
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
       end
     end

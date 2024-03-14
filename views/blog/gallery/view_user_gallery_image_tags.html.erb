@@ -23,12 +23,10 @@
     <div>
         <br>
         <div style="border: 1px solid black; font-family: Consolas; margin: 0 auto;">
-            <% @tags_set = [] %>
-            <% @split_tags.each do |tag| %>
-                <% tag_quantity = @gallery.data_arr.count { |image| image['tags']&.split(", ")&.include?(tag) } %>
-                <% @tags_set << "<a href='#{domain_name(@r)}/gallery/view/#{@user}/tags/search/?search_tags=#{tag}'>#{tag}(#{tag_quantity})</a>" %>
+            <% @tags_set.each do |tag| %>
+                <%= tag %>,
             <% end %>
-            <center><h2><%= @tags_set.join(", ") %></h2></center>
+           
         </div>
         <br>
     </div>

@@ -325,7 +325,7 @@ class CGMFS
       private_view?(r, user)
 
       r.get do
-        
+
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @skip_by = r.params['skip_by'].to_i
@@ -354,7 +354,7 @@ class CGMFS
 
         @gallery = @gallery.data_arr[@gallery_range]
 
-        
+
         view('blog/gallery/list_gallery_uploads', engine: 'html.erb', layout: 'layout.html')
       end
     end
@@ -488,10 +488,10 @@ class CGMFS
           hash['attachments'] = @attachments
 
         end
-        @line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
+        @@line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
           hash['recache'] = true
         end
-        @line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
+        @@line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
 
         log(@url_params)
         @gallery.save_partition_by_id_to_file!(@id)
@@ -514,10 +514,10 @@ class CGMFS
           @gallery.data_arr[@id] = {}
           File.delete("public/gallery/#{@user}/#{@image['file']}")
           @gallery.save_partition_by_id_to_file!(@id)
-          @line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
+          @@line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
             hash['recache'] = true
           end
-          @line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
+          @@line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
           "Gallery post with id #{@id} deleted successfully. <a href='#{domain_name(r)}/gallery/view/#{@user}'>Back TO Gallery</a>"
         else
           "No gallery post found with id #{@id}."
@@ -593,8 +593,8 @@ class CGMFS
         @cache = @@line_db[@user].pad["cache_system_database", "cache_system_table"]
 
         @cache_hash = @cache.get(0)
- 
-        if @cache_hash == {} 
+
+        if @cache_hash == {}
             @recache = true
             @cache.set(0) do |hash|
               hash['recache'] = true
@@ -607,7 +607,7 @@ class CGMFS
               hash['recache'] = false
               @recache = false
             end
- 
+
           elsif @cache.get(0)['recache']
               @recache = true
           else
@@ -627,7 +627,7 @@ class CGMFS
             tag.split(', ').each do |split_tag|
               @tags_array << split_tag
             end
- 
+
           end
           @tags_array = @tags_array.uniq
           @images_set = @images.to_set
@@ -639,7 +639,7 @@ class CGMFS
             tag_quantity = @gallery.data_arr.count { |image| image['tags']&.split(", ")&.include?(tag) }
             @tags_set << "<a href='#{domain_name(@r)}/gallery/view/#{@user}/tags/search/?search_tags=#{tag}'>#{tag}(#{tag_quantity})</a>"
           end
-         
+
 
           @cache.set(0) do |hash|
             hash['tags_set'] = @tags_set

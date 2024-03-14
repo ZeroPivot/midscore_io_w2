@@ -1,5 +1,5 @@
     <% gallery = []
-       latest_id = @gallery.latest_id %>
+       latest_id = @gallery.size %>
   <!DOCTYPE html>
   <html>
   <head>
@@ -23,7 +23,7 @@
     <h1>For <%= @user %>'s gallery</h1>
     <table padding="11" border="0">
     <tr>
-      <% @gallery.iterate do |hash| %> <!-- for now, this does it from ascending order -->
+      <% @gallery.each do |hash| %>
         <%
          gallery << hash
          %>
@@ -44,6 +44,8 @@
 
       <% end %>
       <% end %>
+
+      <%= @pages_html %>
     </tr>
     </table>
   </center>

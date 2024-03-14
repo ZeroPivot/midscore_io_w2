@@ -325,8 +325,35 @@ class CGMFS
       private_view?(r, user)
 
       r.get do
+        
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @skip_by = r.params['skip_by'].to_i
+        if r.params['skip_by'].nil?
+          @skip_by = 0
+        end
+        @gallery_numbers = @gallery.data_arr.size / 500
+        if @gallery_numbers < 1
+          @pages = 0
+        else
+          @pages = @gallery_numbers.ceil
+        end
+
+        # generate pages html
+        @pages_html = ""
+        @pages.times do |page_number|
+          if page_number == @skip_by
+            @pages_html << "<a href='#{domain_name(r)}/gallery/view/#{@user}?skip_by=#{page_number}'><b><i>#{page_number}</i><b></a>&nbsp;&nbsp;"
+          else
+            @pages_html << "<a href='#{domain_name(r)}/gallery/view/#{@user}?skip_by=#{page_number}'>#{page_number}</a>&nbsp;&nbsp;"
+          end
+          @pages_html << "&nbsp;" unless page_number == @pages - 1
+        end
+        @gallery_range = (500*@skip_by)..(500 + 500*(@skip_by))
+
+        @gallery = @gallery.data_arr[@gallery_range]
+
+        
         view('blog/gallery/list_gallery_uploads', engine: 'html.erb', layout: 'layout.html')
       end
     end

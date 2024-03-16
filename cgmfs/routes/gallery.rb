@@ -731,6 +731,7 @@ class CGMFS
         @@line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
           hash['recache'] = true
         end
+        @@line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
       end
     end

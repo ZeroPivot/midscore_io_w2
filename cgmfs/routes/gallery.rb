@@ -337,13 +337,13 @@ class CGMFS
         if r.params['skip_by'].nil?
           @skip_by = 0
         end
-        @gallery_numbers = @gallery.data_arr.size / 175
+        @gallery_numbers = @gallery_images.size / 175
         log(@gallery_numbers)
         if @gallery_images.size <= 175
           @pages = 0
           @gallery_range = 0..175
         else
-          @pages = @gallery_numbers - 1
+          @pages = @gallery_numbers + 1
           @gallery_range = (175*@skip_by)..(175 + 175*(@skip_by))
         end
 
@@ -360,7 +360,7 @@ class CGMFS
         end
         
 
-        @gallery = @gallery.data_arr[@gallery_range]
+        @gallery = @gallery_images[@gallery_range]
 
 
         view('blog/gallery/list_gallery_uploads', engine: 'html.erb', layout: 'layout.html')

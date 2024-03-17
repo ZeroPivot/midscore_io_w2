@@ -30,7 +30,7 @@
          <% end %>
       <% latest_id.downto(0) do |id| %>
         <% hash = gallery[id] %>
-        <% unless hash.nil? %>
+        <% unless hash.nil? || hash == {} %>
           <% if id % 4 == 0 %>
           </tr><tr>
           <% end %>

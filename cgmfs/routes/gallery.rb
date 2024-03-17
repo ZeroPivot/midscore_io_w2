@@ -328,15 +328,23 @@ class CGMFS
 
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+
+        @gallery_images = @gallery.data_arr.reject { |image| image == {} }
+
+        log("gallery images size: #{@gallery_images.size}")
+
         @skip_by = r.params['skip_by'].to_i
         if r.params['skip_by'].nil?
           @skip_by = 0
         end
-        @gallery_numbers = @gallery.data_arr.size / 125
-        if @gallery_numbers < 1
+        @gallery_numbers = @gallery.data_arr.size / 175
+        log(@gallery_numbers)
+        if @gallery_images.size <= 175
           @pages = 0
+          @gallery_range = 0..175
         else
-          @pages = @gallery_numbers.ceil
+          @pages = @gallery_numbers - 1
+          @gallery_range = (175*@skip_by)..(175 + 175*(@skip_by))
         end
 
         # generate pages html
@@ -350,7 +358,7 @@ class CGMFS
           @pages_html << "&nbsp;" unless page_number == @pages - 1
           @pages_html << "<br>" if page_number % 10 == 0 && page_number != 0
         end
-        @gallery_range = (125*@skip_by)..(125 + 125*(@skip_by))
+        
 
         @gallery = @gallery.data_arr[@gallery_range]
 

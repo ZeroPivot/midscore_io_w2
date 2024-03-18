@@ -53,7 +53,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "v3.3.9.1 - Codename: \"The Stimky Sniffa\"" # used in layout.html.erb
+$dog_blog_version = "v3.3.9.3 - Codename: \"The Stimky Sniffa\"" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 
@@ -161,6 +161,8 @@ class CGMFS < Roda
     @@line_db[db].pad.new_table!(database_name: "gallery_database", database_table: "gallery_table")
     puts "...Loading cache system database..."
     @@line_db[db].pad.new_table!(database_name: "cache_system_database", database_table: "cache_system_table")
+    puts "... Loading uwu collections system database..."
+    @@line_db[db].pad.new_table!(database_name: "uwu_collections_database", database_table: "uwu_collections_table")
     puts "Done."
     b = Time.now
     puts "Time taken to load #{db}: #{b - a} seconds."

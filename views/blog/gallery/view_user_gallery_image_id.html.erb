@@ -104,6 +104,30 @@
             <div class="table-data"><%= @image['views'] %></div>
         </div>
           <div class="table-row">
+            <div class="table-header"><strong>OwO</strong>
+
+
+            </div>
+            <div class="table-data">
+                <% if !@owo.nil? %>
+                <%= @owo %>
+                <% else %>
+                ⊘
+                <% end %>
+
+
+            <% if session['user'] %>
+                <% log(session['user']) %>
+                <% log(@owo.to_s) %>
+                <% if @owo.nil? %>
+                <a href="<%= "#{domain_name(@r)}/gallery/owo/add?image_id=#{@image['id']}" %>">(OwO🪨)</a>
+                <% else %>
+                <a href="<%= "#{domain_name(@r)}/gallery/owo/add?image_id=#{@image['id']}" %>">(OwO➕➕)</a> || <a href="<%= "#{domain_name(@r)}/owo/sub?image_id=#{@image['id']}" %>">(OwO➖➖)</a> || <a href="<%= "#{domain_name(@r)}/gallery/owo/rem?image_id=#{@image['id']}" %>">(OwO🔨)</a>
+                <% end %>
+            <% end %>
+            </div>
+        </div>
+          <div class="table-row">
             <div class="table-header"><strong>(⏬💾)</strong></div>
             <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{@image["file"]}" %>">DOWNLOAD</a></div>
         </div>

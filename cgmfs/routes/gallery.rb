@@ -419,13 +419,14 @@ class CGMFS
 
        File.delete("public/gallery/#{@user}/attachments/#{@attachments[attachment_id]['file_attachment_name']}")
        @attachments.delete_at(attachment_id)
+       log(@attachments.to_s)
+       log("attachment deleted")
         @gallery.set(@id) do |hash|
           hash['attachments'] = @attachments
         end
+        log("attachment hash set")
         @gallery.save_partition_by_id_to_file!(@id)
-        @line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
-          hash['recache'] = true
-        end
+
         @line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments"
       end
@@ -456,6 +457,7 @@ class CGMFS
           @uploaded_filehandle = r.params['file'][:tempfile].read
           @file_name = Time.now.to_f.to_s + r.params['file'][:filename]
           FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
+          File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
           @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
           @id = id
           @image = @gallery.get(@id)
@@ -516,117 +518,7 @@ class CGMFS
 
     end
 
-    r.is 'uwu', 'view', String do |user| # view the collections list
-      user_failcheck(user, r)
-      r.get do
-        @user = user
-        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
-        @collections = @collections.data_arr
-        # uwu collections has its own id in data_arr and the id of the image in the gallery that is very uwu, with a numerical ranking system
-        @collections = @collections.compact
-        @collections = @collections.sort_by { |collection| collection['id'] }
 
-        view('blog/gallery/view_uwu_collections', engine: 'html.erb', layout: 'layout.html')
-      end
-    end
-
-    r.is 'uwu', 'view', String, 'id', Integer do |user, id| # view the collection id
-      user_failcheck(user, r)
-      r.get do
-        @user = user
-        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
-        @id = id
-        @collection = @collections.get(@id)
-        @image_id = @collection['image_id']
-        @image = @gallery.get(@image_id)
-        view('blog/gallery/view_uwu_collections_id', engine: 'html.erb', layout: 'layout.html')
-      end
-    end
-
-    r.is 'uwu', 'edit', String, 'id', Integer do |user, id| # edit the collection id
-      user_failcheck(user, r)
-      r.get do
-        @user = user
-        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
-        @id = id
-        @collection = @collections.get(@id)
-        @image_id = @collection['image_id']
-        @image = @gallery.get(@image_id)
-        view('blog/gallery/edit_uwu_collections_id', engine: 'html.erb', layout: 'layout.html')
-      end
-    end
-
-    r.is 'uwu', 'view', String, 'id', Integer, 'delete' do |user, id| # delete the collection id
-      user_failcheck(user, r)
-      logged_in?(r, user)
-      r.get do
-        @user = user
-        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
-        @id = id
-        @collection = @collections.get(@id)
-        if @collection
-          @collections.data_arr[@id] = {}
-          @collections.save_partition_by_id_to_file!(@id)
-          "Collection with id #{@id} deleted successfully."
-        else
-          "No collection found with id #{@id}."
-        end
-      end
-    end
-
-    r.is 'owo', 'add' do
-      r.get do
-        @user = session['user']
-        @image_id = r.params['image_id'].to_i
-        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-        @gallery.set(@image_id) do |hash|
-          if hash['owo_count'].nil?
-            hash['owo_count'] = 0
-          else
-            hash['owo_count'] += 1
-          end
-        end
-        @gallery.save_partition_by_id_to_file!(@image_id)
-        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@image_id}"
-
-      end
-
-    end
-
-    r.is 'owo', 'rem' do
-      r.get do
-        @user = session['user']
-        @image_id = r.params['image_id'].to_i
-        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-        @gallery.set(@image_id) do |hash|
-          hash['owo_count'] = nil
-        end
-        @gallery.save_partition_by_id_to_file!(@image_id)
-        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@image_id}"
-
-      end
-
-
-    end
-
-    r.is 'owo', 'sub' do
-      r.get do
-        @image_id = r.params['image_id'].to_i
-        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-        @gallery.set(@image_id) do |hash|
-          if hash['owo_count'].nil?
-            hash['owo_count'] = 0
-          else
-            hash['owo_count'] -= 1
-          end
-        end
-        @gallery.save_partition_by_id_to_file!(@image_id)
-        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@image_id}"
-      end
-    end
 
     r.is 'delete', String, 'id', Integer do |user, id| # delete a gallery post by id
       user_failcheck(user, r)
@@ -860,6 +752,121 @@ class CGMFS
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
       end
     end
+
+    r.is 'uwu', 'view', String do |user| # view the collections list
+      user_failcheck(user, r)
+      r.get do
+        @user = user
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
+        @collections = @collections.data_arr
+        # uwu collections has its own id in data_arr and the id of the image in the gallery that is very uwu, with a numerical ranking system
+        @collections = @collections.compact
+        @collections = @collections.sort_by { |collection| collection['id'] }
+
+        view('blog/gallery/view_uwu_collections', engine: 'html.erb', layout: 'layout.html')
+      end
+    end
+
+    r.is 'uwu', 'view', String, 'id', Integer do |user, id| # view the collection id
+      user_failcheck(user, r)
+      r.get do
+        @user = user
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
+        @id = id
+        @collection = @collections.get(@id)
+        @image_id = @collection['image_id']
+        @image = @gallery.get(@image_id)
+        view('blog/gallery/view_uwu_collections_id', engine: 'html.erb', layout: 'layout.html')
+      end
+    end
+
+    r.is 'uwu', 'edit', String, 'id', Integer do |user, id| # edit the collection id
+      user_failcheck(user, r)
+      r.get do
+        @user = user
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
+        @id = id
+        @collection = @collections.get(@id)
+        @image_id = @collection['image_id']
+        @image = @gallery.get(@image_id)
+        view('blog/gallery/edit_uwu_collections_id', engine: 'html.erb', layout: 'layout.html')
+      end
+    end
+
+    r.is 'uwu', 'view', String, 'id', Integer, 'delete' do |user, id| # delete the collection id
+      user_failcheck(user, r)
+      logged_in?(r, user)
+      r.get do
+        @user = user
+        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
+        @id = id
+        @collection = @collections.get(@id)
+        if @collection
+          @collections.data_arr[@id] = {}
+          @collections.save_partition_by_id_to_file!(@id)
+          "Collection with id #{@id} deleted successfully."
+        else
+          "No collection found with id #{@id}."
+        end
+      end
+    end
+
+    r.is 'owo', 'add' do
+      r.get do
+        @user = session['user']
+        @image_id = r.params['image_id'].to_i
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @gallery.set(@image_id) do |hash|
+          if hash['owo_count'].nil?
+            hash['owo_count'] = 0
+          else
+            hash['owo_count'] += 1
+          end
+        end
+        @gallery.save_partition_by_id_to_file!(@image_id)
+        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@image_id}"
+
+      end
+
+    end
+
+    r.is 'owo', 'rem' do
+      r.get do
+        @user = session['user']
+        @image_id = r.params['image_id'].to_i
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @gallery.set(@image_id) do |hash|
+          hash['owo_count'] = nil
+        end
+        @gallery.save_partition_by_id_to_file!(@image_id)
+        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@image_id}"
+
+      end
+
+
+    end
+
+    r.is 'owo', 'sub' do
+      r.get do
+        @image_id = r.params['image_id'].to_i
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @gallery.set(@image_id) do |hash|
+          if hash['owo_count'].nil?
+            hash['owo_count'] = 0
+          else
+            hash['owo_count'] -= 1
+          end
+        end
+        @gallery.save_partition_by_id_to_file!(@image_id)
+        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@image_id}"
+      end
+    end
+
+
+
   end
 end
 # rubocop:enable Metrics/BlockLength, Layout/LineLength, Metrics/ClassLength, Metrics/MethodLength

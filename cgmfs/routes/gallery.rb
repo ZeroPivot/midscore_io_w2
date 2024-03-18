@@ -326,6 +326,8 @@ class CGMFS
 
       r.get do
 
+
+
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
 
@@ -361,6 +363,8 @@ class CGMFS
 
 
         @gallery = @gallery_images[@gallery_range]
+
+        @owo_count_gallery = @gallery.sort_by { |image| image['owo_count'].to_i }
 
 
         view('blog/gallery/list_gallery_uploads', engine: 'html.erb', layout: 'layout.html')

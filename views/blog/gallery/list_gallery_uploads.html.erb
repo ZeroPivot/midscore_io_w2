@@ -21,6 +21,45 @@
       <br>
       <br>
       <h1>For <%= @user %>'s gallery</h1>
+
+      <h1><b>OwO⁉️</b></h1>
+
+      <table padding="11" border="0">
+        <tr>
+          <% @owo_count_gallery.each_with_index do |image, index| %>
+            <% next if image['owo_count'].nil? %>
+            <% if index % 6 == 0 %>
+              </tr><tr>
+            <% end %>
+            <td>
+              <div id="gallery_images">
+                <p><center><%= image['owo_count'] %> OwOs</center></p>
+                <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= image['id'] %>" border="0">
+                  <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= image['file'] %>" alt="<%= @title %>">
+                </a>
+                <% if !image['attachments'].nil? %>
+    <% image['attachments'].each_with_index do |attachment, index| %>
+            <div class="attachment">
+                   *️⃣ <a href="/gallery/<%= @user %>/attachments/<%= attachment['file_attachment_name'] %>">
+
+                   <% if @user == session['user'] %>
+                   <%= attachment['file_attachment_name'] %></a> <a href="/gallery/view/<%= @user %>/id/<%= index %>/attachments/delete/<%= index  %>">DELETE</a>
+                   <% end %>
+            </div><br />
+    <% end %>
+<% end %>
+
+
+              </div>
+            </td>
+          <% end %>
+        </tr>
+      </table>
+
+      <br><br>
+
+      <h1><b>🖼️,🖼️,...</b></h1>
+
       <table padding="11" border="0">
       <tr>
         <% @gallery.each do |hash| %>

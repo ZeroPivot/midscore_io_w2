@@ -371,7 +371,7 @@ class CGMFS
       end
     end
 
-    r.is 'view', String, 'id', Integer do |user, id| # view the gallery list
+    r.is 'view', String, 'id', Integer do |user, id| # view the gallery entry
       user_failcheck(user, r)
       r.get do
         @user = user
@@ -426,8 +426,9 @@ class CGMFS
         end
         log("attachment hash set")
         @gallery.save_partition_by_id_to_file!(@id)
-
-        @line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
+        log("attachment saved")
+       
+        #"attachment deleted. <a href='#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments'>Back to attachments</a>"
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments"
       end
 

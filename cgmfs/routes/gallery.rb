@@ -856,7 +856,7 @@ class CGMFS
     end
 
     r.is 'owo', 'add' do
-      logged_in?(r, @user)
+      
       r.get do
         @user = session['user']
         logged_in?(r, @user)

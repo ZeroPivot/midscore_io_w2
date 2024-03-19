@@ -32,7 +32,7 @@
           <% end %>
           <div style="flex: 1 0 33%; padding: 11px; box-sizing: border-box;">
             <div id="gallery_images">
-              <p style="text-align: center;"><%= image['owo_count'] %> OwOs</p>
+              <p style="text-align: center;"><%= convert_ints_to_emoji(image['owo_count']) %> OwOs</p>
               <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= image['id'] %>" border="0">
                 <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= image['file'] %>" alt="<%= @title %>">
               </a>

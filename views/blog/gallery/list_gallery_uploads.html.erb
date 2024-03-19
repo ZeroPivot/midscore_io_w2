@@ -33,7 +33,7 @@
             <% end %>
             <td>
               <div id="gallery_images">
-                <p><center><%= image['owo_count'] %> OwOs</center></p>
+                <p><center><%= convert_ints_to_emoji(image['owo_count']) %> OwOs</center></p>
                 <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= image['id'] %>" border="0">
                   <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= image['file'] %>" alt="<%= @title %>">
                 </a>

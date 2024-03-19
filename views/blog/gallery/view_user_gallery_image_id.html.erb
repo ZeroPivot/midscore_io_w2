@@ -110,7 +110,7 @@
             </div>
             <div class="table-data">
                 <% if !@owo.nil? %>
-                <%= @owo %>
+                <%= convert_ints_to_emoji(@owo) %>
                 <% else %>
                 ⊘
                 <% end %>

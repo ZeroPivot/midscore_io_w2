@@ -15,6 +15,43 @@ class CGMFS
     r.redirect "#{domain_name(r)}/blog/login"
   end
 
+  def convert_ints_to_emoji(int)
+    integers_string = int.to_s.split('')
+    emoji_integers = integers_string.map do |integer|
+      case integer
+      when '0'
+        '0️⃣'
+      when '1'
+        '1️⃣'
+      when '2'
+        '2️⃣'
+      when '3'
+        '3️⃣'
+      when '4'
+        '4️⃣'
+      when '5'
+        '5️⃣'
+      when '6'
+        '6️⃣'
+      when '7'
+        '7️⃣'
+      when '8'
+        '8️⃣'
+      when '9'
+        '9️⃣'
+      end     
+    end
+    string_integers = emoji_integers.join('')
+    if int < 0
+      string_integers = "➖#{string_integers}"
+    end
+    string_integers
+  end
+
+
+  
+
+
 
   def private_view?(r, user)
     if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'].nil?
@@ -854,9 +891,10 @@ class CGMFS
     end
 
     r.is 'owo', 'sub' do
-      logged_in?(r, user)
+    
       r.get do
         @user = session['user']
+        logged_in?(r, @user)
         @image_id = r.params['image_id'].to_i
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @gallery.set(@image_id) do |hash|

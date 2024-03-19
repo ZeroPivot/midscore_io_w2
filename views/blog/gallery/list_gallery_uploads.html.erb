@@ -28,7 +28,7 @@
         <tr>
           <% @owo_count_gallery.each_with_index do |image, index| %>
             <% next if image['owo_count'].nil? %>
-            <% if index % 6 == 0 %>
+            <% if index % 3 == 0 %>
               </tr><tr>
             <% end %>
             <td>

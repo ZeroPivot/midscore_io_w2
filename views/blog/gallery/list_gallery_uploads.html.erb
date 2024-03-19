@@ -24,37 +24,32 @@
 
       <h1><b>OwO⁉️</b></h1>
 
-      <table padding="11" border="0">
-        <tr>
-          <% @owo_count_gallery.each_with_index do |image, index| %>
-            <% next if image['owo_count'].nil? %>
-            <% if index % 3 == 0 %>
-              </tr><tr>
-            <% end %>
-            <td>
-              <div id="gallery_images">
-                <p><center><%= convert_ints_to_emoji(image['owo_count']) %> OwOs</center></p>
-                <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= image['id'] %>" border="0">
-                  <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= image['file'] %>" alt="<%= @title %>">
-                </a>
-                <% if !image['attachments'].nil? %>
-    <% image['attachments'].each_with_index do |attachment, index| %>
-            <div class="attachment">
-                   *️⃣ <a href="/gallery/<%= @user %>/attachments/<%= attachment['file_attachment_name'] %>">
-
-                   <% if @user == session['user'] %>
-                   <%= attachment['file_attachment_name'] %></a> <a href="/gallery/view/<%= @user %>/id/<%= image['id'] %>/attachments/delete/<%= index  %>">DELETE</a>
-                   <% end %>
-            </div><br />
-    <% end %>
-<% end %>
-
-
-              </div>
-            </td>
+      <div style="display: flex; flex-wrap: wrap;">
+        <% @owo_count_gallery.each_with_index do |image, index| %>
+          <% next if image['owo_count'].nil? %>
+          <% if index % 3 == 0 %>
+            <br>
           <% end %>
-        </tr>
-      </table>
+          <div style="flex: 1 0 33%; padding: 11px; box-sizing: border-box;">
+            <div id="gallery_images">
+              <p style="text-align: center;"><%= image['owo_count'] %> OwOs</p>
+              <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= image['id'] %>" border="0">
+                <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= image['file'] %>" alt="<%= @title %>">
+              </a>
+              <% if !image['attachments'].nil? %>
+                <% image['attachments'].each_with_index do |attachment, index| %>
+                  <div class="attachment">
+                    *️⃣ <a href="/gallery/<%= @user %>/attachments/<%= attachment['file_attachment_name'] %>">
+                    <% if @user == session['user'] %>
+                      <%= attachment['file_attachment_name'] %></a> <a href="/gallery/view/<%= @user %>/id/<%= image['id'] %>/attachments/delete/<%= index  %>">DELETE</a>
+                    <% end %>
+                  </div><br />
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
 
       <br><br>
 

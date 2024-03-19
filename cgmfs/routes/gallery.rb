@@ -808,6 +808,7 @@ class CGMFS
 
     r.is 'uwu', 'view', String, 'id', Integer do |user, id| # view the collection id
       user_failcheck(user, r)
+  
       r.get do
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
@@ -822,6 +823,7 @@ class CGMFS
 
     r.is 'uwu', 'edit', String, 'id', Integer do |user, id| # edit the collection id
       user_failcheck(user, r)
+      logged_in?(r, user)
       r.get do
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
@@ -835,6 +837,8 @@ class CGMFS
     end
 
     r.is 'uwu', 'view', String, 'id', Integer, 'delete' do |user, id| # delete the collection id
+      user_failcheck(user, r)
+      logged_in?(r, user)
      r.get do
         @user = user
         logged_in?(r, @user)

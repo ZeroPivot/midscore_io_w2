@@ -34,7 +34,7 @@
             <div id="gallery_images">
               <p style="text-align: center;"><%= convert_ints_to_emoji(image['owo_count']) %> OwOs</p>
               <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= image['id'] %>" border="0">
-                <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= image['file'] %>" alt="<%= @title %>">
+                <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= image['file'] %>" alt="<%= @title %>" onerror="this.src='not_found_image.png'">
               </a>
               <% if !image['attachments'].nil? %>
                 <% image['attachments'].each_with_index do |attachment, index| %>

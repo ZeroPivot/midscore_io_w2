@@ -39,7 +39,7 @@ class CGMFS
         '8️⃣'
       when '9'
         '9️⃣'
-      end     
+      end
     end
     string_integers = emoji_integers.join('')
     if int < 0
@@ -49,7 +49,7 @@ class CGMFS
   end
 
 
-  
+
 
 
 
@@ -207,9 +207,12 @@ class CGMFS
           new_file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
           File.rename(file_path, new_file_path)
 
-
-          create_image_thumbnail!(image_path: new_file_path, thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
-          resize_image!(image_path: new_file_path, size: 1920, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+          Thread.new do
+            create_image_thumbnail!(image_path: new_file_path, thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
+          end
+          Thread.new do
+            resize_image!(image_path: new_file_path, size: 1920, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+          end
         else
           uploadable = false
           # delete the file
@@ -318,8 +321,13 @@ class CGMFS
           uploadable = true
           FileUtils.mkdir_p("public/gallery/#{@user}")
           File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
-          create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
-          resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1920, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+          Thread.new do
+            create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
+          end
+
+          Thread.new do
+            resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1920, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+          end
         else
           uploadable = false
         end
@@ -464,7 +472,7 @@ class CGMFS
         log("attachment hash set")
         @gallery.save_partition_by_id_to_file!(@id)
         log("attachment saved")
-       
+
         #"attachment deleted. <a href='#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments'>Back to attachments</a>"
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments"
       end
@@ -518,7 +526,7 @@ class CGMFS
 
         else
 
-        @uri_url = URI.open(@url_params)
+        @uri_url = URI.open(URI.encode_www_form_component(@url_params.to_s))
         @uploaded_filehandle = @uri_url.read
         @meta = @uri_url.meta['content-type'].split('/').last
         log(@meta)
@@ -761,8 +769,12 @@ class CGMFS
             uploadable = true
             FileUtils.mkdir_p("public/gallery/#{@user}")
             File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
-            create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 255, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
-            resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1080, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+            Thread.new do
+              create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 255, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
+            end
+            Thread.new do
+              resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1080, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+            end
           else
             uploadable = false
           end
@@ -808,7 +820,7 @@ class CGMFS
 
     r.is 'uwu', 'view', String, 'id', Integer do |user, id| # view the collection id
       user_failcheck(user, r)
-  
+
       r.get do
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
@@ -856,7 +868,7 @@ class CGMFS
     end
 
     r.is 'owo', 'add' do
-      
+
       r.get do
         @user = session['user']
         logged_in?(r, @user)
@@ -877,7 +889,7 @@ class CGMFS
     end
 
     r.is 'owo', 'rem' do
-      
+
       r.get do
         @user = session['user']
         logged_in?(r, @user)
@@ -895,7 +907,7 @@ class CGMFS
     end
 
     r.is 'owo', 'sub' do
-    
+
       r.get do
         @user = session['user']
         logged_in?(r, @user)

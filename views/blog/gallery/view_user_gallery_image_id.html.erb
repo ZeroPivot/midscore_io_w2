@@ -79,7 +79,7 @@
     </center>
     <br>
     <div class="image-container">
-        <img id="gallery-image" src="<%= "#{domain_name(@r)}/gallery/#{@user}/resized_#{@image["file"]}" %>" onclick="toggleImageSize()" alt="<%= @title %>">
+        <img id="gallery-image" src="<%= "#{domain_name(@r)}/gallery/#{@user}/resized_#{@image["file"]}" %>" onclick="toggleImageSize()" alt="<%= @title %>" onerror="this.src='not_found_image.png'">
     </div>
     <center><button onclick="fitToScreenSize()">(🗜️)</button></center>
     <div class="table">

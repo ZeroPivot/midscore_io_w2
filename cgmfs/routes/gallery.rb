@@ -798,10 +798,9 @@ class CGMFS
     end
 
     r.is 'uwu', 'view', String, 'id', Integer, 'delete' do |user, id| # delete the collection id
-      user_failcheck(user, r)
-      logged_in?(r, user)
-      r.get do
+     r.get do
         @user = user
+        logged_in?(r, @user)
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
         @id = id
         @collection = @collections.get(@id)
@@ -816,8 +815,10 @@ class CGMFS
     end
 
     r.is 'owo', 'add' do
+      logged_in?(r, @user)
       r.get do
         @user = session['user']
+        logged_in?(r, @user)
         @image_id = r.params['image_id'].to_i
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @gallery.set(@image_id) do |hash|
@@ -835,8 +836,10 @@ class CGMFS
     end
 
     r.is 'owo', 'rem' do
+      
       r.get do
         @user = session['user']
+        logged_in?(r, @user)
         @image_id = r.params['image_id'].to_i
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @gallery.set(@image_id) do |hash|
@@ -851,7 +854,9 @@ class CGMFS
     end
 
     r.is 'owo', 'sub' do
+      logged_in?(r, user)
       r.get do
+        @user = session['user']
         @image_id = r.params['image_id'].to_i
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @gallery.set(@image_id) do |hash|

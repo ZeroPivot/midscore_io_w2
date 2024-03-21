@@ -20,6 +20,8 @@ require 'net/https'
 require 'yuicompressor'
 require 'roda/plugins/assets'
 
+# MAJOR TODO v3.4.0.4a  (3/20/2024): make sure filenames in uploads edits etc are compatible with ascii)
+
 
 # require 'rack'
 # require 'rack/csrf'
@@ -39,7 +41,7 @@ require_dir "./lib/dir_requires"
 # SERVER_IP_LOCAL = 'localhost'
 # DOMAIN_NAME = 'https://onemoonpla.net'
 DEBUG = false
-LOCAL = false
+LOCAL = true
 
 ## enable Resolv to use DNS (../views/layout.html.erb)
 $dns_enabled = false # enable dns
@@ -53,7 +55,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "v3.4.0.3(#️⃣3) - Codename: \"Stimky-Sniffa Emoji 🩲\"" # used in layout.html.erb
+$dog_blog_version = "v3.4.0.4a(#️⃣11) - Codename: \"Stimky-Sniffa Emoji 🩲\"" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 

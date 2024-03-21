@@ -70,6 +70,17 @@
     <% file.write(@page_views) %>
   <% end unless LOCAL %>
 <% end %>
+
+<% if LOCAL %>
+   <% File.open("views/page_views_local.txt", "r+") do |file| %>
+    <% @page_views = file.read.to_i %>
+    <% @page_views += 1 %>
+    <% file.rewind %>
+    <% file.write(@page_views) %>
+  <% end %>
+
+
+  <% end %>
   Dog-N [<%= $dog_blog_version %>] - ♾️<%= @page_views %> -- ©️metagame
   <br><br>
   <a href="<%= domain_name(@r) %>/blog/logout">[➖🔒]</a><br><br>

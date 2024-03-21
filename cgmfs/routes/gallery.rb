@@ -526,7 +526,7 @@ class CGMFS
 
         else
 
-        @uri_url = URI.open(URI.encode_www_form_component(@url_params.to_s))
+        @uri_url = URI.open(@url_params.to_s)
         @uploaded_filehandle = @uri_url.read
         @meta = @uri_url.meta['content-type'].split('/').last
         log(@meta)

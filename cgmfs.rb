@@ -55,7 +55,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "v3.4.0.4a(#️⃣11) - Codename: \"Stimky-Sniffa Emoji 🩲\"" # used in layout.html.erb
+$dog_blog_version = "v3.4.0.5(#️⃣3) - Codename: \"NEVER-Too-Stimky-Sniffa Emoji 🩲\"" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 

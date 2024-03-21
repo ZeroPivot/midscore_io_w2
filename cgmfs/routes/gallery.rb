@@ -307,10 +307,11 @@ class CGMFS
         description = "no description" if description.empty?
         tags = "none" if tags.empty?
         title = "untitled" if title.empty?
-        original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}".encode('ASCII-8BIT', invalid: :replace, undef: :replace, replace: '')
+        file_extension = File.extname(uploaded_filehandle[:filename])
+        original_to_new_filename = "#{@user}_#{Time.now.to_f}_original_#{file_extension}"
         file_contents = uploaded_filehandle[:tempfile].read
         file_size = file_contents.size
-        file_extension = File.extname(uploaded_filehandle[:filename])
+       
 
         file_type = FastImage.type(uploaded_filehandle[:tempfile])
 
@@ -758,7 +759,8 @@ class CGMFS
         uploadable = false
         uploaded_filehandle = r.params['file']
         if uploaded_filehandle
-          original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}"
+          #original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}"
+          original_to_new_filename = "#{@user}_#{Time.now.to_f}_original_#{file_extension}"
           file_contents = uploaded_filehandle[:tempfile].read
           file_size = file_contents.size
           file_extension = File.extname(uploaded_filehandle[:filename])

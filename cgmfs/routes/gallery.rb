@@ -48,7 +48,7 @@ class CGMFS
     string_integers
   end
 
-
+# word.encode('ASCII-8BIT', invalid: :replace, undef: :replace, replace: '')
 
 
 
@@ -307,7 +307,7 @@ class CGMFS
         description = "no description" if description.empty?
         tags = "none" if tags.empty?
         title = "untitled" if title.empty?
-        original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}"
+        original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}".encode('ASCII-8BIT', invalid: :replace, undef: :replace, replace: '')
         file_contents = uploaded_filehandle[:tempfile].read
         file_size = file_contents.size
         file_extension = File.extname(uploaded_filehandle[:filename])

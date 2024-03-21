@@ -368,8 +368,10 @@ class CGMFS
     r.on 'signup' do
       r.is do
         r.get do
+         if r.host == 'hudl.ink' || LOCAL == true 
           # log("signup attempt made; signups are closed (view)")
           view('blog/signup', engine: 'html.erb', layout: 'layout.html') # keep signups closed for now; open for our own personal purposes but needs to be closed for the public
+         end
           # "Signups are closed; see an admin please."
         end
 

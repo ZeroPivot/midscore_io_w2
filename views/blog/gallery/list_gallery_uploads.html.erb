@@ -24,13 +24,21 @@
 <hr>
       <h1><b>OwO⁉️</b></h1>
 
+      <form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/" %>" method="get">
+        <label for="owo_display">➗OwO:</label>
+        <input type="number" id="owo_display" name="owo_count_rate" value="<%= @owo_count_rate || 3 %>" required>
+        <input type="submit" value="Submit">
+      </form>
+      <br>
+
       <div style="display: flex; flex-wrap: wrap;">
         <% @owo_count_gallery.each_with_index do |image, index| %>
           <% next if image['owo_count'].nil? %>
-          <% if index % 3 == 0 %>
+          <% log(@owo_count_rate) %>
+          <% if index % @owo_count_rate == 0 %> <!-- Modulo operation with @owo_count_rate -->
             <br>
           <% end %>
-          <div style="flex: 1 0 33%; padding: 11px; box-sizing: border-box;">
+          <div style="padding: 11px; box-sizing: border-box;">
             <div id="gallery_images">
               <p style="text-align: center;"><%= convert_ints_to_emoji(image['owo_count']) %> OwOs</p>
               <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= image['id'] %>" border="0">
@@ -55,6 +63,16 @@
 
       <h1><b>🖼️,🖼️,...</b></h1>
 
+      <form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/" %>" method="get">
+        <label for="modulo_display">➗</label>
+        <input type="text" id="modulo_display" name="modulo_display" value="<%= @modulo_display || 4 %>" required>
+        <label for="image_quantity">#️⃣</label>
+        <input type="text" id="image_quantity" name="quantity_displayed" value="<%= @quantity_displayed || 175 %>" required>
+        <input type="submit" value="Submit">
+      </form>
+
+      <br>
+
       <table padding="11" border="0">
       <tr>
         <% @gallery.each do |hash| %>
@@ -65,7 +83,7 @@
       <% latest_id.downto(0) do |id| %>
         <% hash = gallery[id] %>
         <% unless hash.nil? || hash == {} %>
-          <% if id % 4 == 0 %>
+          <% if id % @modulo_display == 0 %>
           </tr><tr>
           <% end %>
           <td>

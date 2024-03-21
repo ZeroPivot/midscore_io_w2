@@ -372,6 +372,29 @@ class CGMFS
 
       r.get do
 
+        if r.params['owo_count_rate'].nil?
+          @owo_count_rate = session['owo_count_rate'] || 3
+        else
+          @owo_count_rate = r.params['owo_count_rate'].to_i
+          session['owo_count_rate'] = @owo_count_rate
+        end
+
+
+
+        if r.params['quantity_displayed'].nil?
+          @quantity_displayed = session['quantity_displayed'] || 175
+        else
+          @quantity_displayed = r.params['quantity_displayed'].to_i
+          session['quantity_displayed'] = @quantity_displayed
+        end
+
+        if r.params['modulo_display'].nil?
+          @modulo_display = session['modulo_display'] || 4
+        else
+          @modulo_display = r.params['modulo_display'].to_i
+          session['modulo_display'] = @modulo_display
+        end
+        
 
 
         @user = user
@@ -385,14 +408,14 @@ class CGMFS
         if r.params['skip_by'].nil?
           @skip_by = 0
         end
-        @gallery_numbers = @gallery_images.size / 175
+        @gallery_numbers = @gallery_images.size / @quantity_displayed
         log(@gallery_numbers)
-        if @gallery_images.size <= 175
+        if @gallery_images.size <= @quantity_displayed
           @pages = 0
-          @gallery_range = 0..175
+          @gallery_range = 0..@quantity_displayed
         else
           @pages = @gallery_numbers + 1
-          @gallery_range = (175*@skip_by)..(175 + 175*(@skip_by))
+          @gallery_range = (@quantity_displayed*@skip_by)..(@quantity_displayed + @quantity_displayed*(@skip_by))
         end
 
         # generate pages html
@@ -420,6 +443,8 @@ class CGMFS
     r.is 'view', String, 'id', Integer do |user, id| # view the gallery entry
       user_failcheck(user, r)
       r.get do
+        @markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true,
+        fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @id = id
@@ -742,11 +767,15 @@ class CGMFS
         view('blog/gallery/edit_user_gallery_image_id', engine: 'html.erb', layout: 'layout.html')
       end
       r.post do
+        @markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true,
+        fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @id = id
         @title = r.params['title']
         @description = r.params['description']
+    
+
         @tags = r.params['tags']
 
         @description = "no description" if @description.empty?

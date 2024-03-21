@@ -1,4 +1,4 @@
-      <script src="https://cdn.tiny.cloud/1/rzzngc2l3yjv4zi3457y3qjfv92codj2bb91rnem3fsyl4x3/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
     <center>
       <form action="<%= "#{domain_name(@r)}/gallery/upload" %>" method="post" enctype="multipart/form-data">
      <fieldset>
@@ -11,7 +11,7 @@
       <br>
 
       <label for="description">Description:</label>
-      <textarea name="description" id="description" rows="4" cols="50"></textarea>
+      <textarea name="description" id="description" rows="40" cols="70"></textarea>
       <br>
 
       <br>
@@ -29,11 +29,3 @@
       <input type="submit" value="Upload">
   </form>
   </center>
-
-      <script>
-      tinymce.init({
-        selector: '#description',
-      plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount linkchecker',
-      toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-    });
-  </script>

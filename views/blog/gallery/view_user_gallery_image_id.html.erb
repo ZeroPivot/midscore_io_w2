@@ -89,7 +89,7 @@
         </div>
         <div class="table-row">
             <div class="table-header"><strong>(📝)</strong></div>
-            <div class="table-data"><%= @image['description'] %></div>
+            <div class="table-data"><%= @markdown.render(@image['description']) %></div>
         </div>
         <div class="table-row">
             <div class="table-header"><strong>(🏷️,🏷️,..)</strong></div>

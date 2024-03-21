@@ -1,7 +1,6 @@
 # /root/midscore_io/views/blog/gallery/edit_user_gallery_id.html.erb
 <%# # /gallery/edit/user/id/ID %>
 <%# Add your HTML and ERB code here for the edit page %>
-<script src="https://cdn.tiny.cloud/1/rzzngc2l3yjv4zi3457y3qjfv92codj2bb91rnem3fsyl4x3/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <h1>Edit User Gallery ID (<%= @id %>)</h1>
 <br>
 <img src="<%= "#{domain_name(@r)}/gallery/#{@user}/thumbnail_#{@file}" %>" onerror="this.src='not_found_image.png'"><br><br>
@@ -20,7 +19,7 @@
   <input type="file" name="file" id="file">
   <br>
   <label for="description">Description:</label>
-  <textarea name="description" id="description"><%= @description %></textarea>
+  <textarea name="description" id="description"  rows="40" cols="70"><%= @description %></textarea>
   <br>
   <input type="submit" value="save">
 </form>
@@ -29,12 +28,6 @@
   <input type="hidden" name="_method" value="delete">
   <input type="submit" value="Delete Entry!">
 </form>
-<script>
-  tinymce.init({
-    selector: '#description',
-    plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount linkchecker',
-    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-  });
-</script>
+
 
 

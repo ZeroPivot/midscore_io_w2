@@ -41,7 +41,7 @@ require_dir "./lib/dir_requires"
 # SERVER_IP_LOCAL = 'localhost'
 # DOMAIN_NAME = 'https://onemoonpla.net'
 DEBUG = false
-LOCAL = false
+LOCAL = true
 
 ## enable Resolv to use DNS (../views/layout.html.erb)
 $dns_enabled = false # enable dns

@@ -311,7 +311,7 @@ class CGMFS
         original_to_new_filename = "#{@user}_#{Time.now.to_f}_original_#{file_extension}"
         file_contents = uploaded_filehandle[:tempfile].read
         file_size = file_contents.size
-       
+
 
         file_type = FastImage.type(uploaded_filehandle[:tempfile])
 
@@ -394,7 +394,7 @@ class CGMFS
           @modulo_display = r.params['modulo_display'].to_i
           session['modulo_display'] = @modulo_display
         end
-        
+
 
 
         @user = user
@@ -642,7 +642,7 @@ class CGMFS
         if @search_params
           @search_params_set = @search_params.split(', ').compact.to_set
           # get rid of nil tags in @images_set
-          @tags_to_reject = @search_params_set.select { |tag| tag.start_with?('-') }
+          @tags_to_reject = @search_params_set.select { |tag| tag.start_with?('--') }
 
           # remove the '--' from the tags to reject
           @tags_to_reject = @tags_to_reject.map { |tag| tag[2..-1] }
@@ -774,7 +774,7 @@ class CGMFS
         @id = id
         @title = r.params['title']
         @description = r.params['description']
-    
+
 
         @tags = r.params['tags']
 

@@ -106,7 +106,6 @@
           <div class="table-row">
             <div class="table-header"><strong>OwO</strong>
 
-
             </div>
             <div class="table-data">
                 <% if !@owo.nil? %>
@@ -114,7 +113,6 @@
                 <% else %>
                 ⊘
                 <% end %>
-
 
             <% if session['user'] %>
                 <% log(session['user']) %>
@@ -136,9 +134,13 @@
             <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}" %>">PERMA-LINK</a></div>
         </div>
         <div class="table-row">
+            <% if session['user'] == @user %>
             <div class="table-header"><strong>(📝)</strong></div>
-            <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{@image["id"]}" %>">ADMIN: EDIT</a></div>
-        </div>
+            <div class="table-data">
+                    <a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{@image["id"]}" %>">ADMIN: EDIT</a>
+            </div>           
+            </div>
+             <% end %>
           <div class="table-header"><strong>(🆔)</strong></div>
             <div class="table-data"><%= @id %></div>
 
@@ -151,7 +153,7 @@
                 <% end %>
         </div>
     </div>
-      <% if session['user'] %>  <center>  <a href = "<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}/attachments/upload" %>">UPLOAD ATTACHMENT</a> </center>
+      <% if session['user'] %>  <center>  <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}/attachments/upload" %>">UPLOAD ATTACHMENT</a> </center>
 
       <br>
       <% end %>

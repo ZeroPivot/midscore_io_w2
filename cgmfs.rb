@@ -41,7 +41,7 @@ require_dir "./lib/dir_requires"
 # SERVER_IP_LOCAL = 'localhost'
 # DOMAIN_NAME = 'https://onemoonpla.net'
 DEBUG = false
-LOCAL = true
+LOCAL = false
 
 ## enable Resolv to use DNS (../views/layout.html.erb)
 $dns_enabled = false # enable dns
@@ -55,7 +55,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "(#️⃣3) - Codename: \"NEVER-Too-Stimky-Sniffa Emoji 🩲\"" # used in layout.html.erb
+$dog_blog_version = "(#️⃣4.0) - Codename: \"NEVER-Too-Stimky-Sniffa Emoji 🩲\"" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 

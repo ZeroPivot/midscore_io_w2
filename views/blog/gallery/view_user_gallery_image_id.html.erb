@@ -134,13 +134,13 @@
             <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}" %>">PERMA-LINK</a></div>
         </div>
         <div class="table-row">
-            <div class="table-header"><strong>(📝)</strong></div>
             <% if session['user'] == @user %>
+            <div class="table-header"><strong>(📝)</strong></div>
             <div class="table-data">
                     <a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{@image["id"]}" %>">ADMIN: EDIT</a>
+            </div>           
             </div>
-            <% end %>
-        </div>
+             <% end %>
           <div class="table-header"><strong>(🆔)</strong></div>
             <div class="table-data"><%= @id %></div>
 

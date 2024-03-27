@@ -133,26 +133,32 @@
             <div class="table-header"><strong>(🔗)</strong></div>
             <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}" %>">PERMA-LINK</a></div>
         </div>
+                <div class="table-row">
+        <div class="table-header"><strong>(🆔)</strong></div>
+            <div class="table-data"><%= @id %>
+        </div>
+        
+        </div>
+            <div class="table-row">
+                <% if @image["attachments"] && !@image["attachments"].empty? %>
+                    <div class="table-header"><strong>(📎)</strong></div>
+                     <div class="table-data">
+                     <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= @id %>/attachments/">ATTACHMENTS LIST (📎)</a>
+                </div>
+                <% end %>
+    </div>
+    
+                    <% if session['user'] == @user %>
         <div class="table-row">
-            <% if session['user'] == @user %>
+
             <div class="table-header"><strong>(📝)</strong></div>
             <div class="table-data">
                     <a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{@image["id"]}" %>">ADMIN: EDIT</a>
             </div>           
-            </div>
+      
              <% end %>
-          <div class="table-header"><strong>(🆔)</strong></div>
-            <div class="table-data"><%= @id %></div>
-
-              <div class="table-row">
-                <% if @image["attachments"] && !@image["attachments"].empty? %>
-                <div class="table-header"><strong>(📎)</strong></div>
-                <div class="table-data">
-                       <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= @id %>/attachments/">ATTACHMENTS LIST (📎)</a>
-                </div>
-                <% end %>
-        </div>
-    </div>
+             </div>
+</div>
       <% if session['user'] %>  <center>  <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}/attachments/upload" %>">UPLOAD ATTACHMENT</a> </center>
 
       <br>

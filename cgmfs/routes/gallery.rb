@@ -781,7 +781,7 @@ class CGMFS
         @description = "no description" if @description.empty?
         @tags = "none" if @tags.empty?
         @title = "untitled" if @title.empty?
-
+        file_extension = nil
 
 
         # get the image temp file parameters through roda:

@@ -9,6 +9,5 @@ db/*.db
 db
 public
 log.txt
-
+local.txt
 lib/partitioned_array
-

@@ -41,7 +41,12 @@ require_dir "./lib/dir_requires"
 # SERVER_IP_LOCAL = 'localhost'
 # DOMAIN_NAME = 'https://onemoonpla.net'
 DEBUG = false
-LOCAL = false
+local = ""
+file_path = "path/to/your/file.txt" # Replace with the actual file path
+
+content = File.open(file_path, "r") { |file| file.read.chomp }
+
+LOCAL = true
 
 ## enable Resolv to use DNS (../views/layout.html.erb)
 $dns_enabled = false # enable dns

@@ -788,6 +788,7 @@ class CGMFS
         uploadable = false
         uploaded_filehandle = r.params['file']
         if uploaded_filehandle
+          file_extension = File.extname(uploaded_filehandle[:filename])
           #original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}"
           original_to_new_filename = "#{@user}_#{Time.now.to_f}_original_#{file_extension}"
           file_contents = uploaded_filehandle[:tempfile].read

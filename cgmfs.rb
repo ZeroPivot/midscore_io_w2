@@ -41,12 +41,12 @@ require_dir "./lib/dir_requires"
 # SERVER_IP_LOCAL = 'localhost'
 # DOMAIN_NAME = 'https://onemoonpla.net'
 DEBUG = false
-local = ""
-file_path = "path/to/your/file.txt" # Replace with the actual file path
+if File.open("local.txt", "r").read.strip == "1"
+  LOCAL = true
+else
+  LOCAL = false
+end
 
-content = File.open(file_path, "r") { |file| file.read.chomp }
-
-LOCAL = true
 
 ## enable Resolv to use DNS (../views/layout.html.erb)
 $dns_enabled = false # enable dns
@@ -170,6 +170,8 @@ class CGMFS < Roda
     @@line_db[db].pad.new_table!(database_name: "cache_system_database", database_table: "cache_system_table")
     puts "... Loading uwu collections system database..."
     @@line_db[db].pad.new_table!(database_name: "uwu_collections_database", database_table: "uwu_collections_table")
+    puts "... Loading grid collections system database..."
+    @@line_db[db].pad.new_table!(database_name: "grid_collections_database", database_table: "grid_collections_table")
     puts "Done."
     b = Time.now
     puts "Time taken to load #{db}: #{b - a} seconds."

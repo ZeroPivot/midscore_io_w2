@@ -1,30 +1,36 @@
+def family_logged_in?(r)
+  return unless session['user']
+  return unless session['password']
+
+  log("family_logged_in? session['user']: #{session['user']}")
+  log("family_logged_in? session['password']: #{session['password']}")
+  r.redirect "#{domain_name(r)}/blog/login"
+end
+
+def domain_name(r)
+  unless r
+    return SERVER_IP_LOCAL if LOCAL # cgmfs.rb
+    return DOMAIN_NAME unless LOCAL # cgmfs.rb ##
+  end
+
+  return 'http://localhost:8080' if DEBUG
+
+  return unless r.host == 'localhost'
+
+  'http://localhost:8080'
+
+  # return "https://" + r.host
+end
+
+
 class CGMFS
   ROOT = ''
+
   hash_branch ROOT do |r|
+    family_logged_in?(r)
     r.on do
+
       #@@telegram_logger.send_message("#{r.host}")
-      if (r.host == 'thefieldtester.net' && r.params['autologin'])
-        session['user'] = 'archyeen'
-        session['password'] = '859CDFE#F4E90'
-        session['admin'] = true
-
-        r.redirect 'https://thefieldtester.net/blog/archyeen'
-      elsif (r.host == 'thefieldtester.net')
-        r.redirect 'https://thefieldtester.net/blog/archyeen'
-      end
-
-      if (r.host == 'thefieldtesters.net')
-        r.redirect 'https://thefieldtesters.net/blog/the-field-testers'
-      end
-
-     if (r.host == 'midscore.io')
-       r.redirect 'https://midscore.io/index.html'
-     end
-
-     if (r.host == "thaiamerican.market")
-      r.redirect 'https://thaiamerican.market/tam/index.html'
-     end
-
 
 
       #r.redirect "https://thefieldtesters.net/blog/aritywolf" if r.host == "thefieldtesters.net" && !r.params("autologin")

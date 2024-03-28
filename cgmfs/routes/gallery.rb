@@ -81,6 +81,17 @@ class CGMFS
     # return "https://" + r.host
   end
 
+  def family_logged_in?(r)
+    return unless !session['user']
+    return unless !session['password']
+    if session['user'] == "superadmin"
+      return
+    end
+    return if r.path == '/blog/login' # Don't redirect if already at login
+
+    r.redirect "#{domain_name(r)}/blog/login"
+  end
+
   def create_image_thumbnail!(image_path:, thumbnail_size:, thumbnail_path:)
     # use free-image gem
     image = FreeImage::Bitmap.open(image_path)
@@ -127,6 +138,7 @@ class CGMFS
 
   # /gallery
   hash_branch 'gallery' do |r|
+    family_logged_in?(r)
     @start_rendering_time = Time.now.to_f
     r.hash_branches
     @r = r

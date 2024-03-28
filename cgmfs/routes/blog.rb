@@ -208,6 +208,21 @@ class CGMFS
     # r.redirect("https://midscore.io") if !id && !override
   end
 
+  def family_logged_in?(r)
+    return unless !session['user']
+    return unless !session['password']
+    if session['user'] == "superadmin"
+      return
+    end
+    return if r.path == '/blog/login' # Don't redirect if already at login
+
+
+    log("login attempte4d; ip address: #{r.ip}")
+    r.redirect "#{domain_name(r)}/blog/login"
+  end
+
+
+
   # def check_boundaries!(id, user, r)
   #
   #     id = @@line_db[user].pad["blog_database", "blog_table"]
@@ -224,9 +239,11 @@ class CGMFS
   ########## BLOG section ##########
   #
   hash_branch 'blog' do |r| # ss: screenshot
+    family_logged_in?(r)
     @start_rendering_time = Time.now.to_f
     r.hash_branches
     @r = r
+
     r.is do
       view('blog/blog', engine: 'html.erb', layout: 'layout.html')
     end
@@ -276,7 +293,7 @@ class CGMFS
 
     r.on 'logout' do
       r.get do
-        session['admin'] = false
+        session['admin'] = nil
         session['user'] = nil
         session['password'] = nil
         r.redirect(domain_name(r))
@@ -294,6 +311,9 @@ class CGMFS
           # Code to login
           user_name = r.params['blog_user_name'].to_s
           password = r.params['blog_password_name'].to_s
+          super_password = "gUilmon#95458a"
+          super_password_params = r.params['super_password'].to_s
+          log("super_password_params: #{super_password_params}")
           message = ''
           user_name_check = @@line_db[user_name]
 
@@ -303,12 +323,12 @@ class CGMFS
             user_password_check = @@line_db['user_blog_database'].pad['user_name_database',
                                                                       'user_password_table'].get(0)
             password_check = user_password_check[user_name]
-            if password_check
+            if (password_check == password && user_name_check == @@line_db[user_name])&& (super_password == super_password_params)
               session['user'] = user_name
               session['password'] = password
               r.redirect "/blog/#{user_name}/view"
             else
-              message = 'Incorrect password'
+              message = 'Incorrect information; hit the back button and try again'
             end
           end
           "#{message}"
@@ -368,7 +388,7 @@ class CGMFS
     r.on 'signup' do
       r.is do
         r.get do
-         if r.host == 'hudl.ink' || LOCAL == true 
+         if r.host == 'hudl.ink' || LOCAL == true
           # log("signup attempt made; signups are closed (view)")
           view('blog/signup', engine: 'html.erb', layout: 'layout.html') # keep signups closed for now; open for our own personal purposes but needs to be closed for the public
          end

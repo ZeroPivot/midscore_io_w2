@@ -60,7 +60,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "(#️⃣4.0.2) - Codename: \"NEVER-Too-Stimky-Sniffa Emoji 🩲\"" # used in layout.html.erb
+$dog_blog_version = "(#️⃣4.0.3) -  🩲\"" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 
@@ -138,6 +138,29 @@ class CGMFS < Roda
   @@line_db["user_blog_database"].pad.new_table!(database_name: "user_name_database",
                                                  database_table: "user_password_table")
 
+  @@line_db["superadmin"].pad.new_table!(database_name: "superadmin_database", database_table: "superadmin_table")
+  puts "Loading database: superadmin..."
+  puts '...Loading blog_table.'
+  @@line_db["superadmin"].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table')
+  puts "...Loading blog_pinned_table."
+  @@line_db["superadmin"].pad.new_table!(database_name: "blog_database", database_table: "blog_pinned_table")
+  puts "...Loading blog_profile_table."
+  @@line_db["superadmin"].pad.new_table!(database_name: "blog_database", database_table: "blog_profile_table")
+  puts "...Loading blog_statistics_table."
+  @@line_db["superadmin"].pad.new_table!(database_name: "blog_database", database_table: "blog_statistics_table")
+  puts "...Loading gallery_database + gallery_table."
+  @@line_db["superadmin"].pad.new_table!(database_name: "gallery_database", database_table: "gallery_table")
+  puts "...Loading cache system database..."
+  @@line_db["superadmin"].pad.new_table!(database_name: "cache_system_database", database_table: "cache_system_table")
+  puts "... Loading uwu collections system database..."
+  @@line_db["superadmin"].pad.new_table!(database_name: "uwu_collections_database", database_table: "uwu_collections_table")
+  puts "... Loading grid collections system database..."
+  @@line_db["superadmin"].pad.new_table!(database_name: "grid_collections_database", database_table: "grid_collections_table")
+  @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].set(0) do |hash|
+    hash["superadmin"] = "859CDFE#F4E100"
+  end
+  puts "Done."
+
   # https://github.com/alexrudall/ruby-openai
   # @@line_db["gpt4"].pad.new_table!(database_name: "gpt4_database", database_table: "gpt4_table")
   @@ai_client = OpenAI::Client.new(
@@ -210,11 +233,6 @@ class CGMFS < Roda
 
     r.public
     r.assets # for public assets
-
-    # log("route: #{r.path}")
-    if r.path == PATHS_INCLUDE_CSRF[r.path] # Known bugs: if there is no slash at the end of the path, it will not work (will override check_csrf! checking)
-      check_csrf!
-    end
     r.hash_routes
   end
 end

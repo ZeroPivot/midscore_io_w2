@@ -60,7 +60,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "(#️⃣4.0.3) -  🩲\"" # used in layout.html.erb
+$dog_blog_version = "(#️⃣4.0.3) - 🩲\"" # used in layout.html.erb
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 
@@ -157,7 +157,7 @@ class CGMFS < Roda
   puts "... Loading grid collections system database..."
   @@line_db["superadmin"].pad.new_table!(database_name: "grid_collections_database", database_table: "grid_collections_table")
   @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].set(0) do |hash|
-    hash["superadmin"] = "859CDFE#F4E100"
+    hash["superadmin"] = "headhunterz"
   end
   puts "Done."
 

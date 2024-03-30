@@ -414,7 +414,6 @@ class CGMFS
 
         @gallery_images = @gallery.data_arr.reject { |image| image == {} }
 
-        log("gallery images size: #{@gallery_images.size}")
 
         @skip_by = r.params['skip_by'].to_i
         if r.params['skip_by'].nil?

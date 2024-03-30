@@ -27,8 +27,9 @@ class CGMFS
   ROOT = ''
 
   hash_branch ROOT do |r|
-    family_logged_in?(r)
+
     r.on do
+      family_logged_in?(r)
 
       #@@telegram_logger.send_message("#{r.host}")
 
@@ -40,6 +41,8 @@ class CGMFS
       # "#{r.host}"
       # "#{r.host}"
     end
+
+ 
   end
 end
 

@@ -36,7 +36,7 @@
                 <p><strong>(⌚)</strong> <%= image['date'] %></p>
                 <p><strong>(♾️)</strong> <%= image['views'] %></p>
                 <p><strong>(🖼️)</strong> <a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{image['file']}" %>">(⏬➡️💾)</a></p>
-                <p><strong>(🔗)</strong> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{image['id']}" %>"><img src="<%= "#{domain_name(@r)}/gallery/#{@user}/thumbnail_#{image['file']}" %>" alt="<%= @title %>" onerror="this.src='not_found_image.png'"></a></p>
+                <p><strong>(🔗)</strong> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{image['id']}" %>"><img src="<%= "#{domain_name(@r)}/gallery/#{@user}/thumbnail_#{image['file']}" %>" alt="<%= @title %>"></a></p>
                 <p><strong>(📌)</strong> <a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{image['id']}" %>">(📝)</a></p>
             </div>
         <% end %>

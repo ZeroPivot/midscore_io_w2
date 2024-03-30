@@ -3,7 +3,7 @@
 <%# Add your HTML and ERB code here for the edit page %>
 <h1>Edit User Gallery ID (<%= @id %>)</h1>
 <br>
-<img src="<%= "#{domain_name(@r)}/gallery/#{@user}/thumbnail_#{@file}" %>" onerror="this.src='not_found_image.png'"><br><br>
+<img src="<%= "#{domain_name(@r)}/gallery/#{@user}/thumbnail_#{@file}" %>"><br><br>
 
 
 <form action="/gallery/edit/<%= @user %>/id/<%= @id %>" method="post" enctype="multipart/form-data">

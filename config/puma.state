@@ -1,25 +1,5 @@
 ---
-<<<<<<< HEAD
-pid: 119980
-control_url: unix:///tmp/puma-status-1712088945305-119980
-control_auth_token: 5bbb90108d4f271943a0537db265c9b5
+pid: 190504
+control_url: unix:///tmp/puma-status-1712354074640-190504
+control_auth_token: 399eba46f40fc8e0474dfdda46429363
 running_from: "/root/midscore_io"
-=======
-<<<<<<< HEAD
-pid: 78319
-control_url: unix:///tmp/puma-status-1711723499435-78319
-control_auth_token: 6c0237cc5ab45a5424182d9e5113dd45
-=======
-<<<<<<< HEAD
-pid: 56931
-control_url: unix:///tmp/puma-status-1711833401775-56931
-control_auth_token: 401be7ccd630f663efd3e85980864d28
-running_from: "/root/midscore_io"
-=======
-pid: 55770
-control_url: unix:///tmp/puma-status-1711649842749-55770
-control_auth_token: 4d9d2173ffbda4c5b3e42cb78e2122c6
->>>>>>> cd6ac7ce9b78387df5fe2ffccc3f4979cdaaffc7
-running_from: "/media/aritywolf/NAS-SERVER-SSD/midscore_io"
->>>>>>> dac0ad7d5fcb479d2edb965733c522db5f789b90
->>>>>>> b603a495fb27c49fdd2554a9d42c32fd3522d38c

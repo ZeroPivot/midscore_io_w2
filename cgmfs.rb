@@ -60,7 +60,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "(#️⃣4.0.4.1) - \"Not Found\" - 🩲\"" # used in layout.html.erb
+$dog_blog_version = "(#️⃣4.0.4.2) - \"Not Found\" - 🩲\"" # used in layout.html.erb
 $lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)
 
 DO_TELEGRAM_LOGGING = true # telegram logging

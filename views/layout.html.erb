@@ -11,7 +11,7 @@
   gtag('config', 'G-3Z9H8R3VLC');
 </script>
     <%= assets(:css) %>
-    <link rel="shortcut icon" type="image/x-icon" href="<%= domain_name(@r) %>/favicon.ico?nocache">
+    <link rel="shortcut icon" type="image/x-icon" href="<%= domain_name(@r) %>/favicon.ico">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="p:domain_verify" content="1ad3833e32a5e3725dfd11d17e9498d4">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -24,7 +24,7 @@
     <meta property="og:image:width" content="500"><!-- added 2021-04-07 -->
     <meta property="og:image:height" content="500"> <!-- added 2021-04-07 -->
     <meta name="description" content="Post By <%= domain_name(@r) %>">
-    <meta name="keywords" content="pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, aritywolf nsfw, artywalf, aritywolf sfw, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, sim, simulwolf, wolf, one moon planet, onemoonplanet, onemoonpla.net, onemoonpla net, blog, aritywolf, simul, simulwolf, gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art">
+    <meta name="keywords" content="demiurge, simulation, simulator, sim, second life, stinky, stimky, stinky.zip, stimky.zip, aritywolf, onemoondogg, pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, aritywolf nsfw, artywalf, aritywolf sfw, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, sim, simulwolf, wolf, one moon planet, onemoonplanet, onemoonpla.net, onemoonpla net, blog, aritywolf, simul, simulwolf, gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art">
     <meta name="author" content="ArityWolf">
     <meta property="og:image" content="<%= domain_name(@r) %>/card_banner.jpg">
     <meta name="twitter:card" content="summary_large_image"> <!-- changed 2021-04-15 -->
@@ -81,7 +81,7 @@
 
 
   <% end %>
-  [<%= $dog_blog_version %>] - ♾️<%= @page_views %> -- ©️meta-game.info
+  [<%= $dog_blog_version %>] - ♾️<%= @page_views.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %> -- ©️<a href="https://meta-game.info">meta-game.info</a> // by OneMoonDogg -- 📅<%= TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).strftime('%Y/%m/%d -- %H:%M:%S') %><br> 
   <br><br>
   <a href="<%= domain_name(@r) %>/blog/logout">[➖🔒]</a><br><br>
   </center><br>

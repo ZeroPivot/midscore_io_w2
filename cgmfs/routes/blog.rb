@@ -239,7 +239,7 @@ class CGMFS
   ########## BLOG section ##########
   #
   hash_branch 'blog' do |r| # ss: screenshot
-    family_logged_in?(r)
+    family_logged_in?(r) if $lockdown
     @start_rendering_time = Time.now.to_f
     r.hash_branches
     @r = r

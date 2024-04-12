@@ -35,8 +35,11 @@
     </div>
   </a><br>
     <center><font size="3"><div size="5" id="ip_addr_resolv">🏘️<b>[🌐<%= request.ip %>]</b></div></font></center>
-    <center>
-      <a href="<%= domain_name(@r) %>/rhux_and_arity_final.jpg"><img src="<%= domain_name(@r) %>/rhux_and_arity_final_thumb.jpg"></a></center>
+    
+    <% if domain_name(@r) == 'https://hudl.ink' || LOCAL %>
+      <center><a href="<%= domain_name(@r) %>/rhux_and_arity_final.jpg"><img src="<%= domain_name(@r) %>/rhux_and_arity_final_thumb.jpg"></a></center>
+    <% end %>
+  <br />
   <font size="16"><%= MoonIllumination.emoji %></font><br />
   <a href="<%= domain_name(@r) %>/blog">(📃)</a>,<a href="<%= domain_name(@r) %>/gallery">(🖼️)</a><br>
   <% if session['user'] %>

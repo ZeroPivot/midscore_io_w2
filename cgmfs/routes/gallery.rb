@@ -74,9 +74,9 @@ class CGMFS
 
     return 'http://localhost:8080' if DEBUG
 
-    return unless r.host == 'localhost'
+    return 'https://' +  r.host unless LOCAL
 
-    'http://localhost:8080'
+    "http://#{r.host}:8080" if LOCAL
 
     # return "https://" + r.host
   end

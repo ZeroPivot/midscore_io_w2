@@ -22,7 +22,6 @@
     <meta name="twitter:site" content="@TheFieldTester">
     <meta name="twitter:title" content="<%= @title %>">
     <!-- <meta name="twitter:description" content="<%#= escape_html description %>" /> -->
-
     <title><%= @title %></title>
   </head>
   <body>
@@ -35,7 +34,6 @@
     </div>
   </a><br>
     <center><font size="3"><div size="5" id="ip_addr_resolv">🏘️<b>[🌐<%= request.ip %>]</b></div></font></center>
-    
     <% if domain_name(@r) == 'https://hudl.ink' || LOCAL %>
       <center><a href="<%= domain_name(@r) %>/rhux_and_arity_final.jpg"><img src="<%= domain_name(@r) %>/rhux_and_arity_final_thumb.jpg"></a></center>
     <% end %>

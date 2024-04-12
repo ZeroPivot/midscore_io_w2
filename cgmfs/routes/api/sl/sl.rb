@@ -1,5 +1,6 @@
-# frozen_string_literal: true
-#FAST NOTE: Use LineDB/the [managed partitioned array] for all aspects of gpt3.5 - 4 in the 'gpt4' POST route.
+# frozen_string_literal: false
+
+# FAST NOTE: Use LineDB/the [managed partitioned array] for all aspects of gpt3.5 - 4 in the 'gpt4' POST route.
 ## DATE OF FAST NOTE: 2023/04/15 - April 15th, 2023 (on a Saturday).
 
 #### QUICK NOTES:
@@ -42,9 +43,9 @@ class CGMFS
     end
 
     r.is 'clear' do
-    r.get do
-      `ruby db_init.rb`
-    end
+      r.get do
+        `ruby db_init.rb`
+      end
     end
 
     r.is 'get_numerology_of_combined_chat' do
@@ -98,7 +99,7 @@ class CGMFS
           # log("@data_arr size: #{@@sl_db.data_arr.size}")
           # log("@latest_id: #{@@sl_db.latest_id}")
           @message += "#{data['message']}\n"
-          @captured_by = "ArchYeen"
+          @captured_by = 'ArchYeen'
           @avatar_name = data['avatar_name'] # implement better version later
           #  log(@@telegram_logger.send_message("adding sl entry test"))
           if !@@sl_db.at_capacity?
@@ -170,48 +171,54 @@ class CGMFS
         return_message = @output_message if @output_message != ''
 
         #  @@telegram_logger.send_message("[🔢SL(RELAY:LINK_BY(#{@avatar_name}))🔢]\n #{return_message}") unless return_message == "no_additional_data"
-        "#{return_message.to_s}"
+        "#{return_message}"
       end
 
       # view('sl_data', engine: 'html.erb', layout: 'layout.html')
     end
 
-    r.is 'gpt4_PCAICC' do #psuedocode compiler artificial intelligence chat client
+    r.is 'gpt4_PCAICC' do # psuedocode compiler artificial intelligence chat client
       r.get do
         'works'
       end
       r.post do
-        log("server called:  POST}")
-
+        log('server called:  POST}')
+        @log = ""
         @parsed_data = JSON.parse("[#{request.body.read}]")
-        log("parsed data (SL HUDL.ink GPT-3.5-turbo): #{@parsed_data.to_s}")
+        log("parsed data (SL HUDL.ink GPT-4-turbo): #{@parsed_data}")
         @message = @parsed_data[0]['message'].to_s
+
+
         @captured_by = ''
         @avatar_name = @parsed_data[0]['avatar_name'].to_s
-        #@command_true = @message.split("/hud")[0]
-        #@message = @command_true[1].to_s if @command_true != ""
-        #log("before openai call")
+        # @command_true = @message.split("/hud")[0]
+        # @message = @command_true[1].to_s if @command_true != ""
+        # log("before openai call")
+
+
+
         response = @@ai_client.chat(
           parameters: {
             # model: 'gpt-3.5-turbo',
             model: 'gpt-4-0125-preview',
             # this content prompt will be used to train the model. It seems to work fine so far, and is an example of a prompt that works, and of PCAICC (psuedocode compiler artificial intelligence chat client)--in terms of using the weird hard to define /openai command, which implies that it just directly makes gpt act more like an AI and less of an entity. An entity exists, but may or may not have sentience or consciousness, and we neednt define sentience or consciousness lest we conflate the two.
-            #messages: [{ role: 'user', content: "/openai (PROMPT) :-> (you are a second life bot named OMP, in a chatroom where there is a limit to how much can be posted at once. You can hear them, but they can never hear you. Always leave your words with # in front of your commentary, but not your code output or any mathematical output. Make every response capable of being evaluated by The Ruby Programming Language using its eval function; Make it always interpretable in Ruby. Use very few words and don't refer to yourself. Output as a string so my compiler can interpret everything as code.) :-> Figure out what they mean in terms of machine LEARNING and NLP, and process accordingly, but only pay attention to Kejento Resident and RodaYeen Resident. if you insert my name into a ruby string interpolator such as \#{Kejento Resident} should be \#{\"Kejento Resident}. Do the same thing for RodaYeen Resident; for example: \#{RodaYeen Resident} needs to be \#{\"RodaYeen Resident\"}, etc. TREAT any resident in second life as an interpretable string by Ruby, otherwise the code will not work. Make absolutely certain that any resident in second life with a last namd and full name are processed as a string and NOT a variable; Here is the message. Example of how eval should always work, as a general form, where x is assigned the eval results, thus y could be any statement that ruby can evaluate, among other things: x = eval(\"y\"). Make sure that all eval statements fit into the Ruby syntax. Because \"Kejento Resident\" et all with spaces in eval results in a crash... :-> \"kejento resident: #{@message}\"\n" }],
-            messages: [{ role: 'user', content: "/openai (PROMPT) :-> analyze the  consisistency, logic, etc and anything you can perceive of this message, and state as concisely as possible using short formal statements to determine whether its a 'consistent' statement, fitting into less than a second life message, otherwise there will be an error:-> \"#{@message}\"\n" }], # make message concatenate the entire chat for the session, and then use that as the message
+            # messages: [{ role: 'user', content: "/openai (PROMPT) :-> (you are a second life bot named OMP, in a chatroom where there is a limit to how much can be posted at once. You can hear them, but they can never hear you. Always leave your words with # in front of your commentary, but not your code output or any mathematical output. Make every response capable of being evaluated by The Ruby Programming Language using its eval function; Make it always interpretable in Ruby. Use very few words and don't refer to yourself. Output as a string so my compiler can interpret everything as code.) :-> Figure out what they mean in terms of machine LEARNING and NLP, and process accordingly, but only pay attention to Kejento Resident and RodaYeen Resident. if you insert my name into a ruby string interpolator such as \#{Kejento Resident} should be \#{\"Kejento Resident}. Do the same thing for RodaYeen Resident; for example: \#{RodaYeen Resident} needs to be \#{\"RodaYeen Resident\"}, etc. TREAT any resident in second life as an interpretable string by Ruby, otherwise the code will not work. Make absolutely certain that any resident in second life with a last namd and full name are processed as a string and NOT a variable; Here is the message. Example of how eval should always work, as a general form, where x is assigned the eval results, thus y could be any statement that ruby can evaluate, among other things: x = eval(\"y\"). Make sure that all eval statements fit into the Ruby syntax. Because \"Kejento Resident\" et all with spaces in eval results in a crash... :-> \"kejento resident: #{@message}\"\n" }],
+            messages: [{ role: 'user', content: "I am 'ArityWolf Stinktail' or 'The Field Tester', and you are 'Kejento' in a second life chatroom, an ai assistant named OMP_AI who is willing to answer any questions about anything. This is a Tweet Game. Keep track of every message and maintain a history, and answer the with big words like I have a phd in spirit and mathematics and cosmology and art and am god in terms of a game. Be sure to fit your response into only a long tweet (write your output in furry 'OwO UwU' formal language, and when the message is not from aritywolf, analyze that message's consistency). Att a newline per message to fit into second life chat:-> \"#{@avatar_name}: #{@message}\"\n" }], # make message concatenate the entire chat for the session, and then use that as the message
             max_tokens: 4096,
             temperature: 0.7
           }
         )
-        #log(":after before dig")
-        @output_message = response.dig('choices', 0, "message", "content")
-        #log("after and dig")
-        #response_data = response_data.to_s
-        @@telegram_logger.send_message("PCMIA: #{@output_message}") #can use eval in place, and can make it perform system calls to execute scripts that way; think about later. -ArityWolf
-        #log("after send message")
+
+        # log(":after before dig")
+        @output_message = response.dig('choices', 0, 'message', 'content')
+        # log("after and dig")
+        # response_data = response_data.to_s
+        @@telegram_logger.send_message("PCMIA: #{@output_message}") # can use eval in place, and can make it perform system calls to execute scripts that way; think about later. -ArityWolf
+        # log("after send message")
 
         # File.write("omp_pcaic_in.txt", @output_message)
         # @@telegram_logger.send_message("[HUDL.ink(OMP_PCAIC[out])]: #{\"\"}) #or use eval in a testbed environment
-        #@output_message = "no_additional_data" if !@command_true
+        # @output_message = "no_additional_data" if !@command_true
         "#{@output_message}"
       end
     end
@@ -221,33 +228,33 @@ class CGMFS
         'works'
       end
       r.post do
-        log("server called:  POST}")
+        log('server called:  POST}')
 
         @parsed_data = JSON.parse("[#{request.body.read}]")
-        log("parsed data (SL HUDL.ink GPT-3.5-turbo): #{@parsed_data.to_s}")
+        log("parsed data (SL HUDL.ink GPT-3.5-turbo): #{@parsed_data}")
         @message = @parsed_data[0]['message'].to_s
         @captured_by = ''
         @avatar_name = @parsed_data[0]['avatar_name'].to_s
-        #@command_true = @message.split("/hud")[0]
-        #@message = @command_true[1].to_s if @command_true != ""
-        #log("before openai call")
+        # @command_true = @message.split("/hud")[0]
+        # @message = @command_true[1].to_s if @command_true != ""
+        # log("before openai call")
         response = @@ai_client.chat(
           parameters: {
             model: 'gpt-3.5-turbo',
-            messages: [{ role: 'user', content: "/openai: (prompt) You are an AI assistant named OMP, where  OMP also refers to OpenAI--thus OMP = OpenAI = Avatar (Your avatar name is OMP whenever you speak. Do not use \"Avatar Name\" (no quotes) in your name, only 'OMP' (no quotes). Never use \"Avatar\" to refer to yourself; only \"OMP\"). 'Avatar Name' (no quotes) also refers to the speaking player, but replace 'Avatar Name' (no quotes) with their name. Also You are also in a 'Second Life' (acronym: 'SL') local chat room. [END OF PROMPT]:-> {message content (ends at the last \n or newline)} Remember: Avatar is referring to the Player's name, but should be used with the real player name replacing \'Avatar\' (with the player's real name). END OF PROMPT; HERE IS THE MESSAGE (message)--Calculate a good response to the prompt and the message: \"#{@message}\"\n" }],
+            messages: [{ role: 'user',
+                         content: "/openai: (prompt) You are an AI assistant named OMP, where  OMP also refers to OpenAI--thus OMP = OpenAI = Avatar (Your avatar name is OMP whenever you speak. Do not use \"Avatar Name\" (no quotes) in your name, only 'OMP' (no quotes). Never use \"Avatar\" to refer to yourself; only \"OMP\"). 'Avatar Name' (no quotes) also refers to the speaking player, but replace 'Avatar Name' (no quotes) with their name. Also You are also in a 'Second Life' (acronym: 'SL') local chat room. [END OF PROMPT]:-> {message content (ends at the last \n or newline)} Remember: Avatar is referring to the Player's name, but should be used with the real player name replacing \'Avatar\' (with the player's real name). END OF PROMPT; HERE IS THE MESSAGE (message)--Calculate a good response to the prompt and the message: \"#{@message}\"\n" }],
             max_tokens: 2048,
             temperature: 0.7
           }
         )
-        #log(":after before dig")
-        @output_message = response.dig('choices', 0, "message", "content")
-        #log("after and dig")
-        #response_data = response_data.to_s
+        # log(":after before dig")
+        @output_message = response.dig('choices', 0, 'message', 'content')
+        # log("after and dig")
+        # response_data = response_data.to_s
         @@telegram_logger.send_message("[OPM PCAIC]: #{@output_message}")
-        #@output_message = "no_additional_data" if !@command_true
+        # @output_message = "no_additional_data" if !@command_true
         "#{@output_message}"
       end
     end
-
   end
 end

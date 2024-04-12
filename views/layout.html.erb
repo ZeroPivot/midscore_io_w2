@@ -2,29 +2,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-3Z9H8R3VLC"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-3Z9H8R3VLC');
-</script>
     <%= assets(:css) %>
     <link rel="shortcut icon" type="image/x-icon" href="<%= domain_name(@r) %>/favicon.ico">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="p:domain_verify" content="1ad3833e32a5e3725dfd11d17e9498d4">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta property="og:title" content="<%= @title %> - by <%= @user %>">
-    <!-- <meta property="og:description" content="<%#= escape_html description %>"> -->
     <meta property="og:image" content="<%= domain_name(@r) %>/card_banner.jpg">
     <meta property="og:url" content="<%= domain_name(@r) %>/blog/<%= @user %>/view/<%= @id %>">
-    <meta property="og:site_name" content="Meta-Game">
+    <meta property="og:site_name" content="e4695.net">
     <meta property="og:type" content="object">
     <meta property="og:image:width" content="500"><!-- added 2021-04-07 -->
     <meta property="og:image:height" content="500"> <!-- added 2021-04-07 -->
-    <meta name="description" content="Post By <%= domain_name(@r) %>">
-    <meta name="keywords" content="demiurge, simulation, simulator, sim, second life, stinky, stimky, stinky.zip, stimky.zip, aritywolf, onemoondogg, pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, aritywolf nsfw, artywalf, aritywolf sfw, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, sim, simulwolf, wolf, one moon planet, onemoonplanet, onemoonpla.net, onemoonpla net, blog, aritywolf, simul, simulwolf, gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art">
+    <meta name="description" content="Post By <%= @user || domain_name(@r) %>">
+    <meta name="keywords" content="demiurge, simulation, simulator, sim, second life, stinky, stimky, stinky.zip, stimky.zip onemoondogg, pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, wolf, one moon planet, onemoonplane, blog,  gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art, zoophile hunters, pedophile hunters, bigot hunters, trans hunters, trans exposers, bigot exposers, pedophile exposers, democrat, republican, cenrist, democrat lol, sexy, signup, mega-game.net, meta game, meta, metaworld, furfaggotry, blogger, blog, gnosis, gnostic, gnocticism, ai, artificlal intelligence, service, blogger, gallery, furry gallery, furry bloggers, furry blogger">
     <meta name="author" content="OneMoonDogg">
     <meta property="og:image" content="<%= domain_name(@r) %>/card_banner.jpg">
     <meta name="twitter:card" content="summary_large_image"> <!-- changed 2021-04-15 -->
@@ -44,6 +35,8 @@
     </div>
   </a><br>
     <center><font size="3"><div size="5" id="ip_addr_resolv">🏘️<b>[🌐<%= request.ip %>]</b></div></font></center>
+    <center>
+      <a href="<%= domain_name(@r) %>/rhux_and_arity_final.jpg"><img src="<%= domain_name(@r) %>/rhux_and_arity_final_thumb.jpg"></a></center>
   <font size="16"><%= MoonIllumination.emoji %></font><br />
   <a href="<%= domain_name(@r) %>/blog">(📃)</a>,<a href="<%= domain_name(@r) %>/gallery">(🖼️)</a><br>
   <% if session['user'] %>
@@ -81,9 +74,9 @@
 
 
   <% end %>
-We do not monitor the accounts. If you have any questions, please contact us at <a href="mailto:eigenfruit@gmail.com">eigenfrui</a>><br>
+We do not monitor the accounts. If you have any questions, please contact us at <a href="mailto:eigenfruit@gmail.com">eigenfruit</a><br>
 <br>
- [<%= $dog_blog_version %>] - ♾️<%= @page_views.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %> -- ©️<a href="https://meta-game.info">meta-game.info</a> // by OneMoonDog<br> 
+ [<%= $dog_blog_version %>] - ♾️<%= @page_views.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %> -- ©️<a href="https://meta-game.info">meta-game.info</a> // by OneMoonDog<br>
   <br><br>
 
 

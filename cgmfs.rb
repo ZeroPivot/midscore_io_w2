@@ -139,6 +139,9 @@ class CGMFS < Roda
   @@line_db["user_blog_database"].pad.new_table!(database_name: "user_name_database",
                                                  database_table: "user_password_table")
 
+
+  @@line_db["secondlife_ai"].pad.new_table!(database_name: "secondlife_database", database_table: "secondlife_table")
+
   @@line_db["superadmin"].pad.new_table!(database_name: "superadmin_database", database_table: "superadmin_table")
   puts "Loading database: superadmin..."
   puts '...Loading blog_table.'

@@ -6,10 +6,11 @@ require 'net/https'
 # Define the server URLs
 login_url = 'https://hudl.ink/blog/login' # Replace with the actual login URL
 base_post_url = 'https://hudl.ink/gallery/upload'  # Replace with the base URL for posting files
-directory_path = 'T:/ArityArtchives/artz'
+directory_path = '/root/Pronz'
 # Define your credentials
 username = 'stinktail'
-password = '859CDFE#F4E100'
+password = 'gUilmon#95458a'
+super_password = "gUilmon#95458a"
 
 file_extensions = ['.jpg', '.jpeg', '.png']  # Define the valid file extensions
 
@@ -64,7 +65,7 @@ http.use_ssl = true
 http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 request = Net::HTTP::Post.new(uri.path)
 
-request.set_form_data({ 'blog_user_name' => username, 'blog_password_name' => password })
+request.set_form_data({ 'blog_user_name' => username, 'blog_password_name' => password, "super_password" => super_password })
 response = http.request(request)
 cookies = response['Set-Cookie']
 remaining_files_to_upload =tags_and_titles.length
@@ -91,3 +92,8 @@ Dir.glob(File.join(directory_path, "*")) do |file_path|
     p remaining_files_to_upload -= 1
   end
 end
+
+# how do I unzip a zip file using unzip?
+# how do I unzip a zip file using unzip?
+
+

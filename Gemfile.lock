@@ -176,18 +176,18 @@ GEM
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     redcarpet (3.6.0)
-    redis (5.1.0)
-      redis-client (>= 0.17.0)
-    redis-client (0.21.1)
+    redis (5.2.0)
+      redis-client (>= 0.22.0)
+    redis-client (0.22.1)
       connection_pool
     regexp_parser (2.9.0)
     rerun (0.14.0)
       listen (~> 3.0)
     resolv (0.4.0)
     rexml (3.2.6)
-    roda (3.78.0)
+    roda (3.79.0)
       rack
-    rubocop (1.63.1)
+    rubocop (1.63.2)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
@@ -208,11 +208,11 @@ GEM
     rubyntlm (0.6.3)
     simple_oauth (0.3.1)
     smart_properties (1.17.0)
-    sorbet (0.5.11340)
-      sorbet-static (= 0.5.11340)
-    sorbet-static (0.5.11340-aarch64-linux)
-    sorbet-static (0.5.11340-universal-darwin)
-    sorbet-static (0.5.11340-x86_64-linux)
+    sorbet (0.5.11350)
+      sorbet-static (= 0.5.11350)
+    sorbet-static (0.5.11350-aarch64-linux)
+    sorbet-static (0.5.11350-universal-darwin)
+    sorbet-static (0.5.11350-x86_64-linux)
     statemachine (2.3.0)
     telegram-bot-ruby (2.0.0)
       dry-struct (~> 1.6)
@@ -289,4 +289,4 @@ DEPENDENCIES
   yuicompressor
 
 BUNDLED WITH
-   2.5.7
+   2.5.9

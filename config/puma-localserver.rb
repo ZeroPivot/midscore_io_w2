@@ -28,7 +28,7 @@
 #
 # The default is "development".
 #
-environment 'development'
+environment 'production'
 
 # Daemonize the server into the background. Highly suggest that
 # this be combined with "pidfile" and "stdout_redirect".
@@ -40,19 +40,18 @@ environment 'development'
 early_hints true
 # Store the pid of the server in the file at "path".
 #
-pidfile '/media/aritywolf/NAS-SERVER-SSD/midscore_io/config/puma.pid'
+pidfile '/home/stimky/midscore_io_w2/config/puma.pid'
 
 # Use "path" as the file to store the server info state. This is
 # used by "pumactl" to query and control the server.
 #
-state_path '/media/aritywolf/NAS-SERVER-SSD/midscore_io/config/puma.state'
+state_path '/home/stimky/midscore_io_w2/config/puma.state'
 
 # Redirect STDOUT and STDERR to files specified. The 3rd parameter
 # ("append") specifies whether the output is appended, the default is
 # "false".
 #
-stdout_redirect '/media/aritywolf/NAS-SERVER-SSD/midscore_io/log/stdout',
-                '/media/aritywolf/NAS-SERVER-SSD/midscore_io/log/stderr', true
+stdout_redirect '/home/stimky/midscore_io_w2/log/stdout', '/aritywolf/midscore_io_w2/log/stderr', true
 # stdout_redirect '/u/apps/lolcat/log/stdout', '/u/apps/lolcat/log/stderr', true
 
 # Disable request logging.
@@ -73,12 +72,12 @@ threads 0, 16
 #
 # The default is "tcp://0.0.0.0:9292".
 #
-bind 'tcp://0.0.0.0:8080'
+bind 'tcp://0.0.0.0:1111'
 
-# bind 'unix:///media/aritywolf/NAS-SERVER-SSD/midscore_io/midscore_io/config/puma.sock'
+# bind 'unix:///aritywolf/midscore_io/config/puma.sock'
 # bind 'unix:///var/run/puma.sock'
 # bind 'unix:///var/run/puma.sock?umask=0111'
-# bind 'ssl://127.0.0.1:8080?key=/media/aritywolf/NAS-SERVER-SSD/midscore_io/midscore_io/localhost.key&cert=/media/aritywolf/NAS-SERVER-SSD/midscore_io/midscore_io/localhost.crt'
+# bind 'ssl://127.0.0.1:9292?key=path_to_key&cert=path_to_cert'
 
 # Instead of "bind 'ssl://127.0.0.1:9292?key=path_to_key&cert=path_to_cert'" you
 # can also use the "ssl_bind" option.
@@ -104,7 +103,7 @@ bind 'tcp://0.0.0.0:8080'
 # load puma itself (ie. 'ruby -Ilib bin/puma'), not the arguments
 # to puma, as those are the same as the original process.
 #
-restart_command '/media/aritywolf/NAS-SERVER-SSD/midscore_io/restart_puma'
+restart_command '/home/stimky/midscore_io_w2/restart_puma'
 
 # === Cluster mode ===
 
@@ -180,13 +179,13 @@ tag 'CGMFS'
 # Setting this value will not protect against slow requests.
 # Default value is 60 seconds.
 #
-worker_timeout 60
+# worker_timeout 60
 
 # Change the default worker timeout for booting
 #
 # If unspecified, this defaults to the value of worker_timeout.
 #
-worker_boot_timeout 25
+# worker_boot_timeout 25
 
 # === Puma control rack application ===
 
@@ -202,9 +201,5 @@ worker_boot_timeout 25
 # activate_control_app 'unix:///var/run/pumactl.sock'
 # activate_control_app 'unix:///var/run/pumactl.sock', { auth_token: '12345' }
 # activate_control_app 'unix:///var/run/pumactl.sock', { no_token: true }
-rackup '/media/aritywolf/NAS-SERVER-SSD/midscore_io/config.ru'
+rackup '/home/stimky/midscore_io_w2/config.ru'
 activate_control_app
-
-# how do I configure my username in git?
-# git config --global user.name "Your Name Here"
-# git config --global user.email "

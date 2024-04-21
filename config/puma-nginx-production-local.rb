@@ -40,18 +40,18 @@ environment 'production'
 early_hints true
 # Store the pid of the server in the file at "path".
 #
-pidfile '/aritywolf/midscore_io/config/puma.pid'
+pidfile '/home/stimky/midscore_io_w2/config/puma.pid'
 
 # Use "path" as the file to store the server info state. This is
 # used by "pumactl" to query and control the server.
 #
-state_path '/aritywolf/midscore_io/config/puma.state'
+state_path '/home/stimky/midscore_io_w2/config/puma.state'
 
 # Redirect STDOUT and STDERR to files specified. The 3rd parameter
 # ("append") specifies whether the output is appended, the default is
 # "false".
 #
-stdout_redirect '/aritywolf/midscore_io/log/stdout', '/aritywolf/midscore_io/log/stderr', true
+stdout_redirect '/home/stimky/midscore_io_w2/log/stdout', '/aritywolf/midscore_io_w2/log/stderr', true
 # stdout_redirect '/u/apps/lolcat/log/stdout', '/u/apps/lolcat/log/stderr', true
 
 # Disable request logging.
@@ -103,7 +103,7 @@ bind 'tcp://0.0.0.0:1111'
 # load puma itself (ie. 'ruby -Ilib bin/puma'), not the arguments
 # to puma, as those are the same as the original process.
 #
-restart_command '/aritywolf/midscore_io/restart_puma'
+restart_command '/home/stimky/midscore_io_w2/restart_puma'
 
 # === Cluster mode ===
 
@@ -201,5 +201,5 @@ tag 'CGMFS'
 # activate_control_app 'unix:///var/run/pumactl.sock'
 # activate_control_app 'unix:///var/run/pumactl.sock', { auth_token: '12345' }
 # activate_control_app 'unix:///var/run/pumactl.sock', { no_token: true }
-rackup '/aritywolf/midscore_io/config.ru'
+rackup '/home/stimky/midscore_io_w2/config.ru'
 activate_control_app

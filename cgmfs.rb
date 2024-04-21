@@ -22,7 +22,6 @@ require 'roda/plugins/assets'
 
 # MAJOR TODO v3.4.0.4a  (3/20/2024): make sure filenames in uploads edits etc are compatible with ascii)
 
-
 # require 'rack'
 # require 'rack/csrf'
 require_relative 'require_dir' # for route auto-loading
@@ -41,12 +40,7 @@ require_dir "./lib/dir_requires"
 # SERVER_IP_LOCAL = 'localhost'
 # DOMAIN_NAME = 'https://onemoonpla.net'
 DEBUG = false
-if File.open("local.txt", "r").read.strip == "1"
-  LOCAL = true
-else
-  LOCAL = false
-end
-
+LOCAL = File.open("local.txt", "r").read.strip == "1"
 
 ## enable Resolv to use DNS (../views/layout.html.erb)
 $dns_enabled = false # enable dns
@@ -61,7 +55,7 @@ SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
 $dog_blog_version = "(#️⃣4.0.4.2) - \"Not Found\" - 🩲\"" # used in layout.html.erb
-$lockdown = true # lockdown mode (no public access to blog or gallery posts, etc)
+$lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)
 
 DO_TELEGRAM_LOGGING = true # telegram logging
 
@@ -139,7 +133,6 @@ class CGMFS < Roda
   @@line_db["user_blog_database"].pad.new_table!(database_name: "user_name_database",
                                                  database_table: "user_password_table")
 
-
   @@line_db["secondlife_ai"].pad.new_table!(database_name: "secondlife_database", database_table: "secondlife_table")
 
   @@line_db["superadmin"].pad.new_table!(database_name: "superadmin_database", database_table: "superadmin_table")
@@ -157,9 +150,11 @@ class CGMFS < Roda
   puts "...Loading cache system database..."
   @@line_db["superadmin"].pad.new_table!(database_name: "cache_system_database", database_table: "cache_system_table")
   puts "... Loading uwu collections system database..."
-  @@line_db["superadmin"].pad.new_table!(database_name: "uwu_collections_database", database_table: "uwu_collections_table")
+  @@line_db["superadmin"].pad.new_table!(database_name: "uwu_collections_database",
+                                         database_table: "uwu_collections_table")
   puts "... Loading grid collections system database..."
-  @@line_db["superadmin"].pad.new_table!(database_name: "grid_collections_database", database_table: "grid_collections_table")
+  @@line_db["superadmin"].pad.new_table!(database_name: "grid_collections_database",
+                                         database_table: "grid_collections_table")
   @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].set(0) do |hash|
     hash["superadmin"] = "headhunterz"
   end

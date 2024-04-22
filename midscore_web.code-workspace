@@ -27,5 +27,6 @@
 	},
 	"javascript.inlayHints.propertyDeclarationTypes.enabled": true,
 	"typescript.inlayHints.propertyDeclarationTypes.enabled": true,
+	"files.autoSave": "afterDelay",
 }
 }

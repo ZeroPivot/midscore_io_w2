@@ -8,7 +8,6 @@
 			"path": "lib/partitioned_array"
 		}
 	],
-	"settings": {  "ruby.rubocop.executePath": "/home/stimky/.rbenv/shims",
 	"files.associations": {
 		"*.html.erb": "erb"
 	},

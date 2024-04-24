@@ -51,7 +51,7 @@ state_path '/home/stimky/midscore_io_w2/config/puma.state'
 # ("append") specifies whether the output is appended, the default is
 # "false".
 #
-stdout_redirect '/home/stimky/midscore_io_w2/log/stdout', '/aritywolf/midscore_io_w2/log/stderr', true
+stdout_redirect '/home/stimky/midscore_io_w2/log/stdout', '/home/stimky/midscore_io_w2/log/stderr', true
 # stdout_redirect '/u/apps/lolcat/log/stdout', '/u/apps/lolcat/log/stderr', true
 
 # Disable request logging.
@@ -72,7 +72,7 @@ threads 0, 16
 #
 # The default is "tcp://0.0.0.0:9292".
 #
-bind 'tcp://0.0.0.0:1111'
+bind 'tcp://0.0.0.0:8080'
 
 # bind 'unix:///aritywolf/midscore_io/config/puma.sock'
 # bind 'unix:///var/run/puma.sock'

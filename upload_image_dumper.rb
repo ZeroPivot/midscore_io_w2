@@ -8,7 +8,7 @@ login_url = 'https://hudl.ink/blog/login' # Replace with the actual login URL
 base_post_url = 'https://hudl.ink/gallery/upload'  # Replace with the base URL for posting files
 directory_path = '/root/Pronz'
 # Define your credentials
-username = 'stinktail'
+username = 'stinky'
 password = 'gUilmon#95458a'
 super_password = "gUilmon#95458a"
 
@@ -95,5 +95,3 @@ end
 
 # how do I unzip a zip file using unzip?
 # how do I unzip a zip file using unzip?
-
-

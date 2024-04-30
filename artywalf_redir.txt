@@ -16918,3 +16918,19 @@ request referrer:
 request user_agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/605.1.15
 AJAX request?: false
 Timestamp: 2024-04-24 07:18:57 +0000
+Artywalf.net -> hudl.ink:8080 Redirection Request:
+request path: /artywalfnet ; request host: hudl.ink
+request hash: #<CGMFS::RodaRequest GET /artywalfnet>
+request ip: 207.241.235.246
+request referrer: 
+request user_agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/605.1.15
+AJAX request?: false
+Timestamp: 2024-04-26 15:12:05 +0000
+Artywalf.net -> hudl.ink:8080 Redirection Request:
+request path: /artywalfnet ; request host: hudl.ink
+request hash: #<CGMFS::RodaRequest GET /artywalfnet>
+request ip: 207.241.236.247
+request referrer: 
+request user_agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/605.1.15
+AJAX request?: false
+Timestamp: 2024-04-27 04:20:51 +0000

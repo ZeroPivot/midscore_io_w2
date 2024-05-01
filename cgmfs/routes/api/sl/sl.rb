@@ -92,67 +92,50 @@ class CGMFS
         @captured_by = ''
         @avatar_name = ''
         # @url_data = URI.extract(request.body.read)
+        database = @@line_db['secondlife_ai'].pad['secondlife_database', 'secondlife_table']
 
         @parsed_data.each_with_index do |data, index|
           # log("upper level called")
           # log("@max_capacity #{@@sl_db.max_capacity}")
           # log("@data_arr size: #{@@sl_db.data_arr.size}")
           # log("@latest_id: #{@@sl_db.latest_id}")
+          log("@parsed_data: #{@parsed_data}")
           @message += "#{data['message']}\n"
-          @captured_by = 'ArchYeen'
+          @captured_by = data['captured_by']
           @avatar_name = data['avatar_name'] # implement better version later
+          @avatar_id = data['avatar_id']
+          @x_pos = data['x_pos']
+          @y_pos = data['y_pos']
+          @z_pos = data['z_pos']
+          @sim_name = data['sim_name']
+          @timestamp = Time.at(data['timestamp']).utc.localtime('-07:00').to_s
           #  log(@@telegram_logger.send_message("adding sl entry test"))
-          if !@@sl_db.at_capacity?
-            entry = @@sl_db.add do |hash|
-              hash['index'] = index
-              hash['timestamp'] = Time.at(data['timestamp']).utc.localtime('-07:00').to_s
-              hash['avatar_name'] = data['avatar_name']
-              hash['avatar_id'] = data['avatar_id']
-              hash['message'] = data['message']
-              hash['x_pos'] = data['x_pos']
-              hash['y_pos'] = data['y_pos']
-              hash['z_pos'] = data['z_pos']
-              hash['sim_name'] = data['sim_name']
-              hash['captured_by'] = data['captured_by'] || 'not_implemented'
-            end
-            # log("entry: #{entry}")
-            @@sl_db.save_last_entry_to_file!
-            @@sl_db.save_partition_to_file!(@@sl_db.get(entry, hash: true)['db_index'])
+          #
 
-          else
-            log('database is at capacity')
-            # log("entry: #{entry}")
-            # log(@@sl_db.get(entry, hash: true)["data_partition"].to_s)
-            # @@telegram_logger.send_message("[🔢SL(RELAY)🔢 (#{@captured_by})] (#{@avatar_name}): #{@message}")
-            # log("lower level called")
-            @@sl_db = @@sl_db.archive_and_new_db!
-            @@sl_db.save_everything_to_files!
-            entry = @@sl_db.add do |hash|
-              hash['index'] = index
-              hash['timestamp'] = Time.at(data['timestamp']).utc.localtime('-07:00').to_s
-              hash['avatar_name'] = data['avatar_name']
-              hash['avatar_id'] = data['avatar_id']
-              hash['message'] = data['message']
-              hash['x_pos'] = data['x_pos']
-              hash['y_pos'] = data['y_pos']
-              hash['z_pos'] = data['z_pos']
-              hash['sim_name'] = data['sim_name']
-              hash['captured_by'] = data['captured_by'] || 'not_implemented'
-              #  log("Archived and created new db!")
-            end
-
-            @@sl_db.save_partition_to_file!(@@sl_db.get(entry, hash: true)['db_index'])
-            @@sl_db.save_last_entry_to_file!
-            # log(@@sl_db.get(entry, hash: true)["data_partition"].to_s)
-            # @@telegram_logger.send_message("[🔢SL(RELAY)🔢 (#{@captured_by})] (#{@avatar_name}): #{@message}")
-            # log("test")
-
+          @id = database.add(return_added_element_id: true) do |hash|
+            hash['id'] = @id
+            hash['timestamp'] = @timestamp
+            hash['avatar_name'] = @avatar_name
+            hash['avatar_id'] = @avatar_id
+            hash['message'] = @message
+            hash['x_pos'] = @x_pos
+            hash['y_pos'] = @y_pos
+            hash['z_pos'] = @z_pos
+            hash['sim_name'] = @sim_name
+            hash['captured_by'] = @captured_by
           end
+          database.save_partition_by_id_to_file!(@id)
+          log("server called: #{r.params}")
           if DO_TELEGRAM_LOGGING
-            @@telegram_logger.send_message("[🔢SL(RELAY)🔢 (#{@captured_by})] (#{@avatar_name}): #{@message}")
+            Thread.new do
+              @@telegram_logger.send_message("[🔢SL-R-tg))🔢 (#{@captured_by}::  🆔(#{@avatar_name})::⌚(#{@timestamp})::-> 🖊️:: #{@message} /::") # Fix: Add a closing parenthesis at the end of the send_message method call
+              log("[🔢SL-R-log.txt))🔢 (#{@captured_by}::  (#{@avatar_name}):#{@timestamp}{🪪::#{@avatar_id}::(✖️:#{@x_pos},Y:#{@y_pos},Z:#{@z_pos})::->}}🖊️->📖)::   #{@message}")
+            end
           end
+          log('telegram message logged')
         end
         urls = URI.extract(@message)
+        log("url extracted: #{urls}")
         @output_message = ''
 
         urls.each do |link|
@@ -183,19 +166,16 @@ class CGMFS
       end
       r.post do
         log('server called:  POST}')
-        @log = ""
+        @log = ''
         @parsed_data = JSON.parse("[#{request.body.read}]")
         log("parsed data (SL HUDL.ink GPT-4-turbo): #{@parsed_data}")
         @message = @parsed_data[0]['message'].to_s
-
 
         @captured_by = ''
         @avatar_name = @parsed_data[0]['avatar_name'].to_s
         # @command_true = @message.split("/hud")[0]
         # @message = @command_true[1].to_s if @command_true != ""
         # log("before openai call")
-
-
 
         response = @@ai_client.chat(
           parameters: {

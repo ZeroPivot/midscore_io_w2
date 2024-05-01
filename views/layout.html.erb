@@ -37,6 +37,7 @@
   </a><br>
     <center><font size="3"><div size="5" id="ip_addr_resolv">🏘️<b>[🌐<%= request.ip %>]</b></div></font></center>
   <br>
+  <font size="16"> <a href="<%= domain_name(@r) %>/blog">(📃)</a>,<a href="<%= domain_name(@r) %>/gallery">(🖼️)</a></font><br><br>
   <font size="16"><%= MoonIllumination.emoji %></font><br>
  <br>
   <% if session['user'] %>
@@ -76,7 +77,7 @@
 <br>
  ♾️<%= @page_views.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %> -- ©️<a href="https://meta-game.info">meta-game.info</a><br>
   <br><br>
-    <a href="<%= domain_name(@r) %>/blog">(📃)</a>,<a href="<%= domain_name(@r) %>/gallery">(🖼️)</a>,<a href="<%= domain_name(@r) %>/blog/logout">[➖🔒]</a><br><br>
+   <a href="<%= domain_name(@r) %>/blog/logout">[➖🔒]</a><br><br>
   </center><br>
   </font>
 </html>

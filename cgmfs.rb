@@ -156,7 +156,7 @@ class CGMFS < Roda
   @@line_db["superadmin"].pad.new_table!(database_name: "grid_collections_database",
                                          database_table: "grid_collections_table")
   @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].set(0) do |hash|
-    hash["superadmin"] = "headhunterz"
+    hash["superadmin"] = "gUilmon#95458a"
   end
   puts "Done."
 

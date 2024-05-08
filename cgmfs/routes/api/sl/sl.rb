@@ -1,5 +1,4 @@
-# frozen_string_literal: false
-
+# rubocop:disable Layout/LineLength
 # FAST NOTE: Use LineDB/the [managed partitioned array] for all aspects of gpt3.5 - 4 in the 'gpt4' POST route.
 ## DATE OF FAST NOTE: 2023/04/15 - April 15th, 2023 (on a Saturday).
 
@@ -30,6 +29,21 @@ class CGMFS
 
   def parse(key, value)
     "<b>#{key}</b> - #{value}"
+  end
+
+  def unescape_string(string)
+    string.gsub(/\\./) do |match|
+      case match[1]
+      when 'n'
+        "\n"
+      when 't'
+        "\t"
+      when 'r'
+        "\r"
+      else
+        match[1]
+      end
+    end
   end
 
   hash_branch '/api', 'sl' do |r| # ss: screenshot
@@ -91,6 +105,10 @@ class CGMFS
         @message = ''
         @captured_by = ''
         @avatar_name = ''
+        num_map = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9,
+                    j: 1, k: 2, l: 3, m: 4, n: 5, o: 6, p: 7, q: 8, r: 9,
+                    s: 1, t: 2, u: 3, v: 4, w: 5, x: 6, y: 7, z: 8 }
+
         # @url_data = URI.extract(request.body.read)
         database = @@line_db['secondlife_ai'].pad['secondlife_database', 'secondlife_table']
 
@@ -128,13 +146,13 @@ class CGMFS
           log("server called: #{r.params}")
           if DO_TELEGRAM_LOGGING
             Thread.new do
-              @@telegram_logger.send_message("[🔢SL-R-tg))🔢 (#{@captured_by}::  🆔(#{@avatar_name})::⌚(#{@timestamp})::-> 🖊️:: #{@message} /::") # Fix: Add a closing parenthesis at the end of the send_message method call
-              log("[🔢SL-R-log.txt))🔢 (#{@captured_by}::  (#{@avatar_name}):#{@timestamp}{🪪::#{@avatar_id}::(✖️:#{@x_pos},Y:#{@y_pos},Z:#{@z_pos})::->}}🖊️->📖)::   #{@message}")
+              @@telegram_logger.send_message("[🔢SecondLife-Relay-MIDSCORE_IO-debug-log.tg)🔢\n(Agent:(#{@captured_by})::\n(#{@avatar_name}):#{@timestamp}{🪪::#{@avatar_id}::(✖️:#{@x_pos},Y:#{@y_pos},Z:#{@z_pos})::->},🏢::#{@sim_name}}::\n\n(🖊️->📖)::#{unescape_string(@message)}\n//::|🔢~#{convert_word_to_number(@message.downcase, num_map)}|") # Fix: Add a closing parenthesis at the end of the send_message method call
+              log("[🔢SecondLife-Relay-MIDSCORE_IO-log (log.txt))🔢\n(Agent:(#{@captured_by})::\n(#{@avatar_name}):#{@timestamp}{🪪::#{@avatar_id}::(✖️:#{@x_pos},Y:#{@y_pos},Z:#{@z_pos})::->},🏢::#{@sim_name}}::\n\n(🖊️->📖)::#{unescape_string(@message)}\n//::|🔢~#{convert_word_to_number(@message.downcase, num_map)}|")
             end
           end
           log('telegram message logged')
         end
-        urls = URI.extract(@message)
+        urls = URI.extract(unescape_string(@message))
         log("url extracted: #{urls}")
         @output_message = ''
 
@@ -238,3 +256,4 @@ class CGMFS
     end
   end
 end
+# rubocop:enable Layout/LineLength

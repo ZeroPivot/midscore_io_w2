@@ -42,16 +42,11 @@ class CGMFS
       end
     end
     string_integers = emoji_integers.join('')
-    if int < 0
-      string_integers = "➖#{string_integers}"
-    end
+    string_integers = "➖#{string_integers}" if int < 0
     string_integers
   end
 
-# word.encode('ASCII-8BIT', invalid: :replace, undef: :replace, replace: '')
-
-
-
+  # word.encode('ASCII-8BIT', invalid: :replace, undef: :replace, replace: '')
 
   def private_view?(r, user)
     if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'].nil?
@@ -74,7 +69,7 @@ class CGMFS
 
     return 'http://localhost:8080' if DEBUG
 
-    return 'https://' +  r.host unless LOCAL
+    return 'https://' + r.host unless LOCAL
 
     "http://#{r.host}:8080" if LOCAL
 
@@ -82,11 +77,9 @@ class CGMFS
   end
 
   def family_logged_in?(r)
-    return unless !session['user']
-    return unless !session['password']
-    if session['user'] == "superadmin"
-      return
-    end
+    return if session['user']
+    return if session['password']
+    return if session['user'] == 'superadmin'
     return if r.path == '/blog/login' # Don't redirect if already at login
 
     r.redirect "#{domain_name(r)}/blog/login"
@@ -126,14 +119,12 @@ class CGMFS
     # parse the tags from the string
     tags = tag_string.split(', ')
     # output html that uses the user and tag_string to redirect to the tag
-    output = ""
+    output = ''
     tags.each_with_index do |tag, index|
       output << "<a href='#{domain_name(r)}/gallery/view/#{user}/tags/search/?search_tags=#{tag}'>#{tag}</a>"
-      output << ", " unless index == tags.size - 1
-
+      output << ', ' unless index == tags.size - 1
     end
     output
-
   end
 
   # /gallery
@@ -147,8 +138,6 @@ class CGMFS
         view('blog/gallery/list_gallery_users', engine: 'html.erb', layout: 'layout.html')
       end
     end
-
-
 
     r.on 'upload', 'url' do
       # get user session in roda
@@ -164,9 +153,9 @@ class CGMFS
         log(r.params['url'])
         uploadable = false
         uploaded_filehandle = r.params['url']
-        description = "url upload - #{r.params['url']} - Time: #{Time.now.to_s}"
-        tags = "url_upload"
-        title = "url upload - #{Time.now.to_s}"
+        description = "url upload - #{r.params['url']} - Time: #{Time.now}"
+        tags = 'url_upload'
+        title = "url upload - #{Time.now}"
 
         # Code to upload an image to the gallery, with an option to introduce the upload location and retrieve via URL
         # 1. Upload the image to the server
@@ -183,10 +172,9 @@ class CGMFS
         # 12. Add a sort option
         # 13. Add a filter option
 
-
         original_to_new_filename = "#{Time.now.to_f}_url_upload_#{@user}"
         file_contents = URI.open(uploaded_filehandle).read
-        #log("file_contents: #{file_contents}")
+        # log("file_contents: #{file_contents}")
         # Write the file to a temporary gallery location
         FileUtils.mkdir_p("public/gallery/#{@user}")
         file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
@@ -196,14 +184,12 @@ class CGMFS
         end
         log("file_path: #{file_path}")
 
-
-
         file_size = file_contents.size
 
         log("file_size: #{file_size}")
         file_type = FastImage.type(uploaded_filehandle)
         log("file_type: #{file_type}")
-        if [:jpeg, :png, :gif].include?(file_type)
+        if %i[jpeg png gif].include?(file_type)
           uploadable = true
           FileUtils.mkdir_p("public/gallery/#{@user}")
           # Rename the file to include the extension
@@ -231,10 +217,6 @@ class CGMFS
           File.delete(file_path)
         end
 
-
-
-
-
         if uploadable
           id = @@line_db[@user].pad['gallery_database', 'gallery_table'].add_at_last do |hash|
             hash['file'] = original_to_new_filename
@@ -257,21 +239,11 @@ class CGMFS
           end
         end
         # change to more efficient form later.
-      @@line_db[@user].pad['gallery_database', 'gallery_table'].save_everything_to_files! if uploadable
-      r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{id}" if uploadable
-      "<html><body>Upload failed. Please try again. <a href='#{domain_name(r)}/gallery/upload/url'>Upload</a></html></body>"
+        @@line_db[@user].pad['gallery_database', 'gallery_table'].save_everything_to_files! if uploadable
+        r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{id}" if uploadable
+        "<html><body>Upload failed. Please try again. <a href='#{domain_name(r)}/gallery/upload/url'>Upload</a></html></body>"
       end
-
-
-
     end
-
-
-
-
-
-
-
 
     r.on 'upload' do
       # get user session in roda
@@ -302,35 +274,32 @@ class CGMFS
         # get the image temp file parameters through roda:
         uploadable = false
         uploaded_filehandle = r.params['file']
-        description = r.params['description'] || ""
-        tags = r.params['tags'] || ""
-        title = r.params['title'] || ""
-        reusable_tags = r.params['reusable_tags'] || ""
-         if reusable_tags == 'on'
+        description = r.params['description'] || ''
+        tags = r.params['tags'] || ''
+        title = r.params['title'] || ''
+        reusable_tags = r.params['reusable_tags'] || ''
+        if reusable_tags == 'on'
           session['last_tags'] = tags
           session['reusable_tags'] = true
-         else
-          session['last_tags'] = ""
+        else
+          session['last_tags'] = ''
           session['reusable_tags'] = false
-         end
+        end
 
-
-
-        description = "no description" if description.empty?
-        tags = "none" if tags.empty?
-        title = "untitled" if title.empty?
+        description = 'no description' if description.empty?
+        tags = 'none' if tags.empty?
+        title = 'untitled' if title.empty?
         file_extension = File.extname(uploaded_filehandle[:filename])
         original_to_new_filename = "#{@user}_#{Time.now.to_f}_original_#{file_extension}"
         file_contents = uploaded_filehandle[:tempfile].read
         file_size = file_contents.size
-
 
         file_type = FastImage.type(uploaded_filehandle[:tempfile])
 
         # list all possible file types in File.extname:
         # .jpg, .jpeg, .png, .gif, .bmp, .zip, .tar, .gz, .rar, .7z, .mp3, .wav, .flac, .ogg, .mp4, .avi, .mkv, .mov, .wmv, .flv, .webm, .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .rtf, .html, .htm, .xml, .json, .csv, .tsv, .md, .markdown, .rb, .py, .js, .css, .scss, .sass, .less, .php, .java, .c, .cpp, .h, .hpp, .cs, .go, .swift, .kt, .kts, .rs, .pl, .sh, .bat, .exe, .dll, .so, .dylib, .app, .apk, .ipa, .deb, .rpm, .msi, .dmg, .iso, .img, .bin, .cue, .mdf, .mds, .nrg, .vcd, .toast, .dmg, .toast, .vcd, .nrg, .mds, .mdf, .cue, .bin, .img, .iso, .rpm, .msi, .deb, .ipa, .apk, .app, .dylib, .so, .dll, .exe, .bat, .sh, .pl, .rs, .kts, .kt, .swift, .go, .cs, .hpp, .h, .cpp, .c, .java, .php, .less, .sass, .scss, .css, .js, .py, .rb, .markdown, .md, .tsv, .csv, .json, .xml, .htm, .html, .rtf, .txt, .pptx, .ppt, .xlsx, .xls, .docx, .doc, .pdf, .webm, .flv, .wmv, .mov, .mkv, .avi, .mp4, .ogg, .flac, .wav, .mp3, .7z, .rar, .gz, .
         #
-        if ['.jpg', '.jpeg', '.png', '.bmp', '.gif'].include?(file_extension) && [:jpeg, :png, :gif].include?(file_type) # add .zip later, et al.
+        if ['.jpg', '.jpeg', '.png', '.bmp', '.gif'].include?(file_extension) && %i[jpeg png gif].include?(file_type) # add .zip later, et al.
           uploadable = true
           FileUtils.mkdir_p("public/gallery/#{@user}")
           File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
@@ -346,7 +315,7 @@ class CGMFS
         end
 
         if uploadable
-         id = @@line_db[@user].pad['gallery_database', 'gallery_table'].add_at_last do |hash|
+          id = @@line_db[@user].pad['gallery_database', 'gallery_table'].add_at_last do |hash|
             hash['file'] = original_to_new_filename
             hash['views'] = 0
             hash['title'] = title
@@ -368,21 +337,28 @@ class CGMFS
         end
         # change to more efficient form later.
         @@line_db[@user].pad['gallery_database', 'gallery_table'].save_everything_to_files! if uploadable
-        @@line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
+        @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
           hash['recache'] = true
         end
-        @@line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
+        @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}" if uploadable
         "<html><body>Upload failed. Please try again. <a href='#{domain_name(r)}/gallery/upload'>Upload</a></html></body>"
       end
     end
 
-    # /gallery/view/username
-    r.is 'view', String do |user| # view the gallery list
+
+
+    r.is 'view', String, 'latest' do |user| # view the gallery list
       user_failcheck(user, r)
       private_view?(r, user)
-
       r.get do
+
+
+        @user = user
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+
+        @gallery_images = @gallery.data_arr.reject { |image| image == {} }
+
 
         if r.params['owo_count_rate'].nil?
           @owo_count_rate = session['owo_count_rate'] || 3
@@ -390,8 +366,6 @@ class CGMFS
           @owo_count_rate = r.params['owo_count_rate'].to_i
           session['owo_count_rate'] = @owo_count_rate
         end
-
-
 
         if r.params['quantity_displayed'].nil?
           @quantity_displayed = session['quantity_displayed'] || 175
@@ -409,16 +383,9 @@ class CGMFS
 
 
 
-        @user = user
-        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-
-        @gallery_images = @gallery.data_arr.reject { |image| image == {} }
-
 
         @skip_by = r.params['skip_by'].to_i
-        if r.params['skip_by'].nil?
-          @skip_by = 0
-        end
+        @skip_by = 0 if r.params['skip_by'].nil?
         @gallery_numbers = @gallery_images.size / @quantity_displayed
         log(@gallery_numbers)
         if @gallery_images.size <= @quantity_displayed
@@ -426,36 +393,87 @@ class CGMFS
           @gallery_range = 0..@quantity_displayed
         else
           @pages = @gallery_numbers + 1
-          @gallery_range = (@quantity_displayed*@skip_by)..(@quantity_displayed + @quantity_displayed*(@skip_by))
+
+        end
+
+
+        r.redirect "#{domain_name(r)}/gallery/view/#{user}?skip_by=#{@pages-1}"
+      end
+    end
+
+
+
+    # /gallery/view/username
+    r.is 'view', String do |user| # view the gallery list
+      user_failcheck(user, r)
+      private_view?(r, user)
+
+      r.get do
+        if r.params['owo_count_rate'].nil?
+          @owo_count_rate = session['owo_count_rate'] || 3
+        else
+          @owo_count_rate = r.params['owo_count_rate'].to_i
+          session['owo_count_rate'] = @owo_count_rate
+        end
+
+        if r.params['quantity_displayed'].nil?
+          @quantity_displayed = session['quantity_displayed'] || 175
+        else
+          @quantity_displayed = r.params['quantity_displayed'].to_i
+          session['quantity_displayed'] = @quantity_displayed
+        end
+
+        if r.params['modulo_display'].nil?
+          @modulo_display = session['modulo_display'] || 4
+        else
+          @modulo_display = r.params['modulo_display'].to_i
+          session['modulo_display'] = @modulo_display
+        end
+
+        @user = user
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+
+        @gallery_images = @gallery.data_arr.reject { |image| image == {} }
+
+        @skip_by = r.params['skip_by'].to_i
+        @skip_by = 0 if r.params['skip_by'].nil?
+        @gallery_numbers = @gallery_images.size / @quantity_displayed
+        log(@gallery_numbers)
+        if @gallery_images.size <= @quantity_displayed
+          @pages = 0
+          @gallery_range = 0..@quantity_displayed
+        else
+          @pages = @gallery_numbers + 1
+          @gallery_range = (@quantity_displayed * @skip_by)..(@quantity_displayed + @quantity_displayed * @skip_by)
         end
 
         # generate pages html
-        @pages_html = ""
+        @pages_html = ''
         @pages.times do |page_number|
           if page_number == @skip_by
             @pages_html << "<a href='#{domain_name(r)}/gallery/view/#{@user}?skip_by=#{page_number}'><b><i>#{page_number}</i><b></a>&nbsp;&nbsp;"
           else
             @pages_html << "<a href='#{domain_name(r)}/gallery/view/#{@user}?skip_by=#{page_number}'>#{page_number}</a>&nbsp;&nbsp;"
           end
-          @pages_html << "&nbsp;" unless page_number == @pages - 1
-          @pages_html << "<br>" if page_number % 10 == 0 && page_number != 0
+          @pages_html << '&nbsp;' unless page_number == @pages - 1
+          @pages_html << '<br>' if page_number % 10 == 0 && page_number != 0
         end
-
 
         @gallery = @gallery_images[@gallery_range]
 
         @owo_count_gallery = @@line_db[@user].pad['gallery_database', 'gallery_table'].data_arr.sort_by { |image| image['owo_count'].to_i }
 
-
         view('blog/gallery/list_gallery_uploads', engine: 'html.erb', layout: 'layout.html')
       end
     end
 
+
     r.is 'view', String, 'id', Integer do |user, id| # view the gallery entry
       user_failcheck(user, r)
+      private_view?(r, user)
       r.get do
         @markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true,
-        fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
+                                                                     fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @id = id
@@ -475,7 +493,6 @@ class CGMFS
       end
     end
 
-
     r.is 'view', String, 'id', Integer, 'attachments' do |user, id| # view the attachments list
       user_failcheck(user, r)
       r.get do
@@ -485,10 +502,7 @@ class CGMFS
         @image = @gallery.get(@id)
         view('blog/gallery/view_user_gallery_image_id_attachments_list', engine: 'html.erb', layout: 'layout.html')
       end
-
-
     end
-
 
     r.is 'view', String, 'id', Integer, 'attachments', 'delete', Integer do |user, id, attachment_id| # view the attachments list
       user_failcheck(user, r)
@@ -499,23 +513,21 @@ class CGMFS
         @image = @gallery.get(@id)
         @attachments = @image['attachments']
 
-       File.delete("public/gallery/#{@user}/attachments/#{@attachments[attachment_id]['file_attachment_name']}")
-       @attachments.delete_at(attachment_id)
-       log(@attachments.to_s)
-       log("attachment deleted")
+        File.delete("public/gallery/#{@user}/attachments/#{@attachments[attachment_id]['file_attachment_name']}")
+        @attachments.delete_at(attachment_id)
+        log(@attachments.to_s)
+        log('attachment deleted')
         @gallery.set(@id) do |hash|
           hash['attachments'] = @attachments
         end
-        log("attachment hash set")
+        log('attachment hash set')
         @gallery.save_partition_by_id_to_file!(@id)
-        log("attachment saved")
+        log('attachment saved')
 
-        #"attachment deleted. <a href='#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments'>Back to attachments</a>"
+        # "attachment deleted. <a href='#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments'>Back to attachments</a>"
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments"
       end
-
     end
-
 
     r.is 'view', String, 'id', Integer, 'attachments', 'upload' do |user, id| # view the gallery list
       user_failcheck(user, r)
@@ -525,7 +537,7 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @id = id
         @image = @gallery.get(@id)
-        #@attachments = @image['attachments']
+        # @attachments = @image['attachments']
         # <%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= @attachment_id %>
         view('blog/gallery/view_user_gallery_image_id_attachments_upload', engine: 'html.erb', layout: 'layout.html')
       end
@@ -536,7 +548,40 @@ class CGMFS
         @url_params = r.params['url']
         @id = id
 
-        unless @url_params
+        if @url_params
+
+          @uri_url = URI.open(@url_params.to_s)
+          @uploaded_filehandle = @uri_url.read
+          @meta = @uri_url.meta['content-type'].split('/').last
+          log(@meta)
+          @file_name = Time.now.to_f.to_s + 'attachment' + '.' + @meta
+
+          FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
+          File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
+          @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+          @id = id
+          @image = @gallery.get(@id)
+
+          log(@image['attachments'].to_s)
+          @attachments = if !@image['attachments']
+                           []
+                         else
+                           @image['attachments']
+                         end
+          @attachments << { 'file_attachment_name' => @file_name, 'file_attachment_size' => @uploaded_filehandle.size, 'extension' => File.extname(@file_name), 'file_attachment_date' => TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s }
+
+          @gallery.set(@id) do |hash|
+            hash['attachments'] = @attachments
+          end
+          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
+            hash['recache'] = true
+          end
+          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
+
+          log(@url_params)
+          @gallery.save_partition_by_id_to_file!(@id)
+
+        else
           @uploaded_filehandle = r.params['file'][:tempfile].read
           @file_name = Time.now.to_f.to_s + r.params['file'][:filename]
           FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
@@ -546,62 +591,23 @@ class CGMFS
           @image = @gallery.get(@id)
 
           log(@image['attachments'].to_s)
-          if !@image['attachments']
-            @attachments = []
-          else
-            @attachments = @image['attachments']
-          end
+          @attachments = if !@image['attachments']
+                           []
+                         else
+                           @image['attachments']
+                         end
           @attachments << { 'file_attachment_name' => @file_name, 'file_attachment_size' => @uploaded_filehandle.size, 'extension' => File.extname(@file_name), 'file_attachment_date' => TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s }
 
           @gallery.set(@id) do |hash|
             hash['attachments'] = @attachments
-
           end
-
 
           @gallery.save_partition_by_id_to_file!(@id)
 
-        else
-
-        @uri_url = URI.open(@url_params.to_s)
-        @uploaded_filehandle = @uri_url.read
-        @meta = @uri_url.meta['content-type'].split('/').last
-        log(@meta)
-        @file_name = Time.now.to_f.to_s + 'attachment' + '.' + @meta
-
-        FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
-        File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
-        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
-        @id = id
-        @image = @gallery.get(@id)
-
-        log(@image['attachments'].to_s)
-        if !@image['attachments']
-          @attachments = []
-        else
-          @attachments = @image['attachments']
         end
-        @attachments << { 'file_attachment_name' => @file_name, 'file_attachment_size' => @uploaded_filehandle.size, 'extension' => File.extname(@file_name), 'file_attachment_date' => TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s }
-
-        @gallery.set(@id) do |hash|
-          hash['attachments'] = @attachments
-
-        end
-        @@line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
-          hash['recache'] = true
-        end
-        @@line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
-
-        log(@url_params)
-        @gallery.save_partition_by_id_to_file!(@id)
-
-      end
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
       end
-
     end
-
-
 
     r.is 'delete', String, 'id', Integer do |user, id| # delete a gallery post by id
       user_failcheck(user, r)
@@ -614,17 +620,16 @@ class CGMFS
           @gallery.data_arr[@id] = {}
           File.delete("public/gallery/#{@user}/#{@image['file']}")
           @gallery.save_partition_by_id_to_file!(@id)
-          @@line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
+          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
             hash['recache'] = true
           end
-          @@line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
+          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
           "Gallery post with id #{@id} deleted successfully. <a href='#{domain_name(r)}/gallery/view/#{@user}'>Back TO Gallery</a>"
         else
           "No gallery post found with id #{@id}."
         end
       end
     end
-
 
     r.is 'view', String, 'tags', 'search' do |user| # view the tags list
       user_failcheck(user, r)
@@ -667,9 +672,7 @@ class CGMFS
             @images_to_find = @images_to_find.reject do |image|
               image['tags']&.split(', ')&.include?(rejected_tag)
             end
-
           end
-
 
           @images_to_find = @images_to_find.to_a
         else
@@ -680,7 +683,6 @@ class CGMFS
       end
     end
 
-
     r.is 'view', String, 'tags' do |user| # view the tags list
       user_failcheck(user, r)
       r.get do
@@ -690,31 +692,29 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @view_all_images_with_tags = r.params['view_all_images_with_tags']
 
-        @cache = @@line_db[@user].pad["cache_system_database", "cache_system_table"]
+        @cache = @@line_db[@user].pad['cache_system_database', 'cache_system_table']
 
         @cache_hash = @cache.get(0)
 
         if @cache_hash == {}
-            @recache = true
-            @cache.set(0) do |hash|
-              hash['recache'] = true
-            end
+          @recache = true
+          @cache.set(0) do |hash|
+            hash['recache'] = true
+          end
         end
 
-
-          if !@cache.get(0)['recache']
-            @cache.set(0) do |hash|
-              hash['recache'] = false
-              @recache = false
-            end
-
-          elsif @cache.get(0)['recache']
-              @recache = true
-          else
+        if !@cache.get(0)['recache']
+          @cache.set(0) do |hash|
+            hash['recache'] = false
             @recache = false
           end
-          log(@recache)
 
+        elsif @cache.get(0)['recache']
+          @recache = true
+        else
+          @recache = false
+        end
+        log(@recache)
 
         if @recache
           GC.start
@@ -727,7 +727,6 @@ class CGMFS
             tag.split(', ').each do |split_tag|
               @tags_array << split_tag
             end
-
           end
           @tags_array = @tags_array.uniq
           @images_set = @images.to_set
@@ -736,10 +735,9 @@ class CGMFS
           @split_tags = @tags_array
 
           @split_tags.each do |tag|
-            tag_quantity = @gallery.data_arr.count { |image| image['tags']&.split(", ")&.include?(tag) }
+            tag_quantity = @gallery.data_arr.count { |image| image['tags']&.split(', ')&.include?(tag) }
             @tags_set << "<a href='#{domain_name(@r)}/gallery/view/#{@user}/tags/search/?search_tags=#{tag}'>#{tag}(#{tag_quantity})</a>"
           end
-
 
           @cache.set(0) do |hash|
             hash['tags_set'] = @tags_set
@@ -749,7 +747,6 @@ class CGMFS
           @cache.save_everything_to_files!
           GC.start
         else
-
 
           @split_tags = @cache.get(0)['split_tags']
           @tags_set = @cache.get(0)['tags_set']
@@ -773,34 +770,30 @@ class CGMFS
         @tags = @image['tags']
         @file = @image['file']
 
-
-
         view('blog/gallery/edit_user_gallery_image_id', engine: 'html.erb', layout: 'layout.html')
       end
       r.post do
         @markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true,
-        fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
+                                                                     fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @id = id
         @title = r.params['title']
         @description = r.params['description']
 
-
         @tags = r.params['tags']
 
-        @description = "no description" if @description.empty?
-        @tags = "none" if @tags.empty?
-        @title = "untitled" if @title.empty?
+        @description = 'no description' if @description.empty?
+        @tags = 'none' if @tags.empty?
+        @title = 'untitled' if @title.empty?
         file_extension = nil
-
 
         # get the image temp file parameters through roda:
         uploadable = false
         uploaded_filehandle = r.params['file']
         if uploaded_filehandle
           file_extension = File.extname(uploaded_filehandle[:filename])
-          #original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}"
+          # original_to_new_filename = "#{Time.now.to_f}_#{uploaded_filehandle[:filename]}"
           original_to_new_filename = "#{@user}_#{Time.now.to_f}_original_#{file_extension}"
           file_contents = uploaded_filehandle[:tempfile].read
           file_size = file_contents.size
@@ -838,10 +831,10 @@ class CGMFS
         end
 
         @gallery.save_partition_by_id_to_file!(@id)
-        @@line_db[@user].pad["cache_system_database", "cache_system_table"].set(0) do |hash|
+        @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
           hash['recache'] = true
         end
-        @@line_db[@user].pad["cache_system_database", "cache_system_table"].save_everything_to_files!
+        @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
       end
     end
@@ -894,7 +887,7 @@ class CGMFS
     r.is 'uwu', 'view', String, 'id', Integer, 'delete' do |user, id| # delete the collection id
       user_failcheck(user, r)
       logged_in?(r, user)
-     r.get do
+      r.get do
         @user = user
         logged_in?(r, @user)
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
@@ -911,7 +904,6 @@ class CGMFS
     end
 
     r.is 'owo', 'add' do
-
       r.get do
         @user = session['user']
         logged_in?(r, @user)
@@ -926,13 +918,10 @@ class CGMFS
         end
         @gallery.save_partition_by_id_to_file!(@image_id)
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@image_id}"
-
       end
-
     end
 
     r.is 'owo', 'rem' do
-
       r.get do
         @user = session['user']
         logged_in?(r, @user)
@@ -943,14 +932,10 @@ class CGMFS
         end
         @gallery.save_partition_by_id_to_file!(@image_id)
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@image_id}"
-
       end
-
-
     end
 
     r.is 'owo', 'sub' do
-
       r.get do
         @user = session['user']
         logged_in?(r, @user)
@@ -967,9 +952,6 @@ class CGMFS
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@image_id}"
       end
     end
-
-
-
   end
 end
 # rubocop:enable Metrics/BlockLength, Layout/LineLength, Metrics/ClassLength, Metrics/MethodLength

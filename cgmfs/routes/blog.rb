@@ -28,6 +28,45 @@ class MoonIllumination
     phase(date)[:emoji]
   end
 
+
+  def self.phase_name(date = DateTime.now)
+    # Calculation based on https://www.subsystems.us/uploads/9/8/9/4/98948044/moonphase.pdf
+    year = date.year
+    month = date.month
+    day = date.day
+    hour = date.hour
+    minute = date.minute
+    second = date.second
+
+    # Convert to Julian date
+    julian_date = 367 * year - ((7 * (year + ((month + 9) / 12))) / 4) + ((275 * month) / 9) + day + 1_721_013.5 + ((hour + (minute / 60.0) + (second / 3600.0)) / 24.0)
+
+    # Calculate moon phase
+    phase = (julian_date - 2_451_550.1) / 29.530588853
+    phase -= phase.to_i
+
+    # Determine phase name based on phase
+    phase_name = if phase < 0.125
+                   'New Moon'
+                 elsif phase < 0.25
+                   'Waxing Crescent'
+                 elsif phase < 0.375
+                   'First Quarter'
+                 elsif phase < 0.5
+                   'Waxing Gibbous'
+                 elsif phase < 0.625
+                   'Full Moon'
+                 elsif phase < 0.75
+                   'Waning Gibbous'
+                 elsif phase < 0.875
+                   'Last Quarter'
+                 else
+                   'Waning Crescent'
+                 end
+
+    phase_name
+  end
+
   def self.phase(date)
     # Calculation based on https://www.subsystems.us/uploads/9/8/9/4/98948044/moonphase.pdf
     year = date.year

@@ -39,6 +39,7 @@
   <br>
   <font size="16"> <a href="<%= domain_name(@r) %>/blog">(📃)</a>,<a href="<%= domain_name(@r) %>/gallery">(🖼️)</a></font><br><br>
   <font size="16"><%= MoonIllumination.emoji %></font><br>
+  <font size="3"><%= MoonIllumination.phase_name %></font><br>
  <br>
   <% if session['user'] %>
    <h1>(👤[<a href="/gallery/upload">(🔢)</a>; <a href="/gallery/upload/url">(🔗🔢)</a>;  <a href="/blog/<%= session['user'] %>/new">(📝)</a>|<a href="/gallery/view/<%= session['user'] %>">(🖼️)</a>],[<a href="/blog/<%= session['user'] %>">(📃)</a>]) <a href="/gallery/view/<%= session['user'] %>"><%= session['user'] %></a></h1><br>

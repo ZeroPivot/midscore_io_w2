@@ -146,7 +146,7 @@ class CGMFS
           log("server called: #{r.params}")
           if DO_TELEGRAM_LOGGING
             Thread.new do
-              @@telegram_logger.send_message("[🔢SecondLife-Relay-MIDSCORE_IO-debug-log.tg)🔢\n(Agent:(#{@captured_by})::\n(#{@avatar_name}):#{@timestamp}{🪪::#{@avatar_id}::(✖️:#{@x_pos},Y:#{@y_pos},Z:#{@z_pos})::->},🏢::#{@sim_name}}::\n\n(🖊️->📖)::#{unescape_string(@message)}\n//::|🔢~#{convert_word_to_number(@message.downcase, num_map)}|") # Fix: Add a closing parenthesis at the end of the send_message method call
+              @@telegram_logger.send_message("[🔢SecondLife-Relay.hud)🔢\n(Agent:(#{@captured_by})::\n(#{@avatar_name}):,🏢::#{@sim_name}}::\n\n(🖊️->📖)::#{unescape_string(@message)}\n//::|🔢~#{convert_word_to_number(@message.downcase, num_map)}|") # Fix: Add a closing parenthesis at the end of the send_message method call
               log("[🔢SecondLife-Relay-MIDSCORE_IO-log (log.txt))🔢\n(Agent:(#{@captured_by})::\n(#{@avatar_name}):#{@timestamp}{🪪::#{@avatar_id}::(✖️:#{@x_pos},Y:#{@y_pos},Z:#{@z_pos})::->},🏢::#{@sim_name}}::\n\n(🖊️->📖)::#{unescape_string(@message)}\n//::|🔢~#{convert_word_to_number(@message.downcase, num_map)}|")
             end
           end

@@ -33,16 +33,13 @@ class CGMFS
         # current = current['url_name_title']
         r.post do
           @@line_db['urls_redir'].pad['urls_database', 'urls_table'].set(0) do |hash|
-            #log('before url_name_title')
             temp = hash['url_name_title']
-            #log('after url_name_title')
             if temp.nil?
-              log('temp is nil')
               temp = []
             end
-            #log('last line of new')
+
             hash['url_name_title'] = temp << [r.params['whole_url_name'], r.params['url_string_title']]
-            #log(hash['url_name_title'])
+
           end
           @@line_db['urls_redir'].pad['urls_database', 'urls_table'].save_everything_to_files!
           r.redirect('/r/admin/view')

@@ -150,7 +150,6 @@ class CGMFS
       end
 
       r.post do
-        log(r.params['url'])
         uploadable = false
         uploaded_filehandle = r.params['url']
         description = "url upload - #{r.params['url']} - Time: #{Time.now}"
@@ -174,21 +173,20 @@ class CGMFS
 
         original_to_new_filename = "#{Time.now.to_f}_url_upload_#{@user}"
         file_contents = URI.open(uploaded_filehandle).read
-        # log("file_contents: #{file_contents}")
         # Write the file to a temporary gallery location
         FileUtils.mkdir_p("public/gallery/#{@user}")
         file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
-        log("file_path: #{file_path}")
+  
         File.open(file_path, 'w') do |file|
           file.write(file_contents)
         end
-        log("file_path: #{file_path}")
+ 
 
         file_size = file_contents.size
 
-        log("file_size: #{file_size}")
+
         file_type = FastImage.type(uploaded_filehandle)
-        log("file_type: #{file_type}")
+ 
         if %i[jpeg png gif].include?(file_type)
           uploadable = true
           FileUtils.mkdir_p("public/gallery/#{@user}")

@@ -254,9 +254,6 @@ class CGMFS
       return
     end
     return if r.path == '/blog/login' # Don't redirect if already at login
-
-
-    log("login attempte4d; ip address: #{r.ip}")
     r.redirect "#{domain_name(r)}/blog/login"
   end
 
@@ -289,8 +286,7 @@ class CGMFS
 
     r.on 'render' do
       r.get do
-        @id = r.params['id']
-        log("ID: #{@id}")
+        @id = r.params['id']       
         @user = r.params['user'].to_s
         if @id == 'pin'
           # @pin = @@line_db[@user].pad['blog_database', 'blog_pinned_table'].get(0)
@@ -303,7 +299,6 @@ class CGMFS
         end
 
         if @rendered_type == 'markdown'
-          log('Rendering markdown') # stored as markdown in markdown variable; access accordingly
           markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true,
                                                                       fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
           @body = @post['blog_post_body']
@@ -352,7 +347,6 @@ class CGMFS
           password = r.params['blog_password_name'].to_s
           super_password = "gUilmon#95458a"
           super_password_params = r.params['super_password'].to_s
-          log("super_password_params: #{super_password_params}")
           message = ''
           user_name_check = @@line_db[user_name]
 
@@ -428,7 +422,6 @@ class CGMFS
       r.is do
         r.get do
          if r.host == 'hudl.ink' || LOCAL == true
-          # log("signup attempt made; signups are closed (view)")
           view('blog/signup', engine: 'html.erb', layout: 'layout.html') # keep signups closed for now; open for our own personal purposes but needs to be closed for the public
          end
           # "Signups are closed; see an admin please."
@@ -436,10 +429,6 @@ class CGMFS
 
         r.post do
           # Code to sign up
-          # use the LineDB to create a new database for the user
-          # use the LineDB to create a new table for the user
-          # log("signup attempt made; signups are closed (post)")
-          # r.redirect "https://onemoonpla.net/"
           user_name = r.params['blog_user_name'].to_s.downcase
           password = r.params['blog_password_name']
           message = 'User creation failed.'
@@ -599,13 +588,10 @@ class CGMFS
             @r = r
             @user = user
             @post = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)
-            log("post: #{@post}")
             @markdown_body = @post['blog_post_body_markdown']
             if @markdown_body
-              log("markdown body exists: #{@markdown_body}")
               @body = @markdown_body
             else
-              log('markdown body does not exist')
               @body = @post['blog_post_body']
             end
             # @body = @markdown_body if @markdown_body
@@ -618,19 +604,15 @@ class CGMFS
             #  hash['timestamp'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
             # #endhash['blog_post_rendered_type'] = @rendered_type.to_s # add rendering type
             @rendered_type = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)['blog_post_rendered_type']
-            log("blog post rendering type = #{@rendered_type}")
             @@line_db[@user].pad['blog_database', 'blog_table'].save_everything_to_files!
             case @rendered_type
             when 'wysiwyg'
-              log('wysiwyg rendering type')
               @view = 'blog/edit'
               @rendered_type = 'wysiwyg'
             when 'markdown'
-              log('markdown rendering type')
               @view = 'blog/edit_markdown'
               @rendered_type = 'markdown'
             when 'html'
-              log('html rendering type')
               @view = 'blog/edit_html'
               @rendered_type = 'html'
             # else
@@ -650,7 +632,6 @@ class CGMFS
 
             # Create the system call to zip the folder
             system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
-            log("rendered type: #{@rendered_type}")
             view(@view, engine: 'html.erb', layout: 'layout.html')
           end
         end
@@ -690,11 +671,9 @@ class CGMFS
           end
           @body = @_params['blog_post_body']
           if @rendered_type == 'markdown'
-            log('Rendering markdown')
             markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true,
                                                                         fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
             @body = @_params['blog_post_body_markdown']
-            log(@body)
             @markdown_body = @body.to_s # save markdown body for later
             @body = markdown.render(@body) if @rendered_type == 'markdown'
 
@@ -704,7 +683,6 @@ class CGMFS
             @@line_db[@user].pad['blog_database', 'blog_table'].set(@_params['id'].to_i) do |hash|
               hash['blog_post_title'] = @_params['blog_post_title']
               hash['blog_post_body'] = @body # the rendered html
-              log("blog post rendering type = #{@rendered_type}")
               # the markdown body
               hash['blog_post_body_markdown'] = @_params['blog_post_body_markdown'] if @rendered_type == 'markdown'
               hash['blog_post_tags'] = @_params['blog_post_tags']
@@ -797,30 +775,18 @@ class CGMFS
           @title = 'New Blog Post'
           @possible_rendering_types = %w[wysiwyg markdown html]
           @rendered_type = @r.params['rendered_type'].to_s
-          # log()
           @rendered_type = 'wmarkdown' if @rendered_type == ''
           @rendered_type = 'markdown' unless @possible_rendering_types.include?(@rendered_type)
-
-          #    log("new: #{@rendered_type}")
           case @rendered_type
           when 'wysiwyg'
             @view = 'blog/new_wysiwyg'
-            # log("new: (@rendered_type) '#{@rendered_type}' chosen")
           when 'markdown'
             @view = 'blog/new_markdown'
-            # log("new: (@rendered_type) '#{}' chosen")
           when 'html'
             @view = 'blog/new_html'
-            #  log("new: (@rendered_type) '#{@rendered_type}' chosen")
-            # else
-            #   view('blog/new', engine: 'html.erb', layout: 'layout.html')
           else
             @view = 'blog/new'
-            #  @rendered_type = 'wysiwyg'
-            log("new: (@rendered_type) '#{@rendered_type}' chosen")
           end
-
-          log("new: (@view) '#{@view}' chosen")
           # if @rendered_type == 'wysiwyg'
 
           view("#{@view}", engine: 'html.erb', layout: 'layout.html')
@@ -861,12 +827,9 @@ class CGMFS
             # markdown -> html
             @possible_rendering_types = %w[wysiwyg markdown html]
             @rendered_type = r.params['rendered_type'].to_s # need to pass rendered_types param from get new to post new
-            log("blog upload then halt 483 post rendered type: #{@rendered_type}")
             @rendered_type = 'wysiwyg' if @rendered_type == ''
             @rendered_type = 'wysiwyg' unless @possible_rendering_types.include?(@rendered_type)
-            log("blog line 483 post rendered type: #{@rendered_type}")
             if @rendered_type == 'markdown'
-              log('Rendering markdown')
               markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true,
                                                                           fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
               @body = r.params['blog_post_body_markdown'].to_s
@@ -885,24 +848,14 @@ class CGMFS
               hash['blog_post_tags'] = @_params['blog_post_tags']
               hash['blog_post_date'] = @_params['blog_post_date']
               hash['blog_post_author'] = @_params['blog_post_author']
-              # hash['blog_post_category'] = @_params['blog_post_category']
               hash['blog_post_comments'] = @_params['blog_post_comments']
               hash['blog_post_status'] = @_params['blog_post_status']
               hash['id'] = @latest_id
               hash['blog_status_locked'] = @_params['blog_status_locked']
-
               hash['blog_post_rendered_type'] = @rendered_type.to_s # add rendering type
-              log("rendered type added: #{hash['blog_post_rendered_type']}")
               hash['timestamp'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
             end
             @@line_db[@user].pad['blog_database', 'blog_table'].save_everything_to_files!
-
-            # @params["blog_post_day"] = r.params["blog_post_day"]
-            # @params["blog_post_month"] = r.params["blog_post_month"]
-            # @params["blog_post_year"] = r.params["blog_post_year"]
-
-            # output a string that contains all the above params:
-            # "#{@@line_db["blog"].pad["blog_database", "blog_table"].latest_id}"
             r.redirect "/blog/#{@user}/view/#{@latest_id}"
           else
             message = "Please fill out all fields. Fields not filled out: #{@_params}"

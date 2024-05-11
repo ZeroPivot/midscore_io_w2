@@ -1,0 +1,38 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "partitioned_array",
+			"path": "lib/partitioned_array"
+		}
+	],
+	"settings": {  "ruby.rubocop.executePath": "/root/.rbenv/shims/",
+	"files.associations": {
+		"*.html.erb": "erb"
+	},
+	"ctags": {
+		"executePath": "/home/root/.rbenv/shims/ripper-tags",
+		"options": "--tag-file=.tags --recursive --force --exclude=/assets/ --exclude=.bundle --exclude=.git/ --exclude=coverage/ --exclude=.arcanist-extensions/ --exclude=log/ --exclude=tmp/ --exclude=bin/",
+		"fileName": ".tags"
+	},
+
+		"ruby.rubocop.suppressRubocopWarnings": true,
+		"solargraph.useBundler": true,
+	"ruby.rubocop.useBundler": true,
+	"[erb]": {
+		"editor.defaultFormatter": "manuelpuyol.erb-linter",
+		"editor.formatOnSave": true
+	},
+	"javascript.inlayHints.propertyDeclarationTypes.enabled": true,
+	"typescript.inlayHints.propertyDeclarationTypes.enabled": true,
+	"files.autoSave": "afterDelay",
+	"workbench.colorCustomizations": {
+		"activityBar.background": "#273202",
+		"titleBar.activeBackground": "#374503",
+		"titleBar.activeForeground": "#F6FEDC"
+	},
+	"window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}${separator}[Branch: master]",
+}
+}

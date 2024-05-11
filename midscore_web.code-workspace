@@ -28,5 +28,6 @@
 	"javascript.inlayHints.propertyDeclarationTypes.enabled": true,
 	"typescript.inlayHints.propertyDeclarationTypes.enabled": true,
 	"files.autoSave": "afterDelay",
+	"window.title": "${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}${separator}[Branch: master]",
 }
 }

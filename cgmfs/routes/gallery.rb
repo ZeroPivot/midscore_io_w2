@@ -176,17 +176,15 @@ class CGMFS
         # Write the file to a temporary gallery location
         FileUtils.mkdir_p("public/gallery/#{@user}")
         file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
-  
+
         File.open(file_path, 'w') do |file|
           file.write(file_contents)
         end
- 
 
         file_size = file_contents.size
 
-
         file_type = FastImage.type(uploaded_filehandle)
- 
+
         if %i[jpeg png gif].include?(file_type)
           uploadable = true
           FileUtils.mkdir_p("public/gallery/#{@user}")
@@ -344,19 +342,14 @@ class CGMFS
       end
     end
 
-
-
     r.is 'view', String, 'latest' do |user| # view the gallery list
       user_failcheck(user, r)
       private_view?(r, user)
       r.get do
-
-
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
 
         @gallery_images = @gallery.data_arr.reject { |image| image == {} }
-
 
         if r.params['owo_count_rate'].nil?
           @owo_count_rate = session['owo_count_rate'] || 3
@@ -379,9 +372,6 @@ class CGMFS
           session['modulo_display'] = @modulo_display
         end
 
-
-
-
         @skip_by = r.params['skip_by'].to_i
         @skip_by = 0 if r.params['skip_by'].nil?
         @gallery_numbers = @gallery_images.size / @quantity_displayed
@@ -394,12 +384,17 @@ class CGMFS
 
         end
 
-
-        r.redirect "#{domain_name(r)}/gallery/view/#{user}?skip_by=#{@pages-1}"
+        r.redirect "#{domain_name(r)}/gallery/view/#{user}?skip_by=#{@pages - 1}"
       end
     end
 
-
+    r.is 'reset_session', String do |user|
+      @user = user
+      session['owo_count_rate'] = 3
+      session['quantity_displayed'] = 175
+      session['modulo_display'] = 4
+      r.redirect "#{domain_name(r)}/gallery/view/#{user}"
+    end
 
     # /gallery/view/username
     r.is 'view', String do |user| # view the gallery list
@@ -464,7 +459,6 @@ class CGMFS
         view('blog/gallery/list_gallery_uploads', engine: 'html.erb', layout: 'layout.html')
       end
     end
-
 
     r.is 'view', String, 'id', Integer do |user, id| # view the gallery entry
       user_failcheck(user, r)

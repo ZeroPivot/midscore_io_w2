@@ -69,7 +69,7 @@
         <label for="image_quantity">#️⃣</label>
         <input type="text" id="image_quantity" name="quantity_displayed" value="<%= @quantity_displayed || 175 %>" required>
         <input type="submit" value="Submit">
-      </form>
+      </form> <a href="<%= "#{domain_name(@r)}/gallery/reset_session/#{@user}" %>"><br>❌</a>
 <br>
 <center><a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/latest"><font size="74">[🆕]</font></a><a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>?skip_by=0"><font size="74">[📁]</font></a></center>
 <br>

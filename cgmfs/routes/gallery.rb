@@ -20,7 +20,14 @@ class CGMFS
               sum = file.read.each_byte.inject(0) { |sum, byte| sum + byte }
               @sum_identifier = sum.to_i
   end
-end
+  end
+
+  def image_bytes_to_num_id_spec_fullpath(filename: String)
+    File.open("#{filename}", 'rb') do |file|
+                sum = file.read.each_byte.inject(0) { |sum, byte| sum + byte }
+                @sum_identifier = sum.to_i
+    end
+  end
 
   def convert_ints_to_emoji(int)
     integers_string = int.to_s.split('')
@@ -180,7 +187,7 @@ end
 
         original_to_new_filename = "#{Time.now.to_f}_url_upload_#{@user}"
         file_contents = URI.open(uploaded_filehandle).read
-        @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename)
+        #@sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename)
         # Write the file to a temporary gallery location
         FileUtils.mkdir_p("public/gallery/#{@user}")
         file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
@@ -204,11 +211,13 @@ end
                            else
                              ''
                            end
+          # make sure to check for file extension type, and possibly return an error if not a valid image type
           file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
           original_to_new_filename += file_extension
           new_file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
           File.rename(file_path, new_file_path)
-
+          @sum_identifier = image_bytes_to_num_id_spec_fullpath(filename: new_file_path)
+          
           Thread.new do
             create_image_thumbnail!(image_path: new_file_path, thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
           end

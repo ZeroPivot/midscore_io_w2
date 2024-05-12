@@ -168,8 +168,11 @@
             <div class="table-data">
                 <%= @image['sum_identifier'].to_s || 0.to_s %>
                 </div>
+        </div>
 
 </div>
+
+
       <% if session['user'] == @user %>  <center>  <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}/attachments/upload" %>">UPLOAD ATTACHMENT</a> </center>
 
       <br>

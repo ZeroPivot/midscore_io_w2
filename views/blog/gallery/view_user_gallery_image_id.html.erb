@@ -121,7 +121,7 @@
                 <a href="<%= "#{domain_name(@r)}/gallery/owo/add?image_id=#{@image['id']}" %>">(OwO➕➕)</a> || <a href="<%= "#{domain_name(@r)}/gallery/owo/sub?image_id=#{@image['id']}" %>">(OwO➖➖)</a> || <a href="<%= "#{domain_name(@r)}/gallery/owo/rem?image_id=#{@image['id']}" %>">(OwO🔨)</a>
                 <% end %>
             <% else %>
-            
+
 
             <% end %>
 
@@ -135,6 +135,7 @@
             <div class="table-header"><strong>(🔗)</strong></div>
             <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}" %>">PERMA-LINK</a></div>
         </div>
+
                 <div class="table-row">
         <div class="table-header"><strong>(🆔)</strong></div>
             <div class="table-data"><%= @id %>
@@ -160,6 +161,14 @@
 
              <% end %>
              </div>
+
+
+        <div class="table-row">
+            <div class="table-header"><strong>(...#️⃣➕#️⃣...)</strong></div>
+            <div class="table-data">
+                <%= @image['sum_identifier'].to_s || 0.to_s %>
+                </div>
+
 </div>
       <% if session['user'] == @user %>  <center>  <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}/attachments/upload" %>">UPLOAD ATTACHMENT</a> </center>
 

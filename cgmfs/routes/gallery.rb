@@ -15,6 +15,13 @@ class CGMFS
     r.redirect "#{domain_name(r)}/blog/login"
   end
 
+  def image_bytes_to_num_id(user:, filename:)
+  File.open("public/gallery/#{user}/#{filename}", 'rb') do |file|
+              sum = file.read.each_byte.inject(0) { |sum, byte| sum + byte }
+              @sum_identifier = sum.to_i
+  end
+end
+
   def convert_ints_to_emoji(int)
     integers_string = int.to_s.split('')
     emoji_integers = integers_string.map do |integer|
@@ -173,6 +180,7 @@ class CGMFS
 
         original_to_new_filename = "#{Time.now.to_f}_url_upload_#{@user}"
         file_contents = URI.open(uploaded_filehandle).read
+        @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename)
         # Write the file to a temporary gallery location
         FileUtils.mkdir_p("public/gallery/#{@user}")
         file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
@@ -223,6 +231,7 @@ class CGMFS
             hash['shares'] = 0
             hash['comments'] = 0
             hash['likes'] = 0
+            hash['sum_identifier'] = @sum_identifier
             hash['tags'] = tags
             hash['size'] = file_size
             hash['extension'] = file_extension
@@ -311,6 +320,8 @@ class CGMFS
         end
 
         if uploadable
+
+        @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename)
           id = @@line_db[@user].pad['gallery_database', 'gallery_table'].add_at_last do |hash|
             hash['file'] = original_to_new_filename
             hash['views'] = 0
@@ -320,6 +331,7 @@ class CGMFS
             hash['shares'] = 0
             hash['comments'] = 0
             hash['likes'] = 0
+            hash['sum_identifier'] = @sum_identifier
             hash['tags'] = tags
             hash['size'] = file_size
             hash['extension'] = file_extension
@@ -761,6 +773,7 @@ class CGMFS
         @description = @image['description']
         @tags = @image['tags']
         @file = @image['file']
+        @sum_identifier = image_bytes_to_num_id(user: @user, filename: @file)
 
         view('blog/gallery/edit_user_gallery_image_id', engine: 'html.erb', layout: 'layout.html')
       end
@@ -803,8 +816,12 @@ class CGMFS
             Thread.new do
               resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1080, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
             end
+            @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename) # code later, but add a binary number adder to the image file, and then add the sum identifier to the image file, and then check the sum identifier to see if the image is the same as the original image.
+
           else
             uploadable = false
+            @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename) # just to be sure!
+
           end
         else
           original_to_new_filename = @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['file']
@@ -820,6 +837,7 @@ class CGMFS
           hash['size'] = file_size
           hash['extension'] = file_extension
           hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
+          hash['sum_identifier'] = @sum_identifier
         end
 
         @gallery.save_partition_by_id_to_file!(@id)

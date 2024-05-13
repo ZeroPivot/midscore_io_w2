@@ -15,7 +15,11 @@
 
     function fitToScreenSize() {
         var image = document.getElementById("gallery-image");
-        image.style.width = "100%";
+        if (image.style.width === "100%") {
+            image.style.width = "50%";
+        } else {
+            image.style.width = "100%";
+        }
         image.style.height = "auto";
     }
 
@@ -159,14 +163,15 @@
                     <a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{@image["id"]}" %>">ADMIN: EDIT</a>
             </div>
 
-             <% end %>
+            
              </div>
+              <% end %>
 
-
+        <% sum = @image['sum_identifier'].to_s.split('').map(&:to_i).sum %> 
         <div class="table-row">
             <div class="table-header"><strong>(...#️⃣➕#️⃣...)</strong></div>
             <div class="table-data">
-                <%= @image['sum_identifier'].to_s || 0.to_s %>
+                (<%= @image['sum_identifier'].to_s || 0.to_s %>) -> (<%= sum %>)
                 </div>
         </div>
 
@@ -182,15 +187,10 @@
     </center>
     <center>
         <script>
-            function fitToScreenSize() {
+            window.onload = function() {
                 var image = document.getElementById("gallery-image");
-                if (image.style.width === "100%") {
-                    image.style.width = "50%";
-                } else {
-                    image.style.width = "100%";
-                }
-                image.style.height = "auto";
-            }
+                image.style.width = "50%";
+            };
         </script>
     </center>
 </body>

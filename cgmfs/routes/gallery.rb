@@ -9,6 +9,38 @@ class CGMFS
     r.redirect "https://#{r.host}" unless LOCAL
   end
 
+  
+  class Calendar
+  attr_reader :date
+
+  def initialize
+    @date = Date.today
+  end
+
+  def gregorian
+    @date.strftime('%m/%d/%Y')
+  end
+
+  def julian
+    jd = @date.jd
+    julian_date = Date.jd(jd, Date::JULIAN)
+    julian_date.strftime('%m/%d/%Y')
+  end
+
+  def julian_primitive
+    jd = @date.jd   
+    jd
+  end
+end
+
+
+
+
+
+
+
+
+
   def logged_in?(r, user)
     return unless session['user'] != user
 

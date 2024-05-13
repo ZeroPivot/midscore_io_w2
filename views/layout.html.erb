@@ -24,7 +24,16 @@
     <!-- <meta name="twitter:description" content="<%#= escape_html description %>" /> -->
     <title><%= @title %></title>
   </head>
+ 
   <body>
+    
+  <style>
+    .day { border: 1px solid black; padding: 10px; display: inline-block; width: 40px; text-align: center; }
+    .week { clear: both; }
+  </style>
+</head>
+
+
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8121079063235245"
      crossorigin="anonymous"></script>
   <div>
@@ -37,9 +46,12 @@
   </a><br>
     <center><font size="3"><div size="5" id="ip_addr_resolv">🏘️<b>[🌐<%= request.ip %>]</b></div></font></center>
   <br>
-  <font size="16"> <a href="<%= domain_name(@r) %>/blog">(📃)</a>,<a href="<%= domain_name(@r) %>/gallery">(🖼️)</a></font><br><br>
+  <font size="16"><a href="<%= domain_name(@r) %>/blog">(📃)</a>,<a href="<%= domain_name(@r) %>/gallery">(🖼️)</a></font><br><br>
+  <font size="3"><%= "Gregorian: #{Calendar.new.gregorian}" %><font><br>
+  <font size="3"><%= "Julian: #{Calendar.new.julian_primitive} -> #{Calendar.new.julian}" %></font><br>
   <font size="16"><%= MoonIllumination.emoji %></font><br>
   <font size="3"><%= MoonIllumination.phase_name %></font><br>
+  <font size="3">Moon Age -> (<%= MoonIllumination.age %>)</font><br>
  <br>
   <% if session['user'] %>
    <h1>(👤[<a href="/gallery/upload">(🔢)</a>; <a href="/gallery/upload/url">(🔗🔢)</a>;  <a href="/blog/<%= session['user'] %>/new">(📝)</a>|<a href="/gallery/view/<%= session['user'] %>">(🖼️)</a>],[<a href="/blog/<%= session['user'] %>">(📃)</a>]) <a href="/gallery/view/<%= session['user'] %>"><%= session['user'] %></a></h1><br>

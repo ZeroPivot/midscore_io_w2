@@ -9,7 +9,7 @@ class CGMFS
     r.redirect "https://#{r.host}" unless LOCAL
   end
 
-  
+
   class Calendar
   attr_reader :date
 
@@ -28,7 +28,7 @@ class CGMFS
   end
 
   def julian_primitive
-    jd = @date.jd   
+    jd = @date.jd
     jd
   end
 end
@@ -249,7 +249,7 @@ end
           new_file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
           File.rename(file_path, new_file_path)
           @sum_identifier = image_bytes_to_num_id_spec_fullpath(filename: new_file_path)
-          
+
           Thread.new do
             create_image_thumbnail!(image_path: new_file_path, thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
           end
@@ -538,8 +538,34 @@ end
       end
     end
 
+    r.is 'view', String, 'containers', String do |user, container|
+      user_failcheck(user, r)
+      private_view?(r, user)
+
+      r.get do
+        @user = user
+        @r = r
+        @container = container
+
+        view('blog/gallery/view_user_gallery_container', engine: 'html.erb', layout: 'layout.html')
+      end
+    end
+
+    # list all containers based on UserName
+    r.is 'view'. String, 'containers' do |user|
+      user_failcheck(user, r)
+      private_view?(r, user)
+      r.get do
+        @user = user
+        @r = r
+
+        view('blog/gallery/view_user_gallery_containers', engine: 'html.erb', layout: 'layout.html')
+      end
+    end
+
     r.is 'view', String, 'id', Integer, 'attachments' do |user, id| # view the attachments list
       user_failcheck(user, r)
+      private_view?(r, user)
       r.get do
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']

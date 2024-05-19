@@ -9,37 +9,27 @@ class CGMFS
     r.redirect "https://#{r.host}" unless LOCAL
   end
 
-
   class Calendar
-  attr_reader :date
+    attr_reader :date
 
-  def initialize
-    @date = Date.today
+    def initialize
+      @date = Date.today
+    end
+
+    def gregorian
+      @date.strftime('%m/%d/%Y')
+    end
+
+    def julian
+      jd = @date.jd
+      julian_date = Date.jd(jd, Date::JULIAN)
+      julian_date.strftime('%m/%d/%Y')
+    end
+
+    def julian_primitive
+      @date.jd
+    end
   end
-
-  def gregorian
-    @date.strftime('%m/%d/%Y')
-  end
-
-  def julian
-    jd = @date.jd
-    julian_date = Date.jd(jd, Date::JULIAN)
-    julian_date.strftime('%m/%d/%Y')
-  end
-
-  def julian_primitive
-    jd = @date.jd
-    jd
-  end
-end
-
-
-
-
-
-
-
-
 
   def logged_in?(r, user)
     return unless session['user'] != user
@@ -48,16 +38,16 @@ end
   end
 
   def image_bytes_to_num_id(user:, filename:)
-  File.open("public/gallery/#{user}/#{filename}", 'rb') do |file|
-              sum = file.read.each_byte.inject(0) { |sum, byte| sum + byte }
-              @sum_identifier = sum.to_i
-  end
+    File.open("public/gallery/#{user}/#{filename}", 'rb') do |file|
+      sum = file.read.each_byte.inject(0) { |sum, byte| sum + byte }
+      @sum_identifier = sum.to_i
+    end
   end
 
   def image_bytes_to_num_id_spec_fullpath(filename: String)
     File.open("#{filename}", 'rb') do |file|
-                sum = file.read.each_byte.inject(0) { |sum, byte| sum + byte }
-                @sum_identifier = sum.to_i
+      sum = file.read.each_byte.inject(0) { |sum, byte| sum + byte }
+      @sum_identifier = sum.to_i
     end
   end
 
@@ -219,7 +209,7 @@ end
 
         original_to_new_filename = "#{Time.now.to_f}_url_upload_#{@user}"
         file_contents = URI.open(uploaded_filehandle).read
-        #@sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename)
+        # @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename)
         # Write the file to a temporary gallery location
         FileUtils.mkdir_p("public/gallery/#{@user}")
         file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
@@ -362,7 +352,7 @@ end
 
         if uploadable
 
-        @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename)
+          @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename)
           id = @@line_db[@user].pad['gallery_database', 'gallery_table'].add_at_last do |hash|
             hash['file'] = original_to_new_filename
             hash['views'] = 0
@@ -535,31 +525,6 @@ end
         else
           "No gallery post found with id #{@id}."
         end
-      end
-    end
-
-    r.is 'view', String, 'containers', String do |user, container|
-      user_failcheck(user, r)
-      private_view?(r, user)
-
-      r.get do
-        @user = user
-        @r = r
-        @container = container
-
-        view('blog/gallery/view_user_gallery_container', engine: 'html.erb', layout: 'layout.html')
-      end
-    end
-
-    # list all containers based on UserName
-    r.is 'view'. String, 'containers' do |user|
-      user_failcheck(user, r)
-      private_view?(r, user)
-      r.get do
-        @user = user
-        @r = r
-
-        view('blog/gallery/view_user_gallery_containers', engine: 'html.erb', layout: 'layout.html')
       end
     end
 

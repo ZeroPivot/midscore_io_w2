@@ -175,6 +175,60 @@ class CGMFS
       end
     end
 
+    r.on 'containers', 'view', String do |user|
+      @user = user
+      private_view?(r, @user)
+
+      r.get do
+
+        view('blog/gallery/view_containers', engine: 'html.erb', layout: 'layout.html')
+      end
+    end
+
+    r.on 'containers', 'view', String, 'id', Integer do |user, id|
+      @user = user
+      @id = id
+      private_view?(r, @user)
+
+      r.get do
+        
+
+        view('blog/gallery/view_container_id', engine: 'html.erb', layout: 'layout.html')
+      end
+    end
+
+    r.on 'containers', 'new' do
+      @user = session['user']
+      logged_in?(r, @user)
+      user_failcheck(@user, r)
+
+      r.get do
+
+        view('blog/gallery/new_container', engine: 'html.erb', layout: 'layout.html')
+      end
+
+      r.post do
+
+      end
+    end
+
+    r.on 'containers', 'edit', 'id', Integer  do |id|
+      @user = session['user']
+      logged_in?(r, @user)
+      user_failcheck(@user, r)
+
+      r.get do
+
+        view('blog/gallery/edit_container_id', engine: 'html.erb', layout: 'layout.html')
+      end
+
+      r.post do
+
+      end
+
+    end
+
+
     r.on 'upload', 'url' do
       # get user session in roda
       @user = session['user']
@@ -551,14 +605,10 @@ class CGMFS
 
         File.delete("public/gallery/#{@user}/attachments/#{@attachments[attachment_id]['file_attachment_name']}")
         @attachments.delete_at(attachment_id)
-        log(@attachments.to_s)
-        log('attachment deleted')
         @gallery.set(@id) do |hash|
           hash['attachments'] = @attachments
         end
-        log('attachment hash set')
         @gallery.save_partition_by_id_to_file!(@id)
-        log('attachment saved')
 
         # "attachment deleted. <a href='#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments'>Back to attachments</a>"
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments"
@@ -598,7 +648,6 @@ class CGMFS
           @id = id
           @image = @gallery.get(@id)
 
-          log(@image['attachments'].to_s)
           @attachments = if !@image['attachments']
                            []
                          else
@@ -614,7 +663,6 @@ class CGMFS
           end
           @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
 
-          log(@url_params)
           @gallery.save_partition_by_id_to_file!(@id)
 
         else
@@ -994,6 +1042,11 @@ class CGMFS
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@image_id}"
       end
     end
+
+
+
+
+
   end
 end
 # rubocop:enable Metrics/BlockLength, Layout/LineLength, Metrics/ClassLength, Metrics/MethodLength

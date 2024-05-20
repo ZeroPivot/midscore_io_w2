@@ -54,7 +54,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "(#️⃣4.0.5.1) - \"The Stimky Sniffa\" - 🩲🍆😤 - [build 2024-05-12 12:57AM PST -07]" # used in layout.html.erb
+$dog_blog_version = "(v#️⃣5) - \"The Stimky Sniffa\" - 🩲🍆😤 - [build 2024-05-20]" # used in layout.html.erb
 $lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)
 
 DO_TELEGRAM_LOGGING = true # telegram logging
@@ -194,6 +194,8 @@ class CGMFS < Roda
     @@line_db[db].pad.new_table!(database_name: "uwu_collections_database", database_table: "uwu_collections_table")
     puts "... Loading grid collections system database..."
     @@line_db[db].pad.new_table!(database_name: "grid_collections_database", database_table: "grid_collections_table")
+    puts "... Loading containers database ..."
+    @@line_db[db].pad.new_table!(database_name: "containers_database", database_table: "containers_table")
     puts "Done."
     b = Time.now
     puts "Time taken to load #{db}: #{b - a} seconds."

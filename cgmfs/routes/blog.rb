@@ -286,7 +286,7 @@ class CGMFS
 
     r.on 'render' do
       r.get do
-        @id = r.params['id']       
+        @id = r.params['id']
         @user = r.params['user'].to_s
         if @id == 'pin'
           # @pin = @@line_db[@user].pad['blog_database', 'blog_pinned_table'].get(0)
@@ -369,55 +369,6 @@ class CGMFS
       end
     end
 
-    r.on '_ADMIN_SIGNUP_PROCESS_' do
-      r.is do
-        r.get do
-          user_name = r.params['user_name'].to_s.downcase
-          password = r.params['user_password'].to_s
-          admin_password = r.params['admin_pass'].to_s
-          message = 'User creation failed.'
-          user_name_check = @@line_db[user_name]
-          if user_name_check.nil? && user_name != '' && password != '' && (admin_password == '859CDFE#F4E85')
-            @@line_db.add_db!(user_name.downcase)
-            @@line_db.update_databases
-            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table') # load the blog database
-            @@line_db['user_blog_database'].pad.new_table!(database_name: 'user_name_database', database_table: 'user_name_table') # load the user blog database
-            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table')
-            puts '...Loading blog_pinned_table.'
-            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database',
-                                                         database_table: 'blog_pinned_table')
-            puts '...Loading blog_profile_table.'
-            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database',
-                                                         database_table: 'blog_profile_table')
-            puts '...Loading blog_statistics_table.'
-            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database',
-                                                         database_table: 'blog_statistics_table')
-            puts '...Loading blog_profile_table...'
-            @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database',
-                                                         database_table: 'blog_profile_table')
-            @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].set(0) do |hash|
-              hash[user_name] = password
-            end
-            @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].save_everything_to_files!
-            message = 'User created successfully!'
-          end
-          # Define the folder to be zipped
-          puts Dir.pwd
-          folder_path = '/root/midscore_io/db'
-
-          # Define the location where the zip file will be placed
-          zip_location = '/root/midscore_io/db_backup'
-
-          # Create the zip file name
-          zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
-
-          # Create the system call to zip the folder
-          system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
-          "#{message}"
-        end
-      end
-    end
-
     r.on 'signup' do
       r.is do
         r.get do
@@ -462,9 +413,13 @@ class CGMFS
             @@line_db[user_name.downcase].pad.new_table!(database_name: "cache_system_database", database_table: "cache_system_table")
             puts "... Loading uwu collections system database..."
             @@line_db[user_name.downcase].pad.new_table!(database_name: "uwu_collections_database", database_table: "uwu_collections_table")
+            puts "... Loading grid collections system database..."
+            @@line_db[db].pad.new_table!(database_name: "grid_collections_database", database_table: "grid_collections_table")
+            puts "... Loading containers database ..."
+            @@line_db[db].pad.new_table!(database_name: "containers_database", database_table: "containers_table")
             message = 'User created successfully!'
             # sleep(11)
-          elsif !user_name_check.nil? && session['admin']
+          elsif !user_name_check.nil? && session['admin'] # should be deprecated... or overriden with *`superadmin`* or `admin` or `root` or `superuser` or `superuseradmin` or `superuseradminroot`
             @@line_db.add_db!(user_name.downcase)
             @@line_db.update_databases
             @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table') # load the blog database

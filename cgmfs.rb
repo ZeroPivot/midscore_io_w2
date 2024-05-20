@@ -20,30 +20,22 @@ require 'net/https'
 require 'yuicompressor'
 require 'roda/plugins/assets'
 
-# MAJOR TODO v3.4.0.4a  (3/20/2024): make sure filenames in uploads edits etc are compatible with ascii)
-
-# require 'rack'
-# require 'rack/csrf'
 require_relative 'require_dir' # for route auto-loading
-# Require the entire partitioned array library and managed partitioned array
+
 LATEST_PA_VERSION = "v2.0.0-mpa_v1.2.6-pa_v1.0.0a-mpafc" # deprecated
-# require_relative "lib/partitioned_array/#{LATEST_PA_VERSION}/requires" # partitioned array loading; loads the entire library
-# require_relative "lib/partitioned_array/lib/managed_partitioned_array"
-# require_relative "lib/partitioned_array/lib/file_context_managed_partitioned_array"
+
 require_relative "lib/partitioned_array/lib/line_db" # magnum opus of computer science
 
 require_relative 'lib/shortened/shortened_url' # shortened url class
 require_relative "lib/loggers/telegram_logger"
 require_relative 'logger'
 require_dir "./lib/dir_requires"
-# SERVER_IP = 'onemoonpla.net' # default host for now
-# SERVER_IP_LOCAL = 'localhost'
-# DOMAIN_NAME = 'https://onemoonpla.net'
+
 DEBUG = false
 LOCAL = File.open("local.txt", "r").read.strip == "1"
 
 ## enable Resolv to use DNS (../views/layout.html.erb)
-$dns_enabled = false # enable dns
+$dns_enabled = false # enable dns (deprecated)
 
 SERVER_MAIN_DOMAIN_NAME = File.open("server_main_domain_name.txt", "r") { |f| f.read.chomp }
 
@@ -57,12 +49,9 @@ DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 $dog_blog_version = "(v#️⃣5) - \"The Stimky Sniffa\" - 🩲🍆😤 - [build 2024-05-20]" # used in layout.html.erb
 $lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)
 
-DO_TELEGRAM_LOGGING = true # telegram logging
-
-# redirect aritywolf.net to aritywolf's blog on onemoonpla.net; aritywolf.net already is a domain name on onemoonpla.net, among others you can find on digitalocean
+DO_TELEGRAM_LOGGING = true # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
 
 class CGMFS < Roda
-  # use Rack::Csrf, :check_only => [''], :raise => true
   PATHS_INCLUDE_CSRF = { '/api/screens/upload' => true, '/u/shorten' => true, '/api/file/upload' => true,
                          '/api/text/upload' => true }
   PUBLIC_URL_PATH = :static

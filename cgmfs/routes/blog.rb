@@ -414,9 +414,9 @@ class CGMFS
             puts "... Loading uwu collections system database..."
             @@line_db[user_name.downcase].pad.new_table!(database_name: "uwu_collections_database", database_table: "uwu_collections_table")
             puts "... Loading grid collections system database..."
-            @@line_db[db].pad.new_table!(database_name: "grid_collections_database", database_table: "grid_collections_table")
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "grid_collections_database", database_table: "grid_collections_table")
             puts "... Loading containers database ..."
-            @@line_db[db].pad.new_table!(database_name: "containers_database", database_table: "containers_table")
+            @@line_db[user_name.downcase].pad.new_table!(database_name: "containers_database", database_table: "containers_table")
             message = 'User created successfully!'
             # sleep(11)
           elsif !user_name_check.nil? && session['admin'] # should be deprecated... or overriden with *`superadmin`* or `admin` or `root` or `superuser` or `superuseradmin` or `superuseradminroot`

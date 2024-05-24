@@ -1,0 +1,19 @@
+<%# /root/midscore_io/views/blog/gallery/view_uwu_collections_id.html.erb %>
+
+<%# Add your HTML structure here %>
+<div class="uwu-collections">
+    <h1>UwU Collections</h1>
+    <% @collections.each do |collection| %>
+        <div class="collection">
+            <h2><%= collection.name %></h2>
+            <p><%= collection.description %></p>
+            <ul>
+                <% collection.items.each do |item| %>
+                    <li><%= item.name %></li>
+                <% end %>
+            </ul>
+        </div>
+    <% end %>
+</div>
+
+

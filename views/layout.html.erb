@@ -16,7 +16,7 @@
     <meta property="og:image:width" content="500"><!-- added 2021-04-07 -->
     <meta property="og:image:height" content="500"> <!-- added 2021-04-07 -->
     <meta name="description" content="Post By <%= @user || domain_name(@r) %>">
-    <meta name="keywords" content="demiurge, simulation, simulator, sim, second life, stinky, stimky, stinky.zip, stimky.zip onemoondogg, pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, wolf, one moon planet, onemoonplane, blog,  gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art, zoophile hunters, pedophile hunters, bigot hunters, trans hunters, trans exposers, bigot exposers, pedophile exposers, democrat, republican, cenrist, democrat lol, sexy, signup, mega-game.net, meta game, meta, metaworld, furfaggotry, blogger, blog, gnosis, gnostic, gnocticism, ai, artificlal intelligence, service, blogger, gallery, furry gallery, furry bloggers, furry blogger">
+    <meta name="keywords" content="demiurge, simulation, simulator, sim, second life, stinky, stimky, stinky.zip, stimky.zip onemoondogg, pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, wolf, one moon planet, onemoonplane, blog,  gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art, zoophile hunters, pedophile hunters, bigot hunters, trans hunters, trans exposers, bigot exposers, pedophile exposers, democrat, republican, cenrist, democrat lol, sexy, signup, mega-game.net, meta game, meta, metaworld, furfaggotry, blogger, blog, gnosis, gnostic, gnocticism, ai, artificlal intelligence, service, blogger, gallery, furry gallery, furry bloggers, furry blogger, gay, homosexual, queer, twin flames, rhuxwolf, aylowolf, rhuxfolf, aylofolf, metagame, game, gaming, games, video games, software, hardware">
     <meta name="author" content="OneMoonDogg">
     <meta property="og:image" content="<%= domain_name(@r) %>/card_banner.jpg">
     <meta name="twitter:card" content="summary_large_image"> <!-- changed 2021-04-15 -->
@@ -88,14 +88,14 @@
 
   <% end %>
 <br>
- ♾️<%= @page_views.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %> -- ©️<a href="https://meta-game.info">meta-game.info</a> --  <%= $dog_blog_version %><br>
-  <br>
-  <%= TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s %>
-  <br>
-  <br>
-    <center><font size="3"><div size="5" id="ip_addr_resolv">🏘️<b>[🌐<%= request.ip %>]</b></div></font></center>
-  <br>
-   <a href="<%= domain_name(@r) %>/blog/logout">[➖🔒]</a><br>
-  </center>
-  </font>
+♾️<%= @page_views.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %> -- ©️<a href="<%= domain_name(@r) %>"><%= domain_name(@r).gsub(/https?:\/\//, '') %></a> --  <%= $dog_blog_version %><br>
+<br>
+<%= TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s %>
+<br>
+<br>
+<center><font size="3"><div size="5" id="ip_addr_resolv">🏘️<b>[🌐<%= request.ip %>]</b></div></font></center>
+<br>
+<a href="<%= domain_name(@r) %>/blog/login">[➕🔒]</a>|<a href="<%= domain_name(@r) %>/blog/logout">[➖🔒]</a><br>
+</center>
+</font>
 </html>

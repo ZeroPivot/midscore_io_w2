@@ -175,63 +175,10 @@ class CGMFS
       end
     end
 
-    r.on 'containers', 'view', String do |user|
-      @user = user
-      private_view?(r, @user)
-
-      r.get do
-
-        view('blog/gallery/view_containers', engine: 'html.erb', layout: 'layout.html')
-      end
-    end
-
-    r.on 'containers', 'view', String, 'id', Integer do |user, id|
-      @user = user
-      @id = id
-      private_view?(r, @user)
-
-      r.get do
-        
-
-        view('blog/gallery/view_container_id', engine: 'html.erb', layout: 'layout.html')
-      end
-    end
-
-    r.on 'containers', 'new' do
-      @user = session['user']
-      logged_in?(r, @user)
-      user_failcheck(@user, r)
-
-      r.get do
-
-        view('blog/gallery/new_container', engine: 'html.erb', layout: 'layout.html')
-      end
-
-      r.post do
-
-      end
-    end
-
-    r.on 'containers', 'edit', 'id', Integer  do |id|
-      @user = session['user']
-      logged_in?(r, @user)
-      user_failcheck(@user, r)
-
-      r.get do
-
-        view('blog/gallery/edit_container_id', engine: 'html.erb', layout: 'layout.html')
-      end
-
-      r.post do
-
-      end
-
-    end
-
-
     r.on 'upload', 'url' do
       # get user session in roda
       @user = session['user']
+      @title = 'Upload Image to Gallery from URL'
       logged_in?(r, @user)
       user_failcheck(@user, r)
 
@@ -244,7 +191,7 @@ class CGMFS
         uploaded_filehandle = r.params['url']
         description = "url upload - #{r.params['url']} - Time: #{Time.now}"
         tags = 'url_upload'
-        title = "url upload - #{Time.now}"
+        @title = title = "url upload - #{Time.now}"
 
         # Code to upload an image to the gallery, with an option to introduce the upload location and retrieve via URL
         # 1. Upload the image to the server
@@ -322,6 +269,9 @@ class CGMFS
             hash['extension'] = file_extension
             hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
           end
+          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
+            hash['recache'] = true
+          end
 
           # set the id of the image to the id of the image in the database
           @@line_db[@user].pad['gallery_database', 'gallery_table'].set(id) do |hash|
@@ -338,10 +288,12 @@ class CGMFS
     r.on 'upload' do
       # get user session in roda
       @user = session['user']
+      @title = 'Upload Image to Gallery'
       logged_in?(r, @user)
       user_failcheck(@user, r)
 
       r.get do
+        @title = 'Upload Image to Gallery'
         view('blog/gallery/new', engine: 'html.erb', layout: 'layout.html')
       end
 
@@ -444,6 +396,7 @@ class CGMFS
       private_view?(r, user)
       r.get do
         @user = user
+        @title = "#{@user}'s Gallery"
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
 
         @gallery_images = @gallery.data_arr.reject { |image| image == {} }
@@ -499,6 +452,7 @@ class CGMFS
       private_view?(r, user)
 
       r.get do
+        @title = "View #{user}'s Gallery"
         if r.params['owo_count_rate'].nil?
           @owo_count_rate = session['owo_count_rate'] || 3
         else
@@ -568,6 +522,7 @@ class CGMFS
         @id = id
         @image = @gallery.get(@id)
         @attachments = @image['attachments']
+        @title = "View Gallery Post ID #{@id} by #{@user}"
 
         @owo = @image['owo_count']
 
@@ -590,6 +545,7 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @id = id
         @image = @gallery.get(@id)
+        @title = "View Attachment Id #{@id} by #{@user}"
         view('blog/gallery/view_user_gallery_image_id_attachments_list', engine: 'html.erb', layout: 'layout.html')
       end
     end
@@ -602,6 +558,7 @@ class CGMFS
         @id = id
         @image = @gallery.get(@id)
         @attachments = @image['attachments']
+        @title = "Delete Attachment Id #{@id} by #{@user}"
 
         File.delete("public/gallery/#{@user}/attachments/#{@attachments[attachment_id]['file_attachment_name']}")
         @attachments.delete_at(attachment_id)
@@ -623,6 +580,7 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @id = id
         @image = @gallery.get(@id)
+        @title = "View Attachment Id #{@id} by #{@user} Upload"
         # @attachments = @image['attachments']
         # <%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= @attachment_id %>
         view('blog/gallery/view_user_gallery_image_id_attachments_upload', engine: 'html.erb', layout: 'layout.html')
@@ -633,13 +591,14 @@ class CGMFS
         @r = r
         @url_params = r.params['url']
         @id = id
+        @title = "Post Attachment to Gallery ID #{@id}"
 
         if @url_params
 
           @uri_url = URI.open(@url_params.to_s)
           @uploaded_filehandle = @uri_url.read
-          @meta = @uri_url.meta['content-type'].split('/').last
-          log(@meta)
+          @meta = @uri_url.meta['content-type'].split('/').last # this doesn't seem to work for some urls
+
           @file_name = Time.now.to_f.to_s + 'attachment' + '.' + @meta
 
           FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
@@ -674,7 +633,6 @@ class CGMFS
           @id = id
           @image = @gallery.get(@id)
 
-          log(@image['attachments'].to_s)
           @attachments = if !@image['attachments']
                            []
                          else
@@ -700,6 +658,7 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @id = id
         @image = @gallery.get(@id)
+        @title = "Delete Gallery Post ID #{@id}"
         if @image
           @gallery.data_arr[@id] = {}
           File.delete("public/gallery/#{@user}/#{@image['file']}")
@@ -721,6 +680,7 @@ class CGMFS
         @only_search = false
         @search_params = r.params['search_tags']
         @user = user
+        @title = "#{@user}'s Gallery Tags Search Function"
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @tags_array = []
         @images = @gallery.data_arr.map { |image| image }
@@ -776,6 +736,8 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @view_all_images_with_tags = r.params['view_all_images_with_tags']
 
+        @title = "#{@user}'s Gallery Tags"
+
         @cache = @@line_db[@user].pad['cache_system_database', 'cache_system_table']
 
         @cache_hash = @cache.get(0)
@@ -798,7 +760,6 @@ class CGMFS
         else
           @recache = false
         end
-        log(@recache)
 
         if @recache
           GC.start
@@ -1042,11 +1003,6 @@ class CGMFS
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@image_id}"
       end
     end
-
-
-
-
-
   end
 end
 # rubocop:enable Metrics/BlockLength, Layout/LineLength, Metrics/ClassLength, Metrics/MethodLength

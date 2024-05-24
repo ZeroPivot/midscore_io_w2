@@ -46,7 +46,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$dog_blog_version = "(v#️⃣5.2) - \"The Stimky Sniffa\" - 🩲🍆😤 - [maintenance build 2024-05-20]" # used in layout.html.erb
+$dog_blog_version = "(v#️⃣5.3) - \"The Stimky Sniffa\" - 🩲🍆😤 - [maintenance build 2024-05-20]" # used in layout.html.erb
 $lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)
 
 DO_TELEGRAM_LOGGING = true # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
@@ -98,12 +98,6 @@ class CGMFS < Roda
   # @@urls.load_last_entry_from_file!
   # @@urls.load_max_partition_archive_from_file!
   # @@urls.load_partition_archive_id_from_file!
-
-  # TODO: add eo managedpartionedarray: an archiver that archives every entry and refreshes the partitions
-  @@sl_db = ManagedPartitionedArray.new(max_capacity: "data_arr_size", db_size: DB_SIZE,
-                                        partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: "./db/sl", db_name: 'sl_slice')
-  @@sl_db.allocate
-  @@sl_db = @@sl_db.load_from_archive!
 
   @@test = ManagedPartitionedArray.new(max_capacity: "data_arr_size", db_size: DB_SIZE,
                                        partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: "./db/sl2", db_name: 'sl_slice2')

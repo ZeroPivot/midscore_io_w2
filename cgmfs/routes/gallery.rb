@@ -857,6 +857,7 @@ class CGMFS
             Thread.new do
               resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1080, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
             end
+
             @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename) # code later, but add a binary number adder to the image file, and then add the sum identifier to the image file, and then check the sum identifier to see if the image is the same as the original image.
 
           else
@@ -868,6 +869,7 @@ class CGMFS
           original_to_new_filename = @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['file']
           file_size = @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['size']
           file_extension = @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['extension']
+          @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename) # just to be sure!
         end
 
         @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|

@@ -49,7 +49,7 @@
                   <div class="attachment">
                     *️⃣ <a href="/gallery/<%= @user %>/attachments/<%= attachment['file_attachment_name'] %>"><%= attachment['file_attachment_name'] %></a>
                     <% if @user == session['user'] %>
-                      <%= attachment['file_attachment_name'] %></a> <a href="/gallery/view/<%= @user %>/id/<%= image['id'] %>/attachments/delete/<%= index %>">DELETE</a>
+                     <a href="/gallery/view/<%= @user %>/id/<%= image['id'] %>/attachments/delete/<%= index %>">DELETE</a>
                     <% end %>
                   </div><br>
                 <% end %>

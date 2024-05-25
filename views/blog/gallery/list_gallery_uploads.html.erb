@@ -47,7 +47,7 @@
               <% if !image['attachments'].nil? %>
                 <% image['attachments'].each_with_index do |attachment, index| %>
                   <div class="attachment">
-                    *️⃣ <a href="/gallery/<%= @user %>/attachments/<%= attachment['file_attachment_name'] %>">
+                    *️⃣ <a href="/gallery/<%= @user %>/attachments/<%= attachment['file_attachment_name'] %>"><%= attachment['file_attachment_name'] %></a>
                     <% if @user == session['user'] %>
                       <%= attachment['file_attachment_name'] %></a> <a href="/gallery/view/<%= @user %>/id/<%= image['id'] %>/attachments/delete/<%= index %>">DELETE</a>
                     <% end %>

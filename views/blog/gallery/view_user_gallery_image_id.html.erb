@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <style>
+        a:link {
+            color: white;
+        }
+        a:visited {
+            color: white;
+        }
+    </style>
     <script>
     function toggleImageSize() {
         var image = document.getElementById("gallery-image");
@@ -76,7 +84,7 @@
     <center><div>
         <form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
             <input type="text" id="search_tags" name="search_tags" placeholder="Search tags" required>
-            <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/" %>">(🏷️,🏷️,...)</a>
+            <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/" %>" style="color: white;">(🏷️,🏷️,...)</a>
             <input type="submit" value="Search">
         </form>
     </div>
@@ -122,7 +130,7 @@
                 <% if @owo.nil? %>
                 <a href="<%= "#{domain_name(@r)}/gallery/owo/add?image_id=#{@image['id']}" %>">(OwO🪨)</a>
                 <% else %>
-                <a href="<%= "#{domain_name(@r)}/gallery/owo/add?image_id=#{@image['id']}" %>">(OwO➕➕)</a> || <a href="<%= "#{domain_name(@r)}/gallery/owo/sub?image_id=#{@image['id']}" %>">(OwO➖➖)</a> || <a href="<%= "#{domain_name(@r)}/gallery/owo/rem?image_id=#{@image['id']}" %>">(OwO🔨)</a>
+                <a href="<%= "#{domain_name(@r)}/gallery/owo/add?image_id=#{@image['id']}" %>">(OwO➕➕)</a> || <a href="<%= "#{domain_name(@r)}/gallery/owo/sub?image_id=#{@image['id']}" %>">(OwO➖➖)</a> || <a href="<%= "#{domain_name(@r)}/gallery/owo/rem?image_id=#{@image['id']}"  %> style="color: white;">(OwO🔨)</a>
                 <% end %>
             <% else %>
 
@@ -133,11 +141,11 @@
         </div>
           <div class="table-row">
             <div class="table-header"><strong>(⏬💾)</strong></div>
-            <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{@image["file"]}" %>">DOWNLOAD</a></div>
+            <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{@image["file"]}" %>" style="color: white;">DOWNLOAD</a></div>
         </div>
           <div class="table-row">
             <div class="table-header"><strong>(🔗)</strong></div>
-            <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}" %>">PERMA-LINK</a></div>
+            <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}" %> style="color: white;"">PERMA-LINK</a></div>
         </div>
 
                 <div class="table-row">
@@ -150,7 +158,7 @@
                 <% if @image["attachments"] && !@image["attachments"].empty? %>
                     <div class="table-header"><strong>(📎)</strong></div>
                      <div class="table-data">
-                     <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= @id %>/attachments/">ATTACHMENTS LIST (📎)</a>
+                     <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= @id %>/attachments/" style="color: white;">ATTACHMENTS LIST (📎)</a>
                 </div>
                 <% end %>
     </div>
@@ -160,14 +168,14 @@
 
             <div class="table-header"><strong>(📝)</strong></div>
             <div class="table-data">
-                    <a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{@image["id"]}" %>">ADMIN: EDIT</a>
+                    <a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{@image["id"]}" %> style="color: white;"">ADMIN: EDIT</a>
             </div>
 
-            
+
              </div>
               <% end %>
 
-        <% sum = @image['sum_identifier'].to_s.split('').map(&:to_i).sum %> 
+        <% sum = @image['sum_identifier'].to_s.split('').map(&:to_i).sum %>
         <div class="table-row">
             <div class="table-header"><strong>(...#️⃣➕#️⃣...)</strong></div>
             <div class="table-data">
@@ -178,7 +186,7 @@
 </div>
 
 
-      <% if session['user'] == @user %>  <center>  <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}/attachments/upload" %>">UPLOAD ATTACHMENT</a> </center>
+      <% if session['user'] == @user %>  <center>  <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}/attachments/upload" %> style="color: white;"">UPLOAD ATTACHMENT</a> </center>
 
       <br>
       <% end %>

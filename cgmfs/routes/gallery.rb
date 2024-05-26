@@ -599,7 +599,7 @@ class CGMFS
           @uploaded_filehandle = @uri_url.read
           @meta = @uri_url.meta['content-type'].split('/').last # this doesn't seem to work for some urls
 
-          @file_name = Time.now.to_f.to_s + 'attachment' + '.' + @meta
+          @file_name = Time.now.to_f.to_s + '_attachment' + '.' + @meta
 
           FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
           File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
@@ -626,7 +626,7 @@ class CGMFS
 
         else
           @uploaded_filehandle = r.params['file'][:tempfile].read
-          @file_name = Time.now.to_f.to_s + r.params['file'][:filename]
+          @file_name = Time.now.to_f.to_s + "_" + r.params['file'][:filename]
           FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
           File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
           @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']

@@ -46,12 +46,6 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-
-
-
-
-
-
 $lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)
 
 DO_TELEGRAM_LOGGING = true # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
@@ -79,18 +73,6 @@ class CGMFS < Roda
   compile_assets
   plugin :json
   plugin :json_parser
-
-  # plugin :csrf, :raise=>true, :skip=>['POST:/api/screens']
-  # <%= assets(:css) %>
-  # <%= assets(:js) %>
-  # # hot to fconfig user.name and user.email in git
-  # git config --global user.name "John Doe"
-  # git config --global user.email
-
-  # PARTITION_AMOUNT = 2 # The initial, + 1
-  # OFFSET = 1 # This came with the math, but you can just state the PARTITION_AMOUNT in total and not worry about the offset in the end
-  # DB_SIZE = 6 # Caveat: The DB_SIZE is the total # of partitions, but you subtract it by one since the first partition is 0, in code.
-  # PARTITION_ADDITION_AMOUNT = 5
 
   PARTITION_AMOUNT = 9 # The initial, + 1
   OFFSET = 1 # This came with the math, but you can just state the PARTITION_AMOUNT in total and not worry about the offset in the end
@@ -197,21 +179,6 @@ class CGMFS < Roda
   puts "Done loading all databases and tables!"
   puts "Time taken to load all databases: #{a2 - a1} seconds."
 
-  #   # start line_db's dog blog:: gallery system
-  #   @@line_db_gallery = LineDB.new(parent_folder: "./db/dog_gallery", database_folder_name: "dog_gallery_db",
-  #   database_file_name: "./db/dog_gallery/dog_gallery_users.db")
-  #   @@line_db_gallery.databases.each do |db|
-  #     # requirements for gallery_db:
-  #     # gallery_database: contains hashes
-  #     @@line_db_gallery[db].pad.new_table!(database_name: "gallery_database", database_table: "gallery_table")
-  #     # for gallery statistics
-  #     @@line_db_gallery[db].pad.new_table!(database_name: "gallery_statistics_database", database_table: "gallery_statistics_table")
-  #     puts "Done loading gallery database: #{db}."
-  #   end
-  #   # end line_db's dog blog:: gallery system
-
-  #  @@
-
   puts "Lambda database: #{@@line_db.databases}"
   # @line_db[line].pad.new_table!(database_name: "blog_database", database_table: "blog_table")
   # end
@@ -231,9 +198,3 @@ class CGMFS < Roda
   end
 end
 # rubocop:enable Style/StringLiterals
-
-# Q: how do I clean my repository working tree?
-# A:
-
-# Q: how do I undo the last git command?
-# A:

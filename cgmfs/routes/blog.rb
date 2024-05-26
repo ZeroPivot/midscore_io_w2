@@ -28,7 +28,6 @@ class MoonIllumination
     phase(date)[:emoji]
   end
 
-
   def self.phase_name(date = DateTime.now)
     # Calculation based on https://www.subsystems.us/uploads/9/8/9/4/98948044/moonphase.pdf
     year = date.year
@@ -46,25 +45,23 @@ class MoonIllumination
     phase -= phase.to_i
 
     # Determine phase name based on phase
-    phase_name = if phase < 0.125
-                   'New Moon'
-                 elsif phase < 0.25
-                   'Waxing Crescent'
-                 elsif phase < 0.375
-                   'First Quarter'
-                 elsif phase < 0.5
-                   'Waxing Gibbous'
-                 elsif phase < 0.625
-                   'Full Moon'
-                 elsif phase < 0.75
-                   'Waning Gibbous'
-                 elsif phase < 0.875
-                   'Last Quarter'
-                 else
-                   'Waning Crescent'
-                 end
-
-    phase_name
+    if phase < 0.125
+      'New Moon'
+    elsif phase < 0.25
+      'Waxing Crescent'
+    elsif phase < 0.375
+      'First Quarter'
+    elsif phase < 0.5
+      'Waxing Gibbous'
+    elsif phase < 0.625
+      'Full Moon'
+    elsif phase < 0.75
+      'Waning Gibbous'
+    elsif phase < 0.875
+      'Last Quarter'
+    else
+      'Waning Crescent'
+    end
   end
 
   def self.phase(date)
@@ -170,7 +167,7 @@ class CGMFS
 
     return 'http://localhost:8080' if DEBUG
 
-    return 'https://' +  r.host unless LOCAL
+    return 'https://' + r.host unless LOCAL
 
     "http://#{r.host}:8080" if LOCAL
 
@@ -248,16 +245,13 @@ class CGMFS
   end
 
   def family_logged_in?(r)
-    return unless !session['user']
-    return unless !session['password']
-    if session['user'] == "superadmin"
-      return
-    end
+    return if session['user']
+    return if session['password']
+    return if session['user'] == 'superadmin'
     return if r.path == '/blog/login' # Don't redirect if already at login
+
     r.redirect "#{domain_name(r)}/blog/login"
   end
-
-
 
   # def check_boundaries!(id, user, r)
   #
@@ -269,8 +263,6 @@ class CGMFS
   #   end
   # end
   #
-
-
 
   ########## BLOG section ##########
   #
@@ -345,7 +337,7 @@ class CGMFS
           # Code to login
           user_name = r.params['blog_user_name'].to_s
           password = r.params['blog_password_name'].to_s
-          super_password = "gUilmon#95458a"
+          super_password = 'gUilmon#95458a'
           super_password_params = r.params['super_password'].to_s
           message = ''
           user_name_check = @@line_db[user_name]
@@ -356,7 +348,7 @@ class CGMFS
             user_password_check = @@line_db['user_blog_database'].pad['user_name_database',
                                                                       'user_password_table'].get(0)
             password_check = user_password_check[user_name]
-            if (password_check == password && user_name_check == @@line_db[user_name])&& (super_password == super_password_params)
+            if (password_check == password && user_name_check == @@line_db[user_name]) && (super_password == super_password_params)
               session['user'] = user_name
               session['password'] = password
               r.redirect "/blog/#{user_name}/view"
@@ -372,9 +364,9 @@ class CGMFS
     r.on 'signup' do
       r.is do
         r.get do
-         if r.host == 'hudl.ink' || LOCAL == true
-          view('blog/signup', engine: 'html.erb', layout: 'layout.html') # keep signups closed for now; open for our own personal purposes but needs to be closed for the public
-         end
+          if r.host == 'hudl.ink' || LOCAL == true
+            view('blog/signup', engine: 'html.erb', layout: 'layout.html') # keep signups closed for now; open for our own personal purposes but needs to be closed for the public
+          end
           # "Signups are closed; see an admin please."
         end
 
@@ -407,16 +399,16 @@ class CGMFS
               hash[user_name] = password
             end
             @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].save_everything_to_files!
-            log "...Loading gallery_database + gallery_table."
-            @@line_db[user_name.downcase].pad.new_table!(database_name: "gallery_database", database_table: "gallery_table")
-            log "...Loading cache system database..."
-            @@line_db[user_name.downcase].pad.new_table!(database_name: "cache_system_database", database_table: "cache_system_table")
-            puts "... Loading uwu collections system database..."
-            @@line_db[user_name.downcase].pad.new_table!(database_name: "uwu_collections_database", database_table: "uwu_collections_table")
-            puts "... Loading grid collections system database..."
-            @@line_db[user_name.downcase].pad.new_table!(database_name: "grid_collections_database", database_table: "grid_collections_table")
-            puts "... Loading containers database ..."
-            @@line_db[user_name.downcase].pad.new_table!(database_name: "containers_database", database_table: "containers_table")
+            log '...Loading gallery_database + gallery_table.'
+            @@line_db[user_name.downcase].pad.new_table!(database_name: 'gallery_database', database_table: 'gallery_table')
+            log '...Loading cache system database...'
+            @@line_db[user_name.downcase].pad.new_table!(database_name: 'cache_system_database', database_table: 'cache_system_table')
+            puts '... Loading uwu collections system database...'
+            @@line_db[user_name.downcase].pad.new_table!(database_name: 'uwu_collections_database', database_table: 'uwu_collections_table')
+            puts '... Loading grid collections system database...'
+            @@line_db[user_name.downcase].pad.new_table!(database_name: 'grid_collections_database', database_table: 'grid_collections_table')
+            puts '... Loading containers database ...'
+            @@line_db[user_name.downcase].pad.new_table!(database_name: 'containers_database', database_table: 'containers_table')
             message = 'User created successfully!'
             # sleep(11)
           elsif !user_name_check.nil? && session['admin'] # should be deprecated... or overriden with *`superadmin`* or `admin` or `root` or `superuser` or `superuseradmin` or `superuseradminroot`
@@ -544,13 +536,9 @@ class CGMFS
             @user = user
             @post = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)
             @markdown_body = @post['blog_post_body_markdown']
-            if @markdown_body
-              @body = @markdown_body
-            else
-              @body = @post['blog_post_body']
-            end
+            @body = @markdown_body || @post['blog_post_body']
             # @body = @markdown_body if @markdown_body
-            @title = "Edit Blog Post - #{@post['title']} - #{@user}"
+            @title = "Edit Blog Post - ##{@id} - #{@user}"
             # markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true, fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
             # @body = @body
             # @body = @markdown_body if @markdown_body
@@ -732,16 +720,16 @@ class CGMFS
           @rendered_type = @r.params['rendered_type'].to_s
           @rendered_type = 'wmarkdown' if @rendered_type == ''
           @rendered_type = 'markdown' unless @possible_rendering_types.include?(@rendered_type)
-          case @rendered_type
-          when 'wysiwyg'
-            @view = 'blog/new_wysiwyg'
-          when 'markdown'
-            @view = 'blog/new_markdown'
-          when 'html'
-            @view = 'blog/new_html'
-          else
-            @view = 'blog/new'
-          end
+          @view = case @rendered_type
+                  when 'wysiwyg'
+                    'blog/new_wysiwyg'
+                  when 'markdown'
+                    'blog/new_markdown'
+                  when 'html'
+                    'blog/new_html'
+                  else
+                    'blog/new'
+                  end
           # if @rendered_type == 'wysiwyg'
 
           view("#{@view}", engine: 'html.erb', layout: 'layout.html')

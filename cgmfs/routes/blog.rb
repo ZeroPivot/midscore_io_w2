@@ -574,7 +574,7 @@ class CGMFS
             zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
 
             # Create the system call to zip the folder
-            system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+            #system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
             view(@view, engine: 'html.erb', layout: 'layout.html')
           end
         end
@@ -652,7 +652,7 @@ class CGMFS
             zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
 
             # Create the system call to zip the folder
-            system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+            # system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
 
             r.redirect("/blog/#{@user}/edit/#{@_params['id']}")
           else
@@ -686,7 +686,7 @@ class CGMFS
             zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
 
             # Create the system call to zip the folder
-            system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+            # system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
             r.redirect("/blog/#{user}/delete")
           end
         end
@@ -828,7 +828,7 @@ class CGMFS
               zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
 
               # Create the system call to zip the folder
-              system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+              # system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
               @@line_db[user].pad['blog_database', 'blog_profile_table'].save_everything_to_files!
             end
             r.redirect("#{domain_name(r)}/blog/#{user}/view")

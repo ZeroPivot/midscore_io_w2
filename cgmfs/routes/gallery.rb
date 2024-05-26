@@ -862,7 +862,7 @@ class CGMFS
 
           else
             uploadable = false
-            @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename) # just to be sure!
+            # @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename) # just to be sure!
 
           end
         else
@@ -871,7 +871,7 @@ class CGMFS
           file_extension = @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['extension']
           @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename) # just to be sure!
         end
-
+      if uploadable
         @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|
           hash['file'] = original_to_new_filename
           hash['title'] = @title
@@ -890,6 +890,8 @@ class CGMFS
         @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
       end
+    end
+    "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id} failed to update."
     end
 
     r.is 'uwu', 'view', String do |user| # view the collections list

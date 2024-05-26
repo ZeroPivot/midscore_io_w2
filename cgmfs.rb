@@ -189,8 +189,6 @@ class CGMFS < Roda
     @@line_db[db].pad.new_table!(database_name: "uwu_collections_database", database_table: "uwu_collections_table")
     puts "... Loading grid collections system database..."
     @@line_db[db].pad.new_table!(database_name: "grid_collections_database", database_table: "grid_collections_table")
-    puts "... Loading containers database ..."
-    @@line_db[db].pad.new_table!(database_name: "containers_database", database_table: "containers_table")
     puts "Done."
     b = Time.now
     puts "Time taken to load #{db}: #{b - a} seconds."

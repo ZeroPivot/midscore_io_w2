@@ -888,11 +888,25 @@ class CGMFS
           hash['recache'] = true
         end
         @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
+      else
+         @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|
+          #hash['file'] = original_to_new_filename
+          hash['title'] = @title
+          hash['description'] = @description
+          hash['tags'] = @tags
+          hash['size'] = file_size
+          hash['extension'] = file_extension
+          hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
+          hash['sum_identifier'] = @sum_identifier
+        end
+        @gallery.save_partition_by_id_to_file!(@id)
+
+      end
+
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
       end
-    end
-    "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id} failed to update."
-    end
+
+  end
 
     r.is 'uwu', 'view', String do |user| # view the collections list
       user_failcheck(user, r)

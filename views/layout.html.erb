@@ -99,3 +99,33 @@
 </center>
 </font>
 </html>
+
+<% if @r %>
+<% File.open('main_request_log.txt', 'a') do |f|
+      # Log the request method
+      f.puts "request_method: #{@r.request_method}"
+
+      # Log the host
+      f.puts "host: #{@r.host}"
+
+      f.puts "ip: #{@r.ip}"
+
+      # Log the path
+      f.puts "path: #{@r.path}"
+
+      # Log the GET parameters
+      f.puts "GET_params: #{@r.GET}"
+
+      # Log the POST parameters
+      f.puts "POST_params: #{@r.POST}"
+
+      f.puts "AJAX request? #{@r.xhr?}"
+      f.puts "cookies: #{@r.cookies}"
+      f.puts "timestamp: #{TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now)}"
+
+      # Log the cookies
+
+      f.puts #newline
+      # ... add more logs as needed ...
+    end %>
+    <% end %>

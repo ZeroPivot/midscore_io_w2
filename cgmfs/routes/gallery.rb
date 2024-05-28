@@ -916,9 +916,7 @@ class CGMFS
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
         @collections = @collections.data_arr
         # uwu collections has its own id in data_arr and the id of the image in the gallery that is very uwu, with a numerical ranking system
-        @collections = @collections.compact
-        @collections = @collections.sort_by { |collection| collection['id'] }
-
+        #@collections = @collections.delete_if { |collection| collection == {} }
         view('blog/gallery/view_uwu_collections', engine: 'html.erb', layout: 'layout.html')
       end
     end
@@ -933,32 +931,160 @@ class CGMFS
         @id = id
         @collection = @collections.get(@id)
         @image_id = @collection['image_id']
-        @image = @gallery.get(@image_id)
+        @images = @image_id.map { |id| [id, @gallery.get(id)] }
+
+
+
+
+
+
         view('blog/gallery/view_uwu_collections_id', engine: 'html.erb', layout: 'layout.html')
       end
     end
 
-    r.is 'uwu', 'edit', String, 'id', Integer do |user, id| # edit the collection id
-      user_failcheck(user, r)
-      logged_in?(r, user)
+    r.is 'uwu', 'delete', 'id', Integer do |id| # delete the collection id
       r.get do
+        @user = session['user']
+        @r = r
+        logged_in?(@r, @user)
+        #logged_in?(r, @user)
+        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
+        @id = id
+        @collection = @collections.get(@id)
+        if @collection
+          @collections.data_arr[@id] = {}
+          @collections.save_partition_by_id_to_file!(@id)
+          "Collection with id #{@id} deleted successfully. <a href='#{domain_name(r)}/gallery/uwu/view/#{@user}'>Back TO Collections</a>"
+        else
+          "No collection found with id #{@id}."
+        end
+      end
+    end
+
+    r.is 'uwu', 'new' do # create a new collection
+
+      r.get do
+        @user = session['user']
+        @r = r
+        logged_in?(@r, @user)
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
+        @title = 'Create a new collection'
+        view('blog/gallery/new_uwu_collections', engine: 'html.erb', layout: 'layout.html')
+      end
+
+      r.post do
+        @user = session['user']
+        @r = r
+        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
+        @title = r.params['title']
+        @description = r.params['description']
+        @id = @collections.add do |hash|
+          hash['title'] = @title
+          hash['description'] = @description
+          hash['image_id'] = []
+        end
+        @collections.save_partition_by_id_to_file!(@id)
+        r.redirect "#{domain_name(@r)}/gallery/uwu/view/#{@user}"
+      end
+    end
+
+    r.is 'uwu', 'edit', 'id', Integer do |id| # edit the collection id
+      #user_failcheck(user, r)
+      #logged_in?(r, user)
+      r.get do
+        @user = session['user']
+        @r = r
+        logged_in?(@r, @user)
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
+        @id = id
+        log("past @id")
+        @collection = @collections.get(@id)
+        @image_id = @collection['image_id']
+        log("image_id: #{@image_id}")
+
+        @images = @image_id.map { |id| [id, @gallery.get(id)] }
+
+        view('blog/gallery/edit_uwu_collections_id', engine: 'html.erb', layout: 'layout.html')
+      end
+
+      r.post do
         @user = user
+        @r = r
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
         @id = id
         @collection = @collections.get(@id)
         @image_id = @collection['image_id']
         @image = @gallery.get(@image_id)
-        view('blog/gallery/edit_uwu_collections_id', engine: 'html.erb', layout: 'layout.html')
+        @title = r.params['title']
+        @description = r.params['description']
+        @tags = r.params['tags']
+        @collections.set(@id) do |hash|
+          hash['title'] = @title
+          hash['description'] = @description
+          hash['tags'] = @tags
+        end
+        @collections.save_partition_by_id_to_file!(@id)
+        r.redirect "#{domain_name(r)}/gallery/uwu/view/#{@user}"
       end
     end
 
-    r.is 'uwu', 'view', String, 'id', Integer, 'delete' do |user, id| # delete the collection id
-      user_failcheck(user, r)
-      logged_in?(r, user)
+    r.is 'uwu', 'delete_image', 'uwu_id', Integer, 'gallery_id', Integer do |uwu_id, gallery_id| # delete the   collection id
       r.get do
-        @user = user
-        logged_in?(r, @user)
+        @user = session['user']
+        @r = r
+        logged_in?(@r, @user)
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
+        @id = uwu_id
+        @collection = @collections.get(@id)
+        @image_id = gallery_id
+        log(@collection)
+        if @collection
+          @collection['image_id'].delete(@image_id)
+          @collections.save_partition_by_id_to_file!(@id)
+          "Image with id #{@image_id} deleted from collection with id #{@id} successfully."
+        else
+          "No collection found with id #{@id}."
+        end
+      end
+    end
+
+    r.is 'uwu', 'add_image', 'uwu_id', Integer do |uwu_id| # add to the collection
+      r.post do
+        @user = session['user']
+
+        @r = r
+        logged_in?(@r, @user)
+        @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
+
+        @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
+        @uwu_id = uwu_id
+        @collection = @collections.get(@uwu_id)
+        @gallery_image_id = r.params['image_id'].to_i
+        @test = @gallery.get(@gallery_image_id)
+        if @test != nil
+          if @collection['image_id'].nil?
+            @collection['image_id'] = [@gallery_image_id]
+          else
+            @collection['image_id'] << @gallery_image_id
+          end
+          @collections.save_partition_by_id_to_file!(@uwu_id)
+          "Image with id #{@image_id} added to collection with id #{@uwu_id} successfully."
+        else
+          "No collection found with id #{@uwu_id}."
+        end
+      end
+    end
+
+    r.is 'uwu', 'delete', 'id', Integer do |id| # delete the collection id
+
+      r.get do
+        @user = session['user']
+        @r = r
+        logged_in?(@r, @user)
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
         @id = id
         @collection = @collections.get(@id)

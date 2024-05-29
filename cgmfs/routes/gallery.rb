@@ -626,7 +626,7 @@ class CGMFS
 
         else
           @uploaded_filehandle = r.params['file'][:tempfile].read
-          @file_name = Time.now.to_f.to_s + "_" + r.params['file'][:filename]
+          @file_name = Time.now.to_f.to_s + '_' + r.params['file'][:filename]
           FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
           File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
           @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
@@ -871,42 +871,41 @@ class CGMFS
           file_extension = @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['extension']
           @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename) # just to be sure!
         end
-      if uploadable
-        @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|
-          hash['file'] = original_to_new_filename
-          hash['title'] = @title
-          hash['description'] = @description
-          hash['tags'] = @tags
-          hash['size'] = file_size
-          hash['extension'] = file_extension
-          hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
-          hash['sum_identifier'] = @sum_identifier
-        end
+        if uploadable
+          @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|
+            hash['file'] = original_to_new_filename
+            hash['title'] = @title
+            hash['description'] = @description
+            hash['tags'] = @tags
+            hash['size'] = file_size
+            hash['extension'] = file_extension
+            hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
+            hash['sum_identifier'] = @sum_identifier
+          end
 
-        @gallery.save_partition_by_id_to_file!(@id)
-        @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
-          hash['recache'] = true
-        end
-        @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
-      else
-         @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|
-          #hash['file'] = original_to_new_filename
-          hash['title'] = @title
-          hash['description'] = @description
-          hash['tags'] = @tags
-          hash['size'] = file_size
-          hash['extension'] = file_extension
-          hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
-          hash['sum_identifier'] = @sum_identifier
-        end
-        @gallery.save_partition_by_id_to_file!(@id)
+          @gallery.save_partition_by_id_to_file!(@id)
+          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
+            hash['recache'] = true
+          end
+          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
+        else
+          @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|
+            # hash['file'] = original_to_new_filename
+            hash['title'] = @title
+            hash['description'] = @description
+            hash['tags'] = @tags
+            hash['size'] = file_size
+            hash['extension'] = file_extension
+            hash['date'] = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s
+            hash['sum_identifier'] = @sum_identifier
+          end
+          @gallery.save_partition_by_id_to_file!(@id)
 
-      end
+        end
 
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
       end
-
-  end
+    end
 
     r.is 'uwu', 'view', String do |user| # view the collections list
       user_failcheck(user, r)
@@ -916,7 +915,7 @@ class CGMFS
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
         @collections = @collections.data_arr
         # uwu collections has its own id in data_arr and the id of the image in the gallery that is very uwu, with a numerical ranking system
-        #@collections = @collections.delete_if { |collection| collection == {} }
+        # @collections = @collections.delete_if { |collection| collection == {} }
         view('blog/gallery/view_uwu_collections', engine: 'html.erb', layout: 'layout.html')
       end
     end
@@ -931,12 +930,7 @@ class CGMFS
         @id = id
         @collection = @collections.get(@id)
         @image_id = @collection['image_id']
-        @images = @image_id.map { |id| [id, @gallery.get(id)] }
-
-
-
-
-
+        @images = @image_id.map { |id_map| [id_map, @gallery.get(id_map)] }
 
         view('blog/gallery/view_uwu_collections_id', engine: 'html.erb', layout: 'layout.html')
       end
@@ -947,7 +941,7 @@ class CGMFS
         @user = session['user']
         @r = r
         logged_in?(@r, @user)
-        #logged_in?(r, @user)
+        # logged_in?(r, @user)
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
         @id = id
         @collection = @collections.get(@id)
@@ -962,7 +956,6 @@ class CGMFS
     end
 
     r.is 'uwu', 'new' do # create a new collection
-
       r.get do
         @user = session['user']
         @r = r
@@ -990,8 +983,8 @@ class CGMFS
     end
 
     r.is 'uwu', 'edit', 'id', Integer do |id| # edit the collection id
-      #user_failcheck(user, r)
-      #logged_in?(r, user)
+      # user_failcheck(user, r)
+      # logged_in?(r, user)
       r.get do
         @user = session['user']
         @r = r
@@ -999,12 +992,12 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
         @id = id
-        log("past @id")
+        log('past @id')
         @collection = @collections.get(@id)
         @image_id = @collection['image_id']
         log("image_id: #{@image_id}")
 
-        @images = @image_id.map { |id| [id, @gallery.get(id)] }
+        @images = @image_id.map { |id_map| [id_map, @gallery.get(id_map)] }
 
         view('blog/gallery/edit_uwu_collections_id', engine: 'html.erb', layout: 'layout.html')
       end
@@ -1045,10 +1038,11 @@ class CGMFS
         if @collection
           @collection['image_id'].delete(@image_id)
           @collections.save_partition_by_id_to_file!(@id)
-          "Image with id #{@image_id} deleted from collection with id #{@id} successfully."
+          "Image with id #{@image_id} deleted from collection with id #{@id} successfully. <a href='/gallery/uwu/edit/id/#{@id}'>Go Back</a>"
         else
           "No collection found with id #{@id}."
         end
+
       end
     end
 
@@ -1065,14 +1059,14 @@ class CGMFS
         @collection = @collections.get(@uwu_id)
         @gallery_image_id = r.params['image_id'].to_i
         @test = @gallery.get(@gallery_image_id)
-        if @test != nil
+        if !@test.nil?
           if @collection['image_id'].nil?
             @collection['image_id'] = [@gallery_image_id]
           else
             @collection['image_id'] << @gallery_image_id
           end
           @collections.save_partition_by_id_to_file!(@uwu_id)
-          "Image with id #{@image_id} added to collection with id #{@uwu_id} successfully."
+          "Image with id #{@image_id} added to collection with id #{@uwu_id} successfully. <a href='/gallery/uwu/edit/id/#{@uwu_id}'>Go Back</a>"
         else
           "No collection found with id #{@uwu_id}."
         end
@@ -1080,7 +1074,6 @@ class CGMFS
     end
 
     r.is 'uwu', 'delete', 'id', Integer do |id| # delete the collection id
-
       r.get do
         @user = session['user']
         @r = r

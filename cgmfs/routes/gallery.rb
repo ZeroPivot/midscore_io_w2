@@ -948,7 +948,8 @@ class CGMFS
         if @collection
           @collections.data_arr[@id] = {}
           @collections.save_partition_by_id_to_file!(@id)
-          "Collection with id #{@id} deleted successfully. <a href='#{domain_name(r)}/gallery/uwu/view/#{@user}'>Back TO Collections</a>"
+          #"Collection with id #{@id} deleted successfully. <a href='#{domain_name(r)}/gallery/uwu/view/#{@user}'>Back TO Collections</a>"
+          r.redirect "#{domain_name(r)}/gallery/uwu/view/#{@user}"
         else
           "No collection found with id #{@id}."
         end
@@ -1061,7 +1062,8 @@ class CGMFS
         @gallery_image_id = r.params['image_id'].to_i
         @test = @gallery.get(@gallery_image_id)
         @title = 'Add Image to Collection'
-        if !@test.nil?
+        log(@test)
+        if (!@test.nil? && !@test.is_a?(Hash))
           if @collection['image_id'].nil?
             @collection['image_id'] = [@gallery_image_id]
           else
@@ -1070,9 +1072,20 @@ class CGMFS
           @collections.save_partition_by_id_to_file!(@uwu_id)
 
           r.redirect("#{domain_name(r)}/gallery/uwu/edit/id/#{@uwu_id}")
-        else
-          "No collection found with id #{@uwu_id}."
+        elsif @test.is_a? Hash
+          if !@test.empty?
+            if @collection['image_id'].nil?
+              @collection['image_id'] = [@gallery_image_id]
+            else
+              @collection['image_id'] << @gallery_image_id
+            end
+            @collections.save_partition_by_id_to_file!(@uwu_id)
+
+            r.redirect("#{domain_name(r)}/gallery/uwu/edit/id/#{@uwu_id}")
+          end
         end
+        "No collection found with id #{@collection['image_id']}." if @collection['image_id'] != []
+        "Empty entry detected. Add an entry that is the ID from your gallery. <a href='#{domain_name(r)}/gallery/uwu/view/#{@user}'>Back to Collections</a>"
       end
     end
 

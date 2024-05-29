@@ -1039,7 +1039,7 @@ class CGMFS
         if @collection
           @collection['image_id'].delete(@image_id)
           @collections.save_partition_by_id_to_file!(@id)
-          "Image with id #{@image_id} deleted from collection with id #{@id} successfully. <a href='/gallery/uwu/edit/id/#{@id}'>Go Back</a>"
+          r.redirect("#{domain_name(r)}/gallery/uwu/edit/id/#{@id}")
         else
           "No collection found with id #{@id}."
         end
@@ -1068,7 +1068,8 @@ class CGMFS
             @collection['image_id'] << @gallery_image_id
           end
           @collections.save_partition_by_id_to_file!(@uwu_id)
-          "Image with id #{@image_id} added to collection with id #{@uwu_id} successfully. <a href='/gallery/uwu/edit/id/#{@uwu_id}'>Go Back</a>"
+
+          r.redirect("#{domain_name(r)}/gallery/uwu/edit/id/#{@uwu_id}")
         else
           "No collection found with id #{@uwu_id}."
         end
@@ -1087,7 +1088,8 @@ class CGMFS
         if @collection
           @collections.data_arr[@id] = {}
           @collections.save_partition_by_id_to_file!(@id)
-          "Collection with id #{@id} deleted successfully."
+          #"Collection with id #{@id} deleted successfully."
+          r.redirect("#{domain_name(r)}/gallery/uwu/view/#{@user}")
         else
           "No collection found with id #{@id}."
         end

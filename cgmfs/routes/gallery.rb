@@ -992,10 +992,10 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
         @id = id
-        log('past @id')
+
         @collection = @collections.get(@id)
         @image_id = @collection['image_id']
-        log("image_id: #{@image_id}")
+        @title = @collection['title']
 
         @images = @image_id.map { |id_map| [id_map, @gallery.get(id_map)] }
 
@@ -1034,6 +1034,7 @@ class CGMFS
         @id = uwu_id
         @collection = @collections.get(@id)
         @image_id = gallery_id
+        @title = 'Delete Image from Collection'
         log(@collection)
         if @collection
           @collection['image_id'].delete(@image_id)
@@ -1059,6 +1060,7 @@ class CGMFS
         @collection = @collections.get(@uwu_id)
         @gallery_image_id = r.params['image_id'].to_i
         @test = @gallery.get(@gallery_image_id)
+        @title = 'Add Image to Collection'
         if !@test.nil?
           if @collection['image_id'].nil?
             @collection['image_id'] = [@gallery_image_id]
@@ -1081,6 +1083,7 @@ class CGMFS
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
         @id = id
         @collection = @collections.get(@id)
+        @title = 'Delete Collection'
         if @collection
           @collections.data_arr[@id] = {}
           @collections.save_partition_by_id_to_file!(@id)

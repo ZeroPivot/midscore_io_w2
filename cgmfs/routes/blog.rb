@@ -11,6 +11,22 @@ end
 
 # BEGIN: 6f7b8d9hjkl3
 
+def convert_to_120_second_time_pst
+  current_time = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now)
+  total_seconds = current_time.hour * 3600 + current_time.min * 60 + current_time.sec
+  seconds_in_120_seconds = 120
+
+  # Calculate the 120-second time
+  total_120_seconds = total_seconds / seconds_in_120_seconds
+  hours_120_seconds = total_120_seconds / 50
+  minutes_120_seconds = (total_120_seconds % 50) * 2
+
+  # Format the output
+  formatted_time = format('%02d:%02d', hours_120_seconds, minutes_120_seconds)
+  formatted_time
+end
+
+
 class MoonIllumination
   def self.age(date = DateTime.now)
     phase(date)[:age]
@@ -113,6 +129,7 @@ class MoonIllumination
 end
 # END: 6f7b8d9hjkl3
 
+# The CGMFS class represents a module for handling various functionalities related to a blog.
 class CGMFS
   def get_mdy(date)
     date = Time.parse(date).strftime('%m/%d/%Y')

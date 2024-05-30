@@ -48,10 +48,11 @@
   <font size="16"><a href="<%= domain_name(@r) %>/blog">(📃)</a>,<a href="<%= domain_name(@r) %>/gallery">(🖼️)</a></font><br><br>
   <font size="3"><%= "Gregorian: #{Calendar.new.gregorian}" %><font><br>
   <font size="3"><%= "Julian: #{Calendar.new.julian_primitive} -> #{Calendar.new.julian}" %></font><br>
-
   <font size="16"><%= MoonIllumination.emoji %></font><br>
   <font size="3"><%= MoonIllumination.phase_name %></font><br>
   <font size="3">Moon Age -> (<%= MoonIllumination.age %>)</font><br>
+  <b>120</b>🕰️<%= convert_to_120_second_time_pst  %> PST
+  <hr>
  <br>
   <% if session['user'] %>
    <h1>(👤[<a href="/gallery/upload">(🔢)</a>; <a href="/gallery/upload/url">(🔗🔢)</a>;  <a href="/blog/<%= session['user'] %>/new">(📝)</a>|<a href="/gallery/view/<%= session['user'] %>">(🖼️)</a>],[<a href="/blog/<%= session['user'] %>">(📃)</a>]) <a href="/gallery/view/<%= session['user'] %>"><%= session['user'] %></a></h1><br>
@@ -90,7 +91,6 @@
 <br>
 ♾️<%= @page_views.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %> -- ©️<a href="<%= domain_name(@r) %>"><%= domain_name(@r).gsub(/https?:\/\//, '') %></a> -- <%= $dog_blog_version %><br>
 <br>
-<%= TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now).to_s %>
 <br>
 <br>
 <center><font size="3"><div size="5" id="ip_addr_resolv">🏘️<b>[🌐<%= request.ip %>]</b></div></font></center>

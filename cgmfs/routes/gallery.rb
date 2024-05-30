@@ -8,7 +8,7 @@ class CGMFS
     r.redirect "http://#{r.host}:8080" if LOCAL
     r.redirect "https://#{r.host}" unless LOCAL
   end
-
+  
   class Calendar
     attr_reader :date
 

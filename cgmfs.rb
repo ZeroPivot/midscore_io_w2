@@ -27,7 +27,6 @@ LATEST_PA_VERSION = "v2.0.0-mpa_v1.2.6-pa_v1.0.0a-mpafc" # deprecated
 require_relative "lib/partitioned_array/lib/line_db" # magnum opus of computer science
 
 require_relative 'lib/shortened/shortened_url' # shortened url class
-require_relative "lib/loggers/telegram_logger"
 require_relative 'logger'
 require_dir "./lib/dir_requires"
 
@@ -89,10 +88,7 @@ class CGMFS < Roda
   @@test = ManagedPartitionedArray.new(max_capacity: "data_arr_size", db_size: DB_SIZE,
                                        partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: "./db/sl2", db_name: 'sl_slice2')
 
-  @@telegram_logger = TelegramLogger.new
-  if DO_TELEGRAM_LOGGING
-    @@telegram_logger.send_message("SERVER MESSAGE: Server has been [re-]started!\nTIME BOOTED: #{Time.now} (server time)")
-  end
+
   # @@sl_db.load_last_entry_from_file!
   # @@sl_db.load_max_partition_archive_from_file!
   # @@sl_db.load_partition_archive_id_from_file!

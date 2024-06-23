@@ -349,3 +349,11 @@ request referrer:
 request user_agent: Mozilla/5.0 (Linux; Android 5.0) AppleWebKit/537.36 (KHTML, like Gecko) Mobile Safari/537.36 (compatible; Bytespider; spider-feedback@bytedance.com)
 AJAX request?: false
 Timestamp: 2024-05-16 03:58:49 +0000
+hudl.ink/bashasset_eng -> itch.io(zeropivot/bashasset) Redirection Request:
+request path: /bashasset_eng ; request host: hudl.ink
+request hash: #<CGMFS::RodaRequest GET /bashasset_eng>
+request ip: 216.244.66.249
+request referrer: 
+request user_agent: Mozilla/5.0 (compatible; DotBot/1.2; +https://opensiteexplorer.org/dotbot; help@moz.com)
+AJAX request?: false
+Timestamp: 2024-06-19 11:57:23 +0000

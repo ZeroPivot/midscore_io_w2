@@ -19,8 +19,8 @@ GEM
       minitest (>= 5.1)
       mutex_m
       tzinfo (~> 2.0)
-    addressable (2.8.6)
-      public_suffix (>= 2.0.2, < 6.0)
+    addressable (2.8.7)
+      public_suffix (>= 2.0.2, < 7.0)
     andand (1.3.3)
     ast (2.4.2)
     axiom-types (0.1.1)
@@ -80,10 +80,10 @@ GEM
       rainbow
       rubocop
       smart_properties
-    erubi (1.12.0)
+    erubi (1.13.0)
     event_stream_parser (1.0.0)
     excon (0.110.0)
-    faraday (2.9.1)
+    faraday (2.9.2)
       faraday-net_http (>= 2.0, < 3.2)
     faraday-multipart (1.0.4)
       multipart-post (~> 2)
@@ -129,7 +129,7 @@ GEM
     loofah (2.22.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
-    mechanize (2.10.0)
+    mechanize (2.10.1)
       addressable (~> 2.8)
       base64
       domain_name (~> 0.5, >= 0.5.20190701)
@@ -147,7 +147,7 @@ GEM
     mime-types (3.5.2)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2024.0604)
-    minitest (5.23.1)
+    minitest (5.24.0)
     mongo (2.20.0)
       bson (>= 4.14.1, < 6.0.0)
     multipart-post (2.4.1)
@@ -160,24 +160,24 @@ GEM
       connection_pool (~> 2.2)
     nio4r (2.7.3)
     nkf (0.2.0)
-    nokogiri (1.16.5-aarch64-linux)
+    nokogiri (1.16.6-aarch64-linux)
       racc (~> 1.4)
-    nokogiri (1.16.5-arm64-darwin)
+    nokogiri (1.16.6-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.16.5-x86_64-darwin)
+    nokogiri (1.16.6-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.16.5-x86_64-linux)
+    nokogiri (1.16.6-x86_64-linux)
       racc (~> 1.4)
     parallel (1.25.1)
     parser (3.3.3.0)
       ast (~> 2.4.1)
       racc
     prism (0.29.0)
-    public_suffix (5.0.5)
+    public_suffix (6.0.0)
     puma (6.4.2)
       nio4r (~> 2.0)
     racc (1.8.0)
-    rack (3.1.3)
+    rack (3.1.4)
     rails-dom-testing (2.2.0)
       activesupport (>= 5.0.0)
       minitest
@@ -219,7 +219,7 @@ GEM
       unicode-display_width (>= 2.4.0, < 3.0)
     rubocop-ast (1.31.3)
       parser (>= 3.3.1.0)
-    rubocop-performance (1.21.0)
+    rubocop-performance (1.21.1)
       rubocop (>= 1.48.1, < 2.0)
       rubocop-ast (>= 1.31.1, < 2.0)
     ruby-lsp (0.17.2)
@@ -251,13 +251,13 @@ GEM
       thor (~> 1.0)
       tilt (~> 2.0)
       yard (~> 0.9, >= 0.9.24)
-    sorbet (0.5.11429)
-      sorbet-static (= 0.5.11429)
-    sorbet-runtime (0.5.11429)
-    sorbet-static (0.5.11429-aarch64-linux)
-    sorbet-static (0.5.11429-universal-darwin)
-    sorbet-static (0.5.11429-x86_64-linux)
-    standard (1.37.0)
+    sorbet (0.5.11444)
+      sorbet-static (= 0.5.11444)
+    sorbet-runtime (0.5.11444)
+    sorbet-static (0.5.11444-aarch64-linux)
+    sorbet-static (0.5.11444-universal-darwin)
+    sorbet-static (0.5.11444-x86_64-linux)
+    standard (1.39.0)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.0)
       rubocop (~> 1.64.0)
@@ -308,7 +308,7 @@ GEM
     yaml (0.3.0)
     yard (0.9.36)
     yuicompressor (1.3.3)
-    zeitwerk (2.6.15)
+    zeitwerk (2.6.16)
 
 PLATFORMS
   aarch64-linux
@@ -353,4 +353,4 @@ DEPENDENCIES
   yuicompressor
 
 BUNDLED WITH
-   2.5.11
+   2.5.14

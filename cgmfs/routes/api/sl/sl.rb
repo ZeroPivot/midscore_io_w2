@@ -144,7 +144,7 @@ class CGMFS
           end
           database.save_partition_by_id_to_file!(@id)
           log("server called: #{r.params}")
-        
+
           log('telegram message logged')
         end
         urls = URI.extract(unescape_string(@message))
@@ -167,6 +167,7 @@ class CGMFS
         return_message = @output_message if @output_message != ''
 
         #  @@telegram_logger.send_message("[🔢SL(RELAY:LINK_BY(#{@avatar_name}))🔢]\n #{return_message}") unless return_message == "no_additional_data"
+        log("[🔢SL(RELAY:LINK_BY(#{@avatar_name}))🔢]\n #{return_message}")
         "#{return_message}"
       end
 

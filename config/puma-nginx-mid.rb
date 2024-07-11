@@ -40,18 +40,18 @@ environment 'production'
 early_hints true
 # Store the pid of the server in the file at "path".
 #
-pidfile '/root/midscore_web/config/puma.pid'
+pidfile '/home/stinky/root/midscore_io/config/puma.pid'
 
 # Use "path" as the file to store the server info state. This is
 # used by "pumactl" to query and control the server.
 #
-state_path '/root/midscore_web/config/puma.state'
+state_path '/home/stinky/root/midscore_io/config/puma.state'
 
 # Redirect STDOUT and STDERR to files specified. The 3rd parameter
 # ("append") specifies whether the output is appended, the default is
 # "false".
 #
-stdout_redirect '/root/midscore_web/log/stdout', '/root/midscore_web/log/stderr', true
+stdout_redirect '/home/stinky/root/midscore_io/log/stdout', '/home/stinky/root/midscore_io/log/stderr', true
 # stdout_redirect '/u/apps/lolcat/log/stdout', '/u/apps/lolcat/log/stderr', true
 
 # Disable request logging.
@@ -65,21 +65,21 @@ stdout_redirect '/root/midscore_web/log/stdout', '/root/midscore_web/log/stderr'
 #
 # The default is "0, 16".
 #
-threads 0, 8
+threads 0, 32
 
-# Bind the server to "url". "tcp://", "unix://" and "ssl://" are the only
+# Bind the server to "url". "tcp:/", "unix:/" and "ssl:/" are the only
 # accepted protocols.
 #
-# The default is "tcp://0.0.0.0:9292".
+# The default is "tcp:/0.0.0.0:9292".
 #
-# bind 'tcp://0.0.0.0:80'
+# bind 'tcp:/0.0.0.0:80'
 
-bind http://'0.0.0.0'/
-# bind 'unix:///var/run/puma.sock'
-# bind 'unix:///var/run/puma.sock?umask=0111'
-# bind 'ssl://127.0.0.1:9292?key=path_to_key&cert=path_to_cert'
+bind 'tcp://0.0.0.0:8080'
+# bind 'unix://var/run/puma.sock'
+# bind 'unix://var/run/puma.sock?umask=0111'
+# bind 'ssl:/127.0.0.1:9292?key=path_to_key&cert=path_to_cert'
 
-# Instead of "bind 'ssl://127.0.0.1:9292?key=path_to_key&cert=path_to_cert'" you
+# Instead of "bind 'ssl:/127.0.0.1:9292?key=path_to_key&cert=path_to_cert'" you
 # can also use the "ssl_bind" option.
 #
 # ssl_bind '127.0.0.1', '9292', {
@@ -103,7 +103,7 @@ bind http://'0.0.0.0'/
 # load puma itself (ie. 'ruby -Ilib bin/puma'), not the arguments
 # to puma, as those are the same as the original process.
 #
-restart_command '/root/midscore_web/restart_puma'
+restart_command '/home/stinky/root/midscore_io/restart_puma'
 
 # === Cluster mode ===
 
@@ -195,11 +195,11 @@ worker_boot_timeout 25
 # will need to include that token as a query parameter. This allows for
 # simple authentication.
 #
-# Check out https://github.com/puma/puma/blob/master/lib/puma/app/status.rb
+# Check out https:/github.com/puma/puma/blob/master/lib/puma/app/status.rb
 # to see what the app has available.
 #
-# activate_control_app 'unix:///var/run/pumactl.sock'
-# activate_control_app 'unix:///var/run/pumactl.sock', { auth_token: '12345' }
-# activate_control_app 'unix:///var/run/pumactl.sock', { no_token: true }
-rackup '/root/midscore_web/config.ru'
+# activate_control_app 'unix://var/run/pumactl.sock'
+# activate_control_app 'unix://var/run/pumactl.sock', { auth_token: '12345' }
+# activate_control_app 'unix://var/run/pumactl.sock', { no_token: true }
+rackup '/home/stinky/root/midscore_io/config.ru'
 activate_control_app

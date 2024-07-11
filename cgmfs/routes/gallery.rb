@@ -8,7 +8,7 @@ class CGMFS
     r.redirect "http://#{r.host}:8080" if LOCAL
     r.redirect "https://#{r.host}" unless LOCAL
   end
-  
+
   class Calendar
     attr_reader :date
 
@@ -453,12 +453,6 @@ class CGMFS
 
       r.get do
         @title = "View #{user}'s Gallery"
-        if r.params['owo_count_rate'].nil?
-          @owo_count_rate = session['owo_count_rate'] || 3
-        else
-          @owo_count_rate = r.params['owo_count_rate'].to_i
-          session['owo_count_rate'] = @owo_count_rate
-        end
 
         if r.params['quantity_displayed'].nil?
           @quantity_displayed = session['quantity_displayed'] || 175
@@ -482,7 +476,6 @@ class CGMFS
         @skip_by = r.params['skip_by'].to_i
         @skip_by = 0 if r.params['skip_by'].nil?
         @gallery_numbers = @gallery_images.size / @quantity_displayed
-        log(@gallery_numbers)
         if @gallery_images.size <= @quantity_displayed
           @pages = 0
           @gallery_range = 0..@quantity_displayed

@@ -8,7 +8,6 @@ require 'resolv'
 require 'tzinfo'
 require 'redcarpet'
 require 'open-uri'
-require 'openai'
 require 'date'
 require 'bigdecimal'
 require 'free-image'
@@ -29,7 +28,7 @@ require_relative "lib/partitioned_array/lib/line_db" # magnum opus of computer s
 require_relative 'lib/shortened/shortened_url' # shortened url class
 require_relative 'logger'
 require_dir "./lib/dir_requires"
-
+RubyVM::YJIT.enable # enable Ruby 3.3+'s JIT compiler (YJIT)'
 DEBUG = false
 LOCAL = File.open("local.txt", "r").read.strip == "1"
 
@@ -88,7 +87,6 @@ class CGMFS < Roda
   @@test = ManagedPartitionedArray.new(max_capacity: "data_arr_size", db_size: DB_SIZE,
                                        partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: "./db/sl2", db_name: 'sl_slice2')
 
-
   # @@sl_db.load_last_entry_from_file!
   # @@sl_db.load_max_partition_archive_from_file!
   # @@sl_db.load_partition_archive_id_from_file!
@@ -97,8 +95,6 @@ class CGMFS < Roda
   timestamp = version_file.readline.chomp
   version_file.close
   $dog_blog_version = "(v#️⃣#{version}):[ 🏗️#{timestamp} ] - \"The Stimky Sniffa\" - 🩲🍆😤" # used in layout.html.erb
-
-
 
   @@line_db = LineDB.new
   @@line_db["urls_redir"].pad.new_table!(database_name: "urls_database", database_table: "urls_table")
@@ -132,20 +128,6 @@ class CGMFS < Roda
     hash["superadmin"] = "gUilmon#95458a"
   end
   puts "Done."
-
-  # https://github.com/alexrudall/ruby-openai
-  # @@line_db["gpt4"].pad.new_table!(database_name: "gpt4_database", database_table: "gpt4_table")
-  @@ai_client = OpenAI::Client.new(
-    access_token: "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",
-    request_timeout: 100
-    # temperature: 0.5,
-    # max_tokens: 100,
-    # top_p: 1,
-    # frequency_penalty: 0,
-    # presence_penalty: 0,
-    # stop: ["\n", " Human:", " AI:"]
-
-  )
 
   a1 = Time.now
   @@line_db.databases.each do |db|

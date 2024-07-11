@@ -1,3 +1,3 @@
 `pkill -f puma`
-exec('puma -C config/puma-local.rb &')
+exec('puma -C config/puma-nginx-mid.rb &')
 puts 'Puma server restarted.'

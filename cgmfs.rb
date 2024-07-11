@@ -28,7 +28,7 @@ require_relative "lib/partitioned_array/lib/line_db" # magnum opus of computer s
 require_relative 'lib/shortened/shortened_url' # shortened url class
 require_relative 'logger'
 require_dir "./lib/dir_requires"
-
+RubyVM::YJIT.enable # enable Ruby 3.3+'s JIT compiler (YJIT)'
 DEBUG = false
 LOCAL = File.open("local.txt", "r").read.strip == "1"
 

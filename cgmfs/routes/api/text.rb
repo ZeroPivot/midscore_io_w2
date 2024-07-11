@@ -8,7 +8,7 @@ class CGMFS
         timestamp = "#{Time.now.to_s.gsub(' ', '_').gsub('+0000', '')}" # {} ".txt"""
         File.write("./public/text/#{timestamp}", r.params['text'])
         # r.redirect("/files/#{timestamp}")
-        "https://hudl.ink/text/#{timestamp}"
+        "https://alphabet-mafia.net/text/#{timestamp}"
       end
     end
 

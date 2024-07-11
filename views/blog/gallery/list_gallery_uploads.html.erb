@@ -26,21 +26,10 @@
       <h1><b><a href="<%= "#{domain_name(@r)}/gallery/uwu/view/#{@user}"%>">UwU⁉️</a></b></h1>
       <hr>
       <h1><b>OwO⁉️</b></h1>
-
-      <form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/" %>" method="get">
-        <label for="owo_display">➗OwO:</label>
-        <input type="number" id="owo_display" name="owo_count_rate" value="<%= @owo_count_rate || 3 %>" required>
-        <input type="submit" value="Submit">
-      </form>
       <br>
-
       <div style="display: flex; flex-wrap: wrap;">
         <% @owo_count_gallery.each_with_index do |image, index| %>
           <% next if image['owo_count'].nil? %>
-          <% log(@owo_count_rate) %>
-          <% if index % @owo_count_rate == 0 %> <!-- Modulo operation with @owo_count_rate -->
-            <br>
-          <% end %>
           <div style="padding: 11px; box-sizing: border-box;">
             <div id="gallery_images">
               <p style="text-align: center;"><%= convert_ints_to_emoji(image['owo_count']) %> OwOs</p>

@@ -11,7 +11,7 @@ class CGMFS
         # "#{timestamp}"
         File.write("./public/files/#{r.params['file_title']}", r.params['form'][:tempfile].read)
         # r.redirect("/screens/#{timestamp}")
-        "https://hudl.ink/files/#{r.params['file_title']}"
+        "https://alphabet-mafia.net/files/#{r.params['file_title']}"
         # "#{Dir.pwd}"
         # "#{p r.params['form'][:tempfile]}"
       end

@@ -65,7 +65,7 @@ class CGMFS
             log("---------------\n(Click) Redirection for \"/r/#{url[1]}\" to #{url[0]}:", filename: "./db/r_redirs/url_shortened.log")
             log("BLOG_REDIR_LABEL: #{url[1]}", filename: "./db/r_redirs/url_shortened.log")
             log("BLOG_URL: #{url[0]}", filename: "./db/r_redirs/url_shortened.log")
-            log("TIMESTAMP: #{Time.now}", filename: "./db/r_redirs/url_shortened.log")            
+            log("TIMESTAMP: #{Time.now}", filename: "./db/r_redirs/url_shortened.log")
             log("PATH: https://#{r.host}#{r.path}", filename: "./db/r_redirs/url_shortened.log")
             log("REQUEST_IP: #{r.ip}", filename: "./db/r_redirs/url_shortened.log")
             log("REFERER: #{r.referer}", filename: "./db/r_redirs/url_shortened.log")
@@ -74,11 +74,10 @@ class CGMFS
             log("REQUEST_PATH: #{r.path}", filename: "./db/r_redirs/url_shortened.log")
             log("REQUEST_HOST: #{r.host}", filename: "./db/r_redirs/url_shortened.log")
             log("REQUEST_PORT: #{r.port}", filename: "./db/r_redirs/url_shortened.log")
-            log("REQUEST_URL: #{r.url}", filename: "./db/r_redirs/url_shortened.log")        
-            log("REQUEST_QUERY_STRING: #{r.query_string}", filename: "./db/r_redirs/url_shortened.log")            
+            log("REQUEST_URL: #{r.url}", filename: "./db/r_redirs/url_shortened.log")
+            log("REQUEST_QUERY_STRING: #{r.query_string}", filename: "./db/r_redirs/url_shortened.log")
             log("---------------\n")
-            @@telegram_logger.send_message("➿REDIRECTION➿ for \"/r/#{url[1]}\" to #{url[0]}:\nBLOG_REDIR_LABEL: #{url[1]}\nBLOG_URL: #{url[0]}\nTIMESTAMP: #{Time.now}\nPATH: https://#{r.host}#{r.path}\nREQUEST_IP: #{r.ip}\nREFERER: #{r.referer}\nREQUEST_USER_AGENT: #{r.user_agent}\nREQUEST_METHOD: #{r.request_method}\nREQUEST_PATH: #{r.path}\nREQUEST_HOST: #{r.host}\nREQUEST_PORT: #{r.port}\nREQUEST_URL: #{r.url}\nREQUEST_QUERY_STRING: #{r.query_string}")
-            r.redirect(url[0])
+           
 
           else
             log("#{url[0]}: /r/#{url[1]} found and skipped!", filename: "./db/r_redirs/url_shortened.log")

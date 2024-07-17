@@ -865,6 +865,12 @@ class CGMFS
           @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename) # just to be sure!
         end
         if uploadable
+
+          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
+            hash['recache'] = true if @tags != @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['tags']
+          end
+          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
+
           @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|
             hash['file'] = original_to_new_filename
             hash['title'] = @title
@@ -877,11 +883,12 @@ class CGMFS
           end
 
           @gallery.save_partition_by_id_to_file!(@id)
+
+        else
           @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
-            hash['recache'] = true
+            hash['recache'] = true if @tags != @@line_db[@user].pad['gallery_database', 'gallery_table'].get(@id)['tags']
           end
           @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
-        else
           @@line_db[@user].pad['gallery_database', 'gallery_table'].set(@id) do |hash|
             # hash['file'] = original_to_new_filename
             hash['title'] = @title
@@ -893,10 +900,7 @@ class CGMFS
             hash['sum_identifier'] = @sum_identifier
           end
           @gallery.save_partition_by_id_to_file!(@id)
-          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
-            hash['recache'] = true # perhaps rewrite later to only recache in general if tags etc are changed alone (then recache)
-          end
-          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
+
 
         end
 

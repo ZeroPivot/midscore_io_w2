@@ -39,14 +39,14 @@ class CGMFS
 
   def image_bytes_to_num_id(user:, filename:)
     File.open("public/gallery/#{user}/#{filename}", 'rb') do |file|
-      sum = file.read.each_byte.inject(0) { |sum, byte| sum + byte }
+      sum = file.read.each_byte.sum
       @sum_identifier = sum.to_i
     end
   end
 
   def image_bytes_to_num_id_spec_fullpath(filename: String)
     File.open("#{filename}", 'rb') do |file|
-      sum = file.read.each_byte.inject(0) { |sum, byte| sum + byte }
+      sum = file.read.each_byte.sum
       @sum_identifier = sum.to_i
     end
   end
@@ -893,6 +893,10 @@ class CGMFS
             hash['sum_identifier'] = @sum_identifier
           end
           @gallery.save_partition_by_id_to_file!(@id)
+          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
+            hash['recache'] = true # perhaps rewrite later to only recache in general if tags etc are changed alone (then recache)
+          end
+          @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
 
         end
 
@@ -941,7 +945,7 @@ class CGMFS
         if @collection
           @collections.data_arr[@id] = {}
           @collections.save_partition_by_id_to_file!(@id)
-          #"Collection with id #{@id} deleted successfully. <a href='#{domain_name(r)}/gallery/uwu/view/#{@user}'>Back TO Collections</a>"
+          # "Collection with id #{@id} deleted successfully. <a href='#{domain_name(r)}/gallery/uwu/view/#{@user}'>Back TO Collections</a>"
           r.redirect "#{domain_name(r)}/gallery/uwu/view/#{@user}"
         else
           "No collection found with id #{@id}."
@@ -1037,7 +1041,6 @@ class CGMFS
         else
           "No collection found with id #{@id}."
         end
-
       end
     end
 
@@ -1056,7 +1059,7 @@ class CGMFS
         @test = @gallery.get(@gallery_image_id)
         @title = 'Add Image to Collection'
         log(@test)
-        if (!@test.nil? && !@test.is_a?(Hash))
+        if !@test.nil? && !@test.is_a?(Hash)
           if @collection['image_id'].nil?
             @collection['image_id'] = [@gallery_image_id]
           else
@@ -1066,7 +1069,7 @@ class CGMFS
 
           r.redirect("#{domain_name(r)}/gallery/uwu/edit/id/#{@uwu_id}")
         elsif @test.is_a? Hash
-          if !@test.empty?
+          unless @test.empty?
             if @collection['image_id'].nil?
               @collection['image_id'] = [@gallery_image_id]
             else
@@ -1094,7 +1097,7 @@ class CGMFS
         if @collection
           @collections.data_arr[@id] = {}
           @collections.save_partition_by_id_to_file!(@id)
-          #"Collection with id #{@id} deleted successfully."
+          # "Collection with id #{@id} deleted successfully."
           r.redirect("#{domain_name(r)}/gallery/uwu/view/#{@user}")
         else
           "No collection found with id #{@id}."

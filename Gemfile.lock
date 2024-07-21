@@ -131,7 +131,7 @@ GEM
     loofah (2.22.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
-    mechanize (2.10.1)
+    mechanize (2.11.0)
       addressable (~> 2.8)
       base64
       domain_name (~> 0.5, >= 0.5.20190701)
@@ -204,7 +204,7 @@ GEM
     resolv (0.4.0)
     reverse_markdown (2.1.1)
       nokogiri
-    rexml (3.3.1)
+    rexml (3.3.2)
       strscan
     roda (3.82.0)
       rack
@@ -253,13 +253,13 @@ GEM
       thor (~> 1.0)
       tilt (~> 2.0)
       yard (~> 0.9, >= 0.9.24)
-    sorbet (0.5.11481)
-      sorbet-static (= 0.5.11481)
-    sorbet-runtime (0.5.11481)
-    sorbet-static (0.5.11481-aarch64-linux)
-    sorbet-static (0.5.11481-universal-darwin)
-    sorbet-static (0.5.11481-x86_64-linux)
-    standard (1.39.1)
+    sorbet (0.5.11491)
+      sorbet-static (= 0.5.11491)
+    sorbet-runtime (0.5.11491)
+    sorbet-static (0.5.11491-aarch64-linux)
+    sorbet-static (0.5.11491-universal-darwin)
+    sorbet-static (0.5.11491-x86_64-linux)
+    standard (1.39.2)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.0)
       rubocop (~> 1.64.0)
@@ -355,4 +355,4 @@ DEPENDENCIES
   yuicompressor
 
 BUNDLED WITH
-   2.5.14
+   2.5.16

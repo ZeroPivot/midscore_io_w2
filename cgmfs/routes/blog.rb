@@ -3,6 +3,7 @@
 # rubocop:disable Metrics/MethodLength
 # rubocop:disable Metrics/BlockLength
 # rubocop:disable Metrics/ClassLength
+# rubocop:disable Style/StringLiterals
 module Math
   def self.radians(angle)
     angle / 180.0 * Math::PI
@@ -966,6 +967,7 @@ class CGMFS
             ### INEFFICIENT save method
             # @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_everything_to_files!
             #
+            
 
             view('blog/view', engine: 'html.erb', layout: 'layout.html')
           end

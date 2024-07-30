@@ -38,7 +38,7 @@ GEM
       parser (>= 2.4)
       smart_properties
     bigdecimal (3.1.8)
-    bson (5.0.0)
+    bson (5.0.1)
     buftok (0.3.0)
     builder (3.3.0)
     coercible (1.0.0)
@@ -88,7 +88,7 @@ GEM
       logger
     faraday-multipart (1.0.4)
       multipart-post (~> 2)
-    faraday-net_http (3.1.0)
+    faraday-net_http (3.1.1)
       net-http
     fastimage (2.3.1)
     ffi (1.17.0-aarch64-linux-gnu)
@@ -131,7 +131,7 @@ GEM
     loofah (2.22.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
-    mechanize (2.11.0)
+    mechanize (2.12.0)
       addressable (~> 2.8)
       base64
       domain_name (~> 0.5, >= 0.5.20190701)
@@ -162,20 +162,19 @@ GEM
       connection_pool (~> 2.2)
     nio4r (2.7.3)
     nkf (0.2.0)
-    nokogiri (1.16.6-aarch64-linux)
+    nokogiri (1.16.7-aarch64-linux)
       racc (~> 1.4)
-    nokogiri (1.16.6-arm64-darwin)
+    nokogiri (1.16.7-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.16.6-x86_64-darwin)
+    nokogiri (1.16.7-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.16.6-x86_64-linux)
+    nokogiri (1.16.7-x86_64-linux)
       racc (~> 1.4)
     parallel (1.25.1)
     parser (3.3.4.0)
       ast (~> 2.4.1)
       racc
-    prism (0.29.0)
-    public_suffix (6.0.0)
+    public_suffix (6.0.1)
     puma (6.4.2)
       nio4r (~> 2.0)
     racc (1.8.0)
@@ -224,10 +223,6 @@ GEM
     rubocop-performance (1.21.1)
       rubocop (>= 1.48.1, < 2.0)
       rubocop-ast (>= 1.31.1, < 2.0)
-    ruby-lsp (0.17.2)
-      language_server-protocol (~> 3.17.0)
-      prism (>= 0.29.0, < 0.30)
-      sorbet-runtime (>= 0.5.10782)
     ruby-openai (7.1.0)
       event_stream_parser (>= 0.3.0, < 2.0.0)
       faraday (>= 1)
@@ -253,12 +248,6 @@ GEM
       thor (~> 1.0)
       tilt (~> 2.0)
       yard (~> 0.9, >= 0.9.24)
-    sorbet (0.5.11491)
-      sorbet-static (= 0.5.11491)
-    sorbet-runtime (0.5.11491)
-    sorbet-static (0.5.11491-aarch64-linux)
-    sorbet-static (0.5.11491-universal-darwin)
-    sorbet-static (0.5.11491-x86_64-linux)
     standard (1.39.2)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.0)
@@ -338,11 +327,8 @@ DEPENDENCIES
   resolv
   roda
   rubocop
-  ruby-lsp
   ruby-openai
   solargraph
-  sorbet
-  sorbet-runtime
   standard
   statemachine
   telegram-bot-ruby

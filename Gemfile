@@ -64,12 +64,9 @@ gem 'erb_lint'
 gem 'htmlbeautifier'
 gem 'redcarpet'
 gem 'telegram-bot-ruby'
-gem 'sorbet'
-gem 'sorbet-runtime'
 
 gem "ruby-openai" #for gpt-4
 gem "rubocop"
 gem "yuicompressor" #for roda asset compression
-gem "ruby-lsp"
 gem 'standard'
 gem 'solargraph'

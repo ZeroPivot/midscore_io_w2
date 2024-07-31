@@ -96,6 +96,8 @@
 
 <% if @r %>
 <% File.open('main_request_log.txt', 'a') do |f| %>
+     
+     <% 
       # Log the request method
       f.puts "request_method: #{@r.request_method}"
 
@@ -122,5 +124,6 @@
 
       f.puts #newline
       # ... add more logs as needed ...
+      %>
     <% end %>
     <% end %>

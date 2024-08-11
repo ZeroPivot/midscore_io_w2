@@ -306,6 +306,7 @@ class CGMFS
           @post = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id.to_i)
           @rendered_type = @post['blog_post_rendered_type']
           @body = @post['blog_post_body']
+          @title = @@line_db[@user].pad['blog_database', 'blog_table'].get(0)['blog_post_title']
         end
 
         if @rendered_type == 'markdown'
@@ -315,12 +316,13 @@ class CGMFS
           @markdown_body = @post['blog_post_body_markdown'] # save markdown body for later
           @markdown_body = @body.to_s # save markdown body for later
           @body = markdown.render(@markdown_body) if @rendered_type == 'markdown'
+          @title = @@line_db[@user].pad['blog_database', 'blog_table'].get(0)['blog_post_title']
 
         end
 
         %[
 <html>
-<title>(Raw): (#{to_numer_string(@body)}) - #{@title}</title>
+<title>(#{to_numer_string(@body)}) - #{@title}</title>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rel="stylesheet" type="text/css" href="#{domain_name(r)}/assets/prism.css">

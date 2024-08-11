@@ -78,7 +78,7 @@ class CGMFS
             log("REQUEST_QUERY_STRING: #{r.query_string}", filename: "./db/r_redirs/url_shortened.log")
             log("---------------\n")
            
-
+            r.redirect(url[0])
           else
             log("#{url[0]}: /r/#{url[1]} found and skipped!", filename: "./db/r_redirs/url_shortened.log")
             #'404 not found'

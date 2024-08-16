@@ -425,7 +425,7 @@ class CGMFS
         @skip_by = r.params['skip_by'].to_i
         @skip_by = 0 if r.params['skip_by'].nil?
         @gallery_numbers = @gallery_images.size / @quantity_displayed
-        log(@gallery_numbers)
+        #log(@gallery_numbers)
         if @gallery_images.size <= @quantity_displayed
           @pages = 0
           @gallery_range = 0..@quantity_displayed
@@ -1037,7 +1037,7 @@ class CGMFS
         @collection = @collections.get(@id)
         @image_id = gallery_id
         @title = 'Delete Image from Collection'
-        log(@collection)
+       # log(@collection)
         if @collection
           @collection['image_id'].delete(@image_id)
           @collections.save_partition_by_id_to_file!(@id)
@@ -1062,7 +1062,7 @@ class CGMFS
         @gallery_image_id = r.params['image_id'].to_i
         @test = @gallery.get(@gallery_image_id)
         @title = 'Add Image to Collection'
-        log(@test)
+       # log(@test)
         if !@test.nil? && !@test.is_a?(Hash)
           if @collection['image_id'].nil?
             @collection['image_id'] = [@gallery_image_id]

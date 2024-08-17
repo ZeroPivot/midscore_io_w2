@@ -17,14 +17,12 @@
       <input type="text" id="search_tags" name="search_tags" placeholder="Search tags" required> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/" %>">(🏷️,🏷️,...)</a>
       <input type="submit" value="Search">
       </form>
-
       <br>
       <br>
       <center><h1>For <%= @user %>'s gallery</h1>
       (<b>BLOG<b>: <font size="74"><a href="<%= "#{domain_name(@r)}/blog/#{@user}" %>">(📰)</a></font>)<br />
       </center>
 <hr>
-
       <h1><b><a href="<%= "#{domain_name(@r)}/gallery/uwu/view/#{@user}"%>">UwU⁉️</a></b></h1>
       <hr>
       <h1><b>OwO⁉️</b></h1>
@@ -54,9 +52,7 @@
       </div>
 <hr>
       <br><br>
-
       <h1><b>🖼️,🖼️,...</b></h1>
-
       <form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/" %>" method="get">
         <label for="modulo_display">➗</label>
         <input type="text" id="modulo_display" name="modulo_display" value="<%= @modulo_display || 4 %>" required>
@@ -67,7 +63,6 @@
 <br>
 <center><a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/latest"><font size="74">[🆕]</font></a><a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>?skip_by=0"><font size="74">[📁]</font></a></center>
 <br>
-
 <hr>
       <br>
       <br>
@@ -96,7 +91,6 @@
 
         <% end %>
         <% end %>
-
     </table>
   </center>
   <center><div><a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>?skip_by=0">[📁]</a> <%= @pages_html %><a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/latest">[🆕]</a></div></center>

@@ -24,7 +24,6 @@
     <meta name="twitter:description" content="<%= @description || @title || @user %>" />
     <title><%= @title %></title>
   </head>
-
   <body>
     <script async src="https://cse.google.com/cse.js?cx=335ec372b63e3444f"></script>
 <div class="gcse-search"></div>
@@ -81,7 +80,6 @@
     <% file.rewind %>
     <% file.write(@page_views) %>
   <% end %>
-
   <% end %>
 <br>
 ♾️<%= @page_views.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %> -- ©️<a href="<%= domain_name(@r) %>"><%= domain_name(@r).gsub(/https?:\/\//, '') %></a> -- <%= $dog_blog_version %><br>

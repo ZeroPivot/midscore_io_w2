@@ -117,7 +117,6 @@
         </div>
           <div class="table-row">
             <div class="table-header"><strong>OwO</strong>
-
             </div>
             <div class="table-data">
                 <% if !@owo.nil? %>
@@ -125,7 +124,6 @@
                 <% else %>
                 ⊘
                 <% end %>
-
             <% if session['user'] == @user %>
                 <% if @owo.nil? %>
                 <a href="<%= "#{domain_name(@r)}/gallery/owo/add?image_id=#{@image['id']}" %>">(OwO🪨)</a>
@@ -134,9 +132,7 @@
                 <% end %>
             <% else %>
 
-
             <% end %>
-
             </div>
         </div>
           <div class="table-row">
@@ -147,12 +143,10 @@
             <div class="table-header"><strong>(🔗)</strong></div>
             <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}" %>" style="color: white;">PERMA-LINK</a></div>
         </div>
-
                 <div class="table-row">
         <div class="table-header"><strong>(🆔)</strong></div>
             <div class="table-data"><%= @id %>
         </div>
-
         </div>
             <div class="table-row">
                 <% if @image["attachments"] && !@image["attachments"].empty? %>
@@ -162,7 +156,6 @@
                 </div>
                 <% end %>
     </div>
-
                     <% if session['user'] == @user %>
         <div class="table-row">
 
@@ -170,8 +163,6 @@
             <div class="table-data">
                     <a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{@image["id"]}" %>" style="color: white;">ADMIN: EDIT</a>
             </div>
-
-
              </div>
               <% end %>
 
@@ -182,12 +173,8 @@
                 (<%= @image['sum_identifier'].to_s || 0.to_s %>) -> (<%= sum %>)
                 </div>
         </div>
-
 </div>
-
-
       <% if session['user'] == @user %>  <center>  <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{@id}/attachments/upload" %>" style="color: white;">UPLOAD ATTACHMENT</a> </center>
-
       <br>
       <% end %>
     <center>

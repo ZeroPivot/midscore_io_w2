@@ -3,7 +3,6 @@
         text-align: center;
     }
 </style>
-
 <div class="center">
     <form action="<%= domain_name(@r) %>/gallery/uwu/add_image/uwu_id/<%= @id %>" method="post" enctype="multipart/form-data">
         <input type="text" name="image_id">
@@ -11,7 +10,6 @@
     </form>
 </div>
 <br><br><br><hr>
-
 <% @images.each_with_index do |image, index| %>
     <div class="center">
         <div class="image">
@@ -24,7 +22,6 @@
         </div>
     </div>
 <% end %>
-
 <div class="center">
     <a href="<%= domain_name(@r) %>/gallery/uwu/view/<%= @user %>">Go Back</a>
 </div>

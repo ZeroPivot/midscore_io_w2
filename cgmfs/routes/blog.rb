@@ -893,13 +893,6 @@ class CGMFS
               end
               @page_views = hash['page_views']
             end
-
-            ### Efficient save method
-            # @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_everything_to_files!
-            ### inefficient save method
-            # @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_everything_to_files!
-            #
-
             @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
 
             # @tagged =  @tagged_posts.map do |id|
@@ -969,7 +962,7 @@ class CGMFS
             ### INEFFICIENT save method
             # @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_everything_to_files!
             #
-            
+
 
             view('blog/view', engine: 'html.erb', layout: 'layout.html')
           end

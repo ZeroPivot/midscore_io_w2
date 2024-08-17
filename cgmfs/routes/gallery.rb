@@ -500,6 +500,19 @@ class CGMFS
 
         @owo_count_gallery = @@line_db[@user].pad['gallery_database', 'gallery_table'].data_arr.sort_by { |image| image['owo_count'].to_i }
 
+
+
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
+          #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+          if hash['page_views'].nil?
+            hash['page_views'] = 0
+          else
+            hash['page_views'] += 1
+          end
+          @page_views = hash['page_views']
+        end
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
+
         view('blog/gallery/list_gallery_uploads', engine: 'html.erb', layout: 'layout.html')
       end
     end
@@ -520,9 +533,31 @@ class CGMFS
         @owo = @image['owo_count']
 
         if @image
+          @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
+            #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+            if hash['page_views'].nil?
+              hash['page_views'] = 0
+            else
+              hash['page_views'] += 1
+            end
+            @page_views = hash['page_views']
+          end
+          @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
           # add one to page view, and save by partition:
           @image['views'] += 1
           @gallery.save_partition_by_id_to_file!(@id)
+
+          @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
+            #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+            if hash['page_views'].nil?
+              hash['page_views'] = 0
+            else
+              hash['page_views'] += 1
+            end
+            @page_views = hash['page_views']
+          end
+          @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
+
           view('blog/gallery/view_user_gallery_image_id', engine: 'html.erb', layout: 'layout.html')
         else
           "No gallery post found with id #{@id}."
@@ -539,6 +574,21 @@ class CGMFS
         @id = id
         @image = @gallery.get(@id)
         @title = "View Attachment Id #{@id} by #{@user}"
+
+
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
+          #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+          if hash['page_views'].nil?
+            hash['page_views'] = 0
+          else
+            hash['page_views'] += 1
+          end
+          @page_views = hash['page_views']
+        end
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
+
+
+
         view('blog/gallery/view_user_gallery_image_id_attachments_list', engine: 'html.erb', layout: 'layout.html')
       end
     end
@@ -716,6 +766,17 @@ class CGMFS
           @only_search = true
         end
 
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
+          #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+          if hash['page_views'].nil?
+            hash['page_views'] = 0
+          else
+            hash['page_views'] += 1
+          end
+          @page_views = hash['page_views']
+        end
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
+
         view('blog/gallery/view_user_gallery_image_tags_search', engine: 'html.erb', layout: 'layout.html')
       end
     end
@@ -789,6 +850,19 @@ class CGMFS
           @split_tags = @cache.get(0)['split_tags']
           @tags_set = @cache.get(0)['tags_set']
         end
+
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
+          #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+          if hash['page_views'].nil?
+            hash['page_views'] = 0
+          else
+            hash['page_views'] += 1
+          end
+          @page_views = hash['page_views']
+        end
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
+
+
         view('blog/gallery/view_user_gallery_image_tags', engine: 'html.erb', layout: 'layout.html')
       end
     end
@@ -915,6 +989,19 @@ class CGMFS
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
         @collections = @collections.data_arr
+
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
+          #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+          if hash['page_views'].nil?
+            hash['page_views'] = 0
+          else
+            hash['page_views'] += 1
+          end
+          @page_views = hash['page_views']
+        end
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
+
+
         # uwu collections has its own id in data_arr and the id of the image in the gallery that is very uwu, with a numerical ranking system
         # @collections = @collections.delete_if { |collection| collection == {} }
         view('blog/gallery/view_uwu_collections', engine: 'html.erb', layout: 'layout.html')
@@ -932,6 +1019,18 @@ class CGMFS
         @collection = @collections.get(@id)
         @image_id = @collection['image_id']
         @images = @image_id.map { |id_map| [id_map, @gallery.get(id_map)] }
+
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
+          #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+          if hash['page_views'].nil?
+            hash['page_views'] = 0
+          else
+            hash['page_views'] += 1
+          end
+          @page_views = hash['page_views']
+        end
+        @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
+
 
         view('blog/gallery/view_uwu_collections_id', engine: 'html.erb', layout: 'layout.html')
       end

@@ -10,7 +10,7 @@ class CGMFS
           @url_to_delete = r.params['url_to_delete']
           @@line_db['urls_redir'].pad['urls_database', 'urls_table'].set(0) do |hash|
             temp = hash['url_name_title']
-            temp.delete_if { |url| url[1] == @url_to_delete }
+            temp.delete_if { |url| url[1] == @url_to_delete || url[0] == @url_to_delete }
             hash['url_name_title'] = temp
           end
           @@line_db['urls_redir'].pad['urls_database', 'urls_table'].save_everything_to_files!
@@ -77,7 +77,7 @@ class CGMFS
             log("REQUEST_URL: #{r.url}", filename: "./db/r_redirs/url_shortened.log")
             log("REQUEST_QUERY_STRING: #{r.query_string}", filename: "./db/r_redirs/url_shortened.log")
             log("---------------\n")
-           
+
             r.redirect(url[0])
           else
             log("#{url[0]}: /r/#{url[1]} found and skipped!", filename: "./db/r_redirs/url_shortened.log")

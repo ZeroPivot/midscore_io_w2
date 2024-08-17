@@ -6,13 +6,13 @@ class CGMFS
       r.get do
         success = 'wur r u doing!?'
         if (r.params['password'] == 'gUilmon95458a')
-          # r.response.set_cookie("admin", value: "true")       
-        
+          # r.response.set_cookie("admin", value: "true")
+
             #session['user'] = 'aritywolf'
             #session['password'] = '859CDFE#F4E85'
             session['admin'] = true
             #r.redirect('/blog/aritywolf')
-          
+
           success = 'Successfully logged in as admin' #unused
         end
 

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: TelegramChat
+  
+    &mdash; Documentation by YARD 0.9.36
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "TelegramChat";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index (T)</a> &raquo;
+    
+    
+    <span class="title">TelegramChat</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: TelegramChat
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">TelegramChat</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/loggers/telegram_chat_openai.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>VERSION v1.0.0 - 2023-04-14</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fetch_updates-instance_method" title="#fetch_updates (instance method)">#<strong>fetch_updates</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>IMPORTANT.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>  &#x21d2; TelegramChat </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>A new instance of TelegramChat.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#receive_message-instance_method" title="#receive_message (instance method)">#<strong>receive_message</strong>(message)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#send_message-instance_method" title="#send_message (instance method)">#<strong>send_message</strong>(chat_id, text)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="TelegramChat (class)">TelegramChat</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns a new instance of TelegramChat.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/loggers/telegram_chat_openai.rb', line 18</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
+  <span class='ivar'>@telegram_bot_token</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>5641593028:AAHzTWyj2f-P4WalK3gUFSV061cqsYvjrMk</span><span class='tstring_end'>&#39;</span></span>
+
+  <span class='ivar'>@ai_client</span> <span class='op'>=</span> <span class='const'>OpenAI</span><span class='op'>::</span><span class='const'>Client</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span>
+    <span class='label'>access_token:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>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</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+
+    <span class='label'>request_timeout:</span> <span class='int'>30</span>
+    <span class='comment'># temperature: 0.5,
+</span>
+    <span class='comment'># max_tokens: 100,
+</span>
+    <span class='comment'># top_p: 1,
+</span>
+    <span class='comment'># frequency_penalty: 0,
+</span>
+    <span class='comment'># presence_penalty: 0,
+</span>
+    <span class='comment'># stop: [&quot;\n&quot;, &quot; Human:&quot;, &quot; AI:&quot;]
+</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="fetch_updates-instance_method">
+  
+    #<strong>fetch_updates</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>IMPORTANT</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/loggers/telegram_chat_openai.rb', line 97</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fetch_updates'><span class='object_link'><a href="top-level-namespace.html#fetch_updates-instance_method" title="#fetch_updates (method)">fetch_updates</a></span></span> <span class='comment'># IMPORTANT
+</span>  <span class='id identifier rubyid_last_update_id'>last_update_id</span> <span class='op'>=</span> <span class='int'>0</span>
+
+  <span class='comment'># Fetch telegram bot update id and message
+</span>
+  <span class='id identifier rubyid_updates'>updates</span> <span class='op'>=</span> <span class='const'>Telegram</span><span class='op'>::</span><span class='const'>Bot</span><span class='op'>::</span><span class='const'>Client</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span><span class='lparen'>(</span><span class='ivar'>@telegram_bot_token</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_bot'>bot</span><span class='op'>|</span>
+    <span class='id identifier rubyid_bot'>bot</span><span class='period'>.</span><span class='id identifier rubyid_api'>api</span><span class='period'>.</span><span class='id identifier rubyid_get_updates'>get_updates</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_last_update_id'>last_update_id</span> <span class='op'>=</span> <span class='id identifier rubyid_updates'>updates</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>result</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>update_id</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='kw'>unless</span> <span class='id identifier rubyid_updates'>updates</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>result</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
+  <span class='const'>Telegram</span><span class='op'>::</span><span class='const'>Bot</span><span class='op'>::</span><span class='const'>Client</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span><span class='lparen'>(</span><span class='ivar'>@telegram_bot_token</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_bot'>bot</span><span class='op'>|</span>
+    <span class='id identifier rubyid_loop'>loop</span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_times_counter'>times_counter</span> <span class='op'>||=</span> <span class='int'>0</span>
+
+      <span class='id identifier rubyid_updates'>updates</span> <span class='op'>=</span> <span class='id identifier rubyid_bot'>bot</span><span class='period'>.</span><span class='id identifier rubyid_api'>api</span><span class='period'>.</span><span class='id identifier rubyid_get_updates'>get_updates</span><span class='lparen'>(</span><span class='label'>offset:</span> <span class='id identifier rubyid_last_update_id'>last_update_id</span> <span class='op'>+</span> <span class='int'>1</span><span class='comma'>,</span> <span class='label'>timeout:</span> <span class='int'>20</span><span class='rparen'>)</span>
+
+      <span class='id identifier rubyid_updates'>updates</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>result</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_update'>update</span><span class='op'>|</span>
+        <span class='id identifier rubyid_last_update_id'>last_update_id</span> <span class='op'>=</span> <span class='id identifier rubyid_update'>update</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>update_id</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span>
+
+        <span class='id identifier rubyid_receive_message'>receive_message</span><span class='lparen'>(</span><span class='const'>Telegram</span><span class='op'>::</span><span class='const'>Bot</span><span class='op'>::</span><span class='const'>Types</span><span class='op'>::</span><span class='const'>Message</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_update'>update</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>message</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+
+      <span class='id identifier rubyid_sleep'>sleep</span><span class='lparen'>(</span><span class='int'>6</span><span class='rparen'>)</span> <span class='comment'># NOTE/TODO: Mess around with sleep response timer... you know the loop...
+</span>
+      <span class='id identifier rubyid_times_counter'>times_counter</span> <span class='op'>+=</span> <span class='int'>1</span>
+
+      <span class='comment'># 10*6 = 60 seconds, 60 seconds is the max time for a telegram bot to be online until its restarted automatically
+</span>
+      <span class='kw'>break</span> <span class='kw'>if</span> <span class='id identifier rubyid_times_counter'>times_counter</span> <span class='op'>==</span> <span class='int'>10</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="receive_message-instance_method">
+  
+    #<strong>receive_message</strong>(message)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/loggers/telegram_chat_openai.rb', line 46</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_receive_message'>receive_message</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_msg'>msg</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+
+  <span class='kw'>unless</span> <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_text'>text</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='comment'># deprecated
+</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_text'>text</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='int'>3</span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>/hud</span><span class='tstring_end'>&#39;</span></span>
+
+      <span class='id identifier rubyid_msg'>msg</span> <span class='op'>=</span> <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_text'>text</span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>/hud </span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+
+    <span class='kw'>else</span>
+
+      <span class='id identifier rubyid_msg'>msg</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>/hud</span><span class='tstring_end'>&#39;</span></span> <span class='comment'># bug with using /hud, not necessary but am integrating this with always saying /openai
+</span>      <span class='id identifier rubyid_msg'>msg</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_text'>text</span>
+
+    <span class='kw'>end</span>
+
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_text'>text</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+    <span class='id identifier rubyid_msg'>msg</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>/hud</span><span class='tstring_end'>&#39;</span></span> <span class='comment'># bug with using /hud, not necessary but am integrating this with always saying /openai
+</span>
+    <span class='id identifier rubyid_msg'>msg</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>{send bug}</span><span class='tstring_end'>&#39;</span></span>
+
+  <span class='kw'>end</span>
+
+  <span class='comment'># send_message(message.chat.id, msg[1].to_s)
+</span>
+  <span class='kw'>return</span> <span class='kw'>unless</span> <span class='id identifier rubyid_msg'>msg</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span>
+
+  <span class='id identifier rubyid_response'>response</span> <span class='op'>=</span> <span class='ivar'>@ai_client</span><span class='period'>.</span><span class='id identifier rubyid_chat'>chat</span><span class='lparen'>(</span>
+    <span class='label'>parameters:</span> <span class='lbrace'>{</span>
+
+      <span class='label'>model:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>gpt-3.5-turbo</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+
+      <span class='label'>messages:</span> <span class='lbracket'>[</span><span class='lbrace'>{</span> <span class='label'>role:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>user</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='label'>content:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>/openai: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_msg'>msg</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span><span class='rbracket'>]</span><span class='comma'>,</span>
+
+      <span class='label'>max_tokens:</span> <span class='int'>2048</span><span class='comma'>,</span>
+
+      <span class='label'>temperature:</span> <span class='float'>0.7</span>
+
+    <span class='rbrace'>}</span>
+  <span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_out_message'>out_message</span> <span class='op'>=</span> <span class='id identifier rubyid_response'>response</span><span class='period'>.</span><span class='id identifier rubyid_dig'>dig</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>choices</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>message</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>content</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_puts'>puts</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Message(OpenAI_Telegram |-&gt; self[ACTORS]:-&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_out_message'>out_message</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_send_message'>send_message</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_chat'>chat</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_out_message'>out_message</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="send_message-instance_method">
+  
+    #<strong>send_message</strong>(chat_id, text)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42
+43
+44</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/loggers/telegram_chat_openai.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_send_message'>send_message</span><span class='lparen'>(</span><span class='id identifier rubyid_chat_id'>chat_id</span><span class='comma'>,</span> <span class='id identifier rubyid_text'>text</span><span class='rparen'>)</span>
+  <span class='const'>Telegram</span><span class='op'>::</span><span class='const'>Bot</span><span class='op'>::</span><span class='const'>Client</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span><span class='lparen'>(</span><span class='ivar'>@telegram_bot_token</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_bot'>bot</span><span class='op'>|</span>
+    <span class='id identifier rubyid_bot'>bot</span><span class='period'>.</span><span class='id identifier rubyid_api'>api</span><span class='period'>.</span><span class='id identifier rubyid_send_message'>send_message</span><span class='lparen'>(</span><span class='label'>chat_id:</span> <span class='id identifier rubyid_chat_id'>chat_id</span><span class='comma'>,</span> <span class='label'>text:</span> <span class='id identifier rubyid_text'>text</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Sat Aug 17 12:54:10 2024 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.36 (ruby-3.3.4).
+</div>
+
+    </div>
+  </body>
+</html>

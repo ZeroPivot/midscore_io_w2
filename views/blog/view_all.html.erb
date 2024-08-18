@@ -1,4 +1,9 @@
 <% blog_lock_status = @@line_db[@user].pad["blog_database", "blog_profile_table"][0]['private_view'] %>
+<center>
+<font size="76"><a href="<%= "#{domain_name(@r)}/gallery/#{@user}" %>">🖼️</a></font>
+</center>
+<br>
+<br>
 <div style="text-align: right;">
   <a href="<%= domain_name(@r) %>/blog/<%= @user %>/view/?desc=1">(❌)</a><a href="<%= domain_name(@r) %>/blog/<%= @user %>/view/">(✅)</a><br>
   <% if @reversed_posts == nil %>

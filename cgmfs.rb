@@ -87,6 +87,13 @@ class CGMFS < Roda
   @@test = ManagedPartitionedArray.new(max_capacity: "data_arr_size", db_size: DB_SIZE,
                                        partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: "./db/sl2", db_name: 'sl_slice2')
 
+  @@sl_db = ManagedPartitionedArray.new(max_capacity: "data_arr_size", db_size: DB_SIZE,
+                                       partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: "./db/sl", db_name: 'sl_slice')
+  @@sl_db.allocate
+  @@sl_db = @@sl_db.load_from_archive!
+
+
+
   # @@sl_db.load_last_entry_from_file!
   # @@sl_db.load_max_partition_archive_from_file!
   # @@sl_db.load_partition_archive_id_from_file!

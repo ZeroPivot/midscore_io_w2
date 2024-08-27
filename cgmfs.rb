@@ -18,6 +18,7 @@ require 'net/http'
 require 'net/https'
 require 'yuicompressor'
 require 'roda/plugins/assets'
+require 'openai'
 
 require_relative 'require_dir' # for route auto-loading
 
@@ -72,6 +73,8 @@ class CGMFS < Roda
   plugin :json
   plugin :json_parser
 
+  @@ai_client = OpenAI::Client.new(access_token: File.open("openai_api_key.txt", "r") { |f| f.read.chomp })
+
   PARTITION_AMOUNT = 9 # The initial, + 1
   OFFSET = 1 # This came with the math, but you can just state the PARTITION_AMOUNT in total and not worry about the offset in the end
   DB_SIZE = 20 # Caveat: The DB_SIZE is th # Caveat: The DB_SIZE is the total # of partitions, but you subtract it by one since the first partition is 0, in code.
@@ -88,11 +91,9 @@ class CGMFS < Roda
                                        partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: "./db/sl2", db_name: 'sl_slice2')
 
   @@sl_db = ManagedPartitionedArray.new(max_capacity: "data_arr_size", db_size: DB_SIZE,
-                                       partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: "./db/sl", db_name: 'sl_slice')
+                                        partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: "./db/sl", db_name: 'sl_slice')
   @@sl_db.allocate
   @@sl_db = @@sl_db.load_from_archive!
-
-
 
   # @@sl_db.load_last_entry_from_file!
   # @@sl_db.load_max_partition_archive_from_file!

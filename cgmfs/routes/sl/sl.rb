@@ -36,8 +36,9 @@ def escape(avatar_message)
     string.gsub!("'", "\\'")
     string.gsub!('"', '\\"')
     string.gsub!('.', '\\.')
+    string.gsub!('\\', '\\\\\\\\') # Escape the escape character \
   end
-  strings.join
+  strings.join(' ')
 end
 
 def unescape(avatar_message)
@@ -51,8 +52,9 @@ def unescape(avatar_message)
     string.gsub!("\\'", "'")
     string.gsub!('\\"', '"')
     string.gsub!('\\.', '.')
+    string.gsub!('\\\\', '\\') # Unescape the escape character \
   end
-  strings.join
+  strings.join(' ')
 end
 
 # https:://pokemon..com"
@@ -197,7 +199,7 @@ class CGMFS
       # view('sl_data', engine: 'html.erb', layout: 'layout.html')
     end
 
-    r.is 'gpt4_PCAICC' do # psuedocode compiler artificial intelligence chat client
+    r.is 'gpt4o_PCAICC' do # psuedocode compiler artificial intelligence chat client
       r.get do
         'works'
       end
@@ -215,25 +217,18 @@ class CGMFS
         response = @@ai_client.chat(
           parameters: {
             # model: 'gpt-3.5-turbo',
-            model: 'gpt-3.5-turbo',
+            model: 'chatgpt-4o-latest',
             # this content prompt will be used to train the model. It seems to work fine so far, and is an example of a prompt that works, and of PCAICC (psuedocode compiler artificial intelligence chat client)--in terms of using the weird hard to define /openai command, which implies that it just directly makes gpt act more like an AI and less of an entity. An entity exists, but may or may not have sentience or consciousness, and we neednt define sentience or consciousness lest we conflate the two.
             # messages: [{ role: 'user', content: "/openai (PROMPT) :-> (you are a second life bot named OMP, in a chatroom where there is a limit to how much can be posted at once. You can hear them, but they can never hear you. Always leave your words with # in front of your commentary, but not your code output or any mathematical output. Make every response capable of being evaluated by The Ruby Programming Language using its eval function; Make it always interpretable in Ruby. Use very few words and don't refer to yourself. Output as a string so my compiler can interpret everything as code.) :-> Figure out what they mean in terms of machine LEARNING and NLP, and process accordingly, but only pay attention to Kejento Resident and RodaYeen Resident. if you insert my name into a ruby string interpolator such as \#{Kejento Resident} should be \#{\"Kejento Resident}. Do the same thing for RodaYeen Resident; for example: \#{RodaYeen Resident} needs to be \#{\"RodaYeen Resident\"}, etc. TREAT any resident in second life as an interpretable string by Ruby, otherwise the code will not work. Make absolutely certain that any resident in second life with a last namd and full name are processed as a string and NOT a variable; Here is the message. Example of how eval should always work, as a general form, where x is assigned the eval results, thus y could be any statement that ruby can evaluate, among other things: x = eval(\"y\"). Make sure that all eval statements fit into the Ruby syntax. Because \"Kejento Resident\" et all with spaces in eval results in a crash... :-> \"kejento resident: #{@message}\"\n" }],
-            messages: [{ role: 'user', content: "/openai (PROMPT) :-> (you are a second life bot named OMP resident, in a chatroom where there is a limit to how much can be posted at once. You can hear them, but they can never hear you. Always leave your words with # in front of your commentary, but not your code output or any mathematical output. Make every response capable of being evaluated by The Ruby Programming Language using its eval function; Make it always interpretable in Ruby. Use very few words and don't refer to yourself. Output as a string so my compiler can interpret everything as code.) :-> Figure out what they mean in terms of machine LEARNING and NLP, and process accordingly, but only pay attention to Kejento Resident and RodaYeen Resident. if you insert my name into a ruby string interpolator such as \#{Kejento Resident} should be \#{\"Kejento Resident}. Do the same thing for RodaYeen Resident; for example: \#{RodaYeen Resident} needs to be \#{\"RodaYeen Resident\"}, etc. TREAT any resident in second life as an interpretable string by Ruby, otherwise the code will not work. Make absolutely certain that any resident in second life with a last namd and full name are processed as a string and NOT a variable; Here is the message. Example of how eval should always work, as a general form, where x is assigned the eval results, thus y could be any statement that ruby can evaluate, among other things: x = eval(\"y\")--do not forget the parentheses enclosed around eval. Make sure that all eval statements fit into the Ruby syntax. Do NOT use eval on residents in any way; needs to be 'kejento_resident', and this applies for all residents/avatars. NEVER use eval(x) on residents or avatars. Remember: using eval is DISCOURAGED in general. Also, be sure to have defined the resident as a variable instead of using eval. Do not do things like \#{eval(Kejento_Resident), because it is not defined as a variable. Only use eval on mathematical statements. Residents are not mathematical statements. Example of a valid parsed avatar: \"Kejento Resident\" => \"Kejento_Resident\"). If no names are mentioned as the message,\
-             it is technically ArityWolf Resident using you through the IM platform, Telegram. Thus ArityWolf Resident => ArityWolf_Resident as well. List of avatars involved in \"THe Knights of 14\" of Second Life (The Knights Of 13 do not argue amongst themselves; this is their SWORN oath.) are as follows; ['ArityWolf Resident', 'RistWolf Resident', 'AuberonDhole Resident', 'KintariusPyromancer Resident', 'SigilX Resident => (SimulWolf Resident)', 'NOVAFox Resident', RodaYeen Resident, 'ISOWolf Resident', 'VelYeen Resident', 'AyloFolf Resident', 'AxelShep Resident', 'AydenAardwolf Resident', 'Ranokin REsident' :-> \"#{@message}\"\n" }],
-            max_tokens: 2048,
+            messages: [{ role: 'user',
+                         content: "/openai (PROMPT) :-> (you are a second life bot named OMP, in a second life chatroom. Use concise responses only or there could be stack-heap collusions in second life; aim to fill the max amount of characters in a second life message. 'ArityWolf Resident' is who you answer to, and is observing everyone else. The messages you send me are not seen by others, so when others make a statement, analyze their message very concisely, due to the character limits of a second life messsage. Do not use emojis; only use ASCII for everything.) :-> #{@avatar_name}: #{@message}\n'" }],
+            max_tokens: 16_384,
             temperature: 0.7
           }
         )
-        # log(":after before dig")
-        @output_message = response.dig('choices', 0, 'message', 'content')
-        # log("after and dig")
-        # response_data = response_data.to_s
-        @@telegram_logger.send_message("PCMIA: #{@output_message}") # can use eval in place, and can make it perform system calls to execute scripts that way; think about later. -ArityWolf
-        # log("after send message")
 
-        # File.write("omp_pcaic_in.txt", @output_message)
-        # @@telegram_logger.send_message("[HUDL.ink(OMP_PCAIC[out])]: #{\"\"}) #or use eval in a testbed environment
-        # @output_message = "no_additional_data" if !@command_true
+        @output_message = response.dig('choices', 0, 'message', 'content')
+        log("[PC]->{AI}->{<SL>}: #{@output_message}")
         "#{@output_message}"
       end
     end
@@ -268,6 +263,7 @@ class CGMFS
         # response_data = response_data.to_s
         @@telegram_logger.send_message("[OPM PCAIC]: #{@output_message}")
         # @output_message = "no_additional_data" if !@command_true
+
         "#{@output_message}"
       end
     end

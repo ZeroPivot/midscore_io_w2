@@ -40,18 +40,18 @@ environment 'production'
 early_hints true
 # Store the pid of the server in the file at "path".
 #
-pidfile '/home/stinky/root/midscore_io/config/puma.pid'
+pidfile '/home/stinky/midscore_io/config/puma.pid'
 
 # Use "path" as the file to store the server info state. This is
 # used by "pumactl" to query and control the server.
 #
-state_path '/home/stinky/root/midscore_io/config/puma.state'
+state_path '/home/stinky/midscore_io/config/puma.state'
 
 # Redirect STDOUT and STDERR to files specified. The 3rd parameter
 # ("append") specifies whether the output is appended, the default is
 # "false".
 #
-stdout_redirect '/home/stinky/root/midscore_io/log/stdout', '/home/stinky/root/midscore_io/log/stderr', true
+stdout_redirect '/home/stinky/midscore_io/log/stdout', '/home/stinky/midscore_io/log/stderr', true
 # stdout_redirect '/u/apps/lolcat/log/stdout', '/u/apps/lolcat/log/stderr', true
 
 # Disable request logging.
@@ -103,7 +103,7 @@ bind 'tcp://0.0.0.0:8080'
 # load puma itself (ie. 'ruby -Ilib bin/puma'), not the arguments
 # to puma, as those are the same as the original process.
 #
-restart_command '/home/stinky/root/midscore_io/restart_puma'
+restart_command '/home/stinky/midscore_io/restart_puma'
 
 # === Cluster mode ===
 
@@ -201,5 +201,5 @@ worker_boot_timeout 25
 # activate_control_app 'unix://var/run/pumactl.sock'
 # activate_control_app 'unix://var/run/pumactl.sock', { auth_token: '12345' }
 # activate_control_app 'unix://var/run/pumactl.sock', { no_token: true }
-rackup '/home/stinky/root/midscore_io/config.ru'
+rackup '/home/stinky/midscore_io/config.ru'
 activate_control_app

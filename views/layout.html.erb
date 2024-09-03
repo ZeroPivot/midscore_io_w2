@@ -21,7 +21,7 @@
     <meta name="twitter:card" content="summary_large_image"> <!-- changed 2021-04-15 -->
     <meta name="twitter:site" content="@TheFieldTester">
     <meta name="twitter:title" content="<%= @title %>">
-    <meta name="twitter:description" content="<%= @description || @title || @user %>" />
+    <meta name="twitter:description" content="<%=h @description || @title || @user %>" />
     <title><%= @title %></title>
   </head>
   <body>

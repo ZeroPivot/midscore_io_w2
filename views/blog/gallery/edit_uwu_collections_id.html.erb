@@ -5,9 +5,16 @@
 </style>
 <div class="center">
     <form action="<%= domain_name(@r) %>/gallery/uwu/add_image/uwu_id/<%= @id %>" method="post" enctype="multipart/form-data">
-        <input type="text" name="image_id">
+        <input type="text" name="image_id">        
         <input type="submit" value="ADD IMAGE TO UwU COLLECTIONS BY *ID*">
+    </form><br /><br />
+    <hr><br /><br />
+    <form action="<%= domain_name(@r) %>/gallery/uwu/edit/id/<%= @id %>" method="post" enctype="multipart/form-data">
+        <input type="text" name="title"  value="<%= @collection['title'] %>">
+        <textarea rows="20" cols="30" name="description"><%= @collection['description'] %>"></textarea>
+        <input type="submit" value="EDIT UwU COLLECTION">
     </form>
+
 </div>
 <br><br><br><hr>
 <% @images.each_with_index do |image, index| %>

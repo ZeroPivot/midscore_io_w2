@@ -425,7 +425,7 @@ class CGMFS
         @skip_by = r.params['skip_by'].to_i
         @skip_by = 0 if r.params['skip_by'].nil?
         @gallery_numbers = @gallery_images.size / @quantity_displayed
-        #log(@gallery_numbers)
+        # log(@gallery_numbers)
         if @gallery_images.size <= @quantity_displayed
           @pages = 0
           @gallery_range = 0..@quantity_displayed
@@ -500,8 +500,6 @@ class CGMFS
 
         @owo_count_gallery = @@line_db[@user].pad['gallery_database', 'gallery_table'].data_arr.sort_by { |image| image['owo_count'].to_i }
 
-
-
         @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
           #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
           if hash['page_views'].nil?
@@ -575,7 +573,6 @@ class CGMFS
         @image = @gallery.get(@id)
         @title = "View Attachment Id #{@id} by #{@user}"
 
-
         @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
           #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
           if hash['page_views'].nil?
@@ -586,8 +583,6 @@ class CGMFS
           @page_views = hash['page_views']
         end
         @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
-
-
 
         view('blog/gallery/view_user_gallery_image_id_attachments_list', engine: 'html.erb', layout: 'layout.html')
       end
@@ -862,7 +857,6 @@ class CGMFS
         end
         @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
 
-
         view('blog/gallery/view_user_gallery_image_tags', engine: 'html.erb', layout: 'layout.html')
       end
     end
@@ -975,7 +969,6 @@ class CGMFS
           end
           @gallery.save_partition_by_id_to_file!(@id)
 
-
         end
 
         r.redirect "#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}"
@@ -1000,7 +993,6 @@ class CGMFS
           @page_views = hash['page_views']
         end
         @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
-
 
         # uwu collections has its own id in data_arr and the id of the image in the gallery that is very uwu, with a numerical ranking system
         # @collections = @collections.delete_if { |collection| collection == {} }
@@ -1030,7 +1022,6 @@ class CGMFS
           @page_views = hash['page_views']
         end
         @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_partition_to_file!(0)
-
 
         view('blog/gallery/view_uwu_collections_id', engine: 'html.erb', layout: 'layout.html')
       end
@@ -1085,6 +1076,7 @@ class CGMFS
 
     r.is 'uwu', 'edit', 'id', Integer do |id| # edit the collection id
       # user_failcheck(user, r)
+      user_failcheck(session['user'], r)
       # logged_in?(r, user)
       r.get do
         @user = session['user']
@@ -1097,6 +1089,7 @@ class CGMFS
         @collection = @collections.get(@id)
         @image_id = @collection['image_id']
         @title = @collection['title']
+        @description = @collection['description']
 
         @images = @image_id.map { |id_map| [id_map, @gallery.get(id_map)] }
 
@@ -1104,14 +1097,12 @@ class CGMFS
       end
 
       r.post do
-        @user = user
+        @user = session['user']
         @r = r
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
         @collections = @@line_db[@user].pad['uwu_collections_database', 'uwu_collections_table']
         @id = id
         @collection = @collections.get(@id)
-        @image_id = @collection['image_id']
-        @image = @gallery.get(@image_id)
         @title = r.params['title']
         @description = r.params['description']
         @tags = r.params['tags']
@@ -1121,11 +1112,12 @@ class CGMFS
           hash['tags'] = @tags
         end
         @collections.save_partition_by_id_to_file!(@id)
-        r.redirect "#{domain_name(r)}/gallery/uwu/view/#{@user}"
+        r.redirect "#{domain_name(r)}/gallery/uwu/edit/id/#{@id}"
       end
     end
 
     r.is 'uwu', 'delete_image', 'uwu_id', Integer, 'gallery_id', Integer do |uwu_id, gallery_id| # delete the   collection id
+      user_failcheck(session['user'], r)
       r.get do
         @user = session['user']
         @r = r
@@ -1136,7 +1128,7 @@ class CGMFS
         @collection = @collections.get(@id)
         @image_id = gallery_id
         @title = 'Delete Image from Collection'
-       # log(@collection)
+        # log(@collection)
         if @collection
           @collection['image_id'].delete(@image_id)
           @collections.save_partition_by_id_to_file!(@id)
@@ -1148,6 +1140,7 @@ class CGMFS
     end
 
     r.is 'uwu', 'add_image', 'uwu_id', Integer do |uwu_id| # add to the collection
+      user_failcheck(session['user'], r)
       r.post do
         @user = session['user']
 
@@ -1161,7 +1154,7 @@ class CGMFS
         @gallery_image_id = r.params['image_id'].to_i
         @test = @gallery.get(@gallery_image_id)
         @title = 'Add Image to Collection'
-       # log(@test)
+        # log(@test)
         if !@test.nil? && !@test.is_a?(Hash)
           if @collection['image_id'].nil?
             @collection['image_id'] = [@gallery_image_id]
@@ -1189,6 +1182,7 @@ class CGMFS
     end
 
     r.is 'uwu', 'delete', 'id', Integer do |id| # delete the collection id
+      user_failcheck(session['user'], r)
       r.get do
         @user = session['user']
         @r = r
@@ -1209,6 +1203,7 @@ class CGMFS
     end
 
     r.is 'owo', 'add' do
+      user_failcheck(session['user'], r)
       r.get do
         @user = session['user']
         logged_in?(r, @user)
@@ -1227,6 +1222,7 @@ class CGMFS
     end
 
     r.is 'owo', 'rem' do
+      user_failcheck(session['user'], r)
       r.get do
         @user = session['user']
         logged_in?(r, @user)
@@ -1241,6 +1237,7 @@ class CGMFS
     end
 
     r.is 'owo', 'sub' do
+      user_failcheck(session['user'], r)
       r.get do
         @user = session['user']
         logged_in?(r, @user)

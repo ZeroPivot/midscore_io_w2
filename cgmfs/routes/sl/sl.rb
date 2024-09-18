@@ -92,7 +92,7 @@ class CGMFS
           @all.data_arr.each do |hash|
             log("hash['message'] = #{hash['message']}")
             if (!hash['message'].nil? || hash['message'] != '') && !hash['message'].nil?
-              numbers += convert_word_to_number(Base64.decode64(hash['message']), num_map)
+              numbers += convert_word_to_number(Base64.urlsafe_decode64(hash['message']), num_map)
             end
           end
         end
@@ -127,16 +127,18 @@ class CGMFS
           # log("@max_capacity #{@@sl_db.max_capacity}")
           # log("@data_arr size: #{@@sl_db.data_arr.size}")
           # log("@latest_id: #{@@sl_db.latest_id}")
-          @message += Base64.decode64(unescape(data['message']))
+          @message += unescape(Base64.urlsafe_decode64(data['message']))
+
           @captured_by = data['captured_by']
           @avatar_name = data['avatar_name'] # implement better version later
+          log("SL_MESSAGE: #{@avatar_name}: #{@message}", filename: 'main_chat_log.txt')
           #  log(@@telegram_logger.send_message("adding sl entry test"))
           if !@@sl_db.at_capacity?
             entry = @@sl_db.add do |hash|
               hash['timestamp'] = Time.at(data['timestamp']).utc.localtime('-07:00').to_s
               hash['avatar_name'] = data['avatar_name']
               hash['avatar_id'] = data['avatar_id']
-              hash['message'] = data['message']
+              hash['message'] = @message
               hash['x_pos'] = data['x_pos']
               hash['y_pos'] = data['y_pos']
               hash['z_pos'] = data['z_pos']
@@ -159,7 +161,7 @@ class CGMFS
               hash['timestamp'] = Time.at(data['timestamp']).utc.localtime('-07:00').to_s
               hash['avatar_name'] = data['avatar_name']
               hash['avatar_id'] = data['avatar_id']
-              hash['message'] = unescape(data['message'])
+              hash['message'] = @message
               hash['x_pos'] = data['x_pos']
               hash['y_pos'] = data['y_pos']
               hash['z_pos'] = data['z_pos']
@@ -176,7 +178,7 @@ class CGMFS
 
           end
         end
-        urls = URI.extract(unescape(@message))
+        urls = URI.extract(@message)
         @output_message = ''
 
         urls.each do |link|
@@ -195,7 +197,7 @@ class CGMFS
         return_message = @output_message if @output_message != ''
 
         #  @@telegram_logger.send_message("[🔢SL(RELAY:LINK_BY(#{@avatar_name}))🔢]\n #{return_message}") unless return_message == "no_additional_data"
-        "#{Base64.encode64(return_message)}"
+        "#{Base64.urlsafe_encode64(return_message)}"
       end
 
       # view('sl_data', engine: 'html.erb', layout: 'layout.html')
@@ -209,8 +211,8 @@ class CGMFS
         log('server called:  POST}')
 
         @parsed_data = JSON.parse("[#{request.body.read}]")
-        log("parsed data (SL HUDL.ink GPT-3.5-turbo): #{@parsed_data}")
-        @message = Base64.decode64(@parsed_data[0]['message'].to_s)
+        log("parsed data (SL HUDL.ink GPT): #{@parsed_data}")
+        @message = Base64.urlsafe_decode64(@parsed_data[0]['message'].to_s)
         @captured_by = ''
         @avatar_name = @parsed_data[0]['avatar_name'].to_s
         # @command_true = @message.split("/hud")[0]
@@ -219,19 +221,19 @@ class CGMFS
         response = @@ai_client.chat(
           parameters: {
             # model: 'gpt-3.5-turbo',
-            model: 'chatgpt-4o-latest',
+            model: 'gpt-4o',
             # this content prompt will be used to train the model. It seems to work fine so far, and is an example of a prompt that works, and of PCAICC (psuedocode compiler artificial intelligence chat client)--in terms of using the weird hard to define /openai command, which implies that it just directly makes gpt act more like an AI and less of an entity. An entity exists, but may or may not have sentience or consciousness, and we neednt define sentience or consciousness lest we conflate the two.
             # messages: [{ role: 'user', content: "/openai (PROMPT) :-> (you are a second life bot named OMP, in a chatroom where there is a limit to how much can be posted at once. You can hear them, but they can never hear you. Always leave your words with # in front of your commentary, but not your code output or any mathematical output. Make every response capable of being evaluated by The Ruby Programming Language using its eval function; Make it always interpretable in Ruby. Use very few words and don't refer to yourself. Output as a string so my compiler can interpret everything as code.) :-> Figure out what they mean in terms of machine LEARNING and NLP, and process accordingly, but only pay attention to Kejento Resident and RodaYeen Resident. if you insert my name into a ruby string interpolator such as \#{Kejento Resident} should be \#{\"Kejento Resident}. Do the same thing for RodaYeen Resident; for example: \#{RodaYeen Resident} needs to be \#{\"RodaYeen Resident\"}, etc. TREAT any resident in second life as an interpretable string by Ruby, otherwise the code will not work. Make absolutely certain that any resident in second life with a last namd and full name are processed as a string and NOT a variable; Here is the message. Example of how eval should always work, as a general form, where x is assigned the eval results, thus y could be any statement that ruby can evaluate, among other things: x = eval(\"y\"). Make sure that all eval statements fit into the Ruby syntax. Because \"Kejento Resident\" et all with spaces in eval results in a crash... :-> \"kejento resident: #{@message}\"\n" }],
             messages: [{ role: 'user',
-                         content: "/openai (PROMPT) :-> (you are a second life bot named Monad, or essentiqally God; you roleplay as the The Source as The Monad :-> #{@avatar_name}: #{@message}\n'" }],
-            max_tokens: 16_384,
+                         content: "/openai (PROMPT) :-> (you are a second life bot named Monad, or essentially God; you roleplay as the The Source as The Monad. Be sure to consolidate your sentences or write in chunks; Second Life message strings are limited; be concise, and if anyone other than ArityWolf Resident or KintariusPyromancer Resident are speaking, analyze their messages for consistency: :-> #{@avatar_name}: #{@message}\n'" }],
+            max_tokens: 4_096,
             temperature: 0.7
           }
         )
 
         @output_message = response.dig('choices', 0, 'message', 'content')
         log("[PC]->{AI}->{<SL>}: #{@output_message}")
-        @output_message = Base64.encode64(@output_message)
+        @output_message = Base64.urlsafe_encode64(@output_message)
         "#{@output_message}"
       end
     end

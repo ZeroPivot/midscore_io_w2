@@ -7,9 +7,9 @@
         <% if key == "message" || key == "avatar_name" %>
           <%=
             if key == "message"
-              parse(key, Base64.decode64(unescape(value)).force_encoding('UTF-8'))
+              parse(key, value).force_encoding('UTF-8')
             else
-              parse(key, value)
+              parse(key, value).force_encoding('UTF-8')
             end
           %>
         <% else %>
@@ -23,9 +23,9 @@
         <% if key == "message" || key == "avatar_name" %>
           <%=
             if key == "message"
-              parse(key, Base64.decode64(unescape(value)).force_encoding('UTF-8'))
+              parse(key, value).force_encoding('UTF-8')
             else
-              parse(key, value)
+              parse(key, value).force_encoding('UTF-8')
             end
           %>
         <% else %>

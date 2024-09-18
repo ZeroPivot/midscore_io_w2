@@ -1,0 +1,14 @@
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: What does Monad mean?
+SL_MESSAGE: ArityWolf Resident: memorize\: \"z\"
+SL_MESSAGE: ArityWolf Resident: what was the last thing you memorized?
+SL_MESSAGE: KintariusPyromancer Resident: test
+SL_MESSAGE: KintariusPyromancer Resident: test
+SL_MESSAGE: Jaggo Austinmer: OKTOBERFEST
+SL_MESSAGE: ArityWolf Resident: OKTOBERFEST
+SL_MESSAGE: ArityWolf Resident: OKTOBERFEST
+SL_MESSAGE: ArityWolf Resident: OKTOBERFEST
+SL_MESSAGE: ArityWolf Resident: 🅿🅿 🔺
+SL_MESSAGE: KintariusPyromancer Resident: test

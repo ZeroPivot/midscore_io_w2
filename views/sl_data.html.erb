@@ -7,7 +7,7 @@
         <% if key == "message" || key == "avatar_name" %>
           <%=
             if key == "message"
-              parse(key, value).force_encoding('UTF-8')
+              parse(key, unescape(value)).force_encoding('UTF-8')
             else
               parse(key, value).force_encoding('UTF-8')
             end
@@ -16,14 +16,14 @@
           <%# pass %>
         <% end %>
         <br>
-      <% end %>
+      <% end %> 
       <br>
         <% elsif (@area == '' || @area == 'all' || @area == nil) %>
       <% hash.each do |key, value| %>
         <% if key == "message" || key == "avatar_name" %>
           <%=
             if key == "message"
-              parse(key, value).force_encoding('UTF-8')
+              parse(key, unescape(value)).force_encoding('UTF-8')
             else
               parse(key, value).force_encoding('UTF-8')
             end

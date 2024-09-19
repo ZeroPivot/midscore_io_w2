@@ -29,6 +29,7 @@ require 'base64'
 def escape(avatar_message)
   strings = avatar_message.split
   strings.each do |string|
+    string.gsub!('\\', '\\\\\\\\') # Escape the escape character \
     string.gsub!(':', '\\:')
     string.gsub!('[', '\\[')
     string.gsub!(']', '\\]')
@@ -37,7 +38,6 @@ def escape(avatar_message)
     string.gsub!("'", "\\'")
     string.gsub!('"', '\\"')
     string.gsub!('.', '\\.')
-    string.gsub!('\\', '\\\\\\\\') # Escape the escape character \
   end
   strings.join(' ')
 end
@@ -45,6 +45,7 @@ end
 def unescape(avatar_message)
   strings = avatar_message.split
   strings.each do |string|
+    string.gsub!('\\\\\\\\', '\\') # Unescape the escape character \ first
     string.gsub!('\\:', ':')
     string.gsub!('\\[', '[')
     string.gsub!('\\]', ']')
@@ -53,7 +54,6 @@ def unescape(avatar_message)
     string.gsub!("\\'", "'")
     string.gsub!('\\"', '"')
     string.gsub!('\\.', '.')
-    string.gsub!('\\\\\\\\', '\\') # Unescape the escape character \
   end
   strings.join(' ')
 end

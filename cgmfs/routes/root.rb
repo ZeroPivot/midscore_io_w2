@@ -27,6 +27,7 @@ class CGMFS
 
     r.on do
       r.redirect "https://thaiamerican.market/tam/index.html" if r.host == 'thaiamerican.market'
+      r.redirect "https://spiritologists.net/blog/spiritology" if (r.host == 'spiritologists.net' && r.path == '/')
       family_logged_in?(r)
 
       r.redirect "https://#{r.host}/blog" if !LOCAL

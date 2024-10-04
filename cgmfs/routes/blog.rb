@@ -3,7 +3,6 @@
 # rubocop:disable Metrics/MethodLength
 # rubocop:disable Metrics/BlockLength
 # rubocop:disable Metrics/ClassLength
-# rubocop:disable Style/StringLiterals
 module Math
   def self.radians(angle)
     angle / 180.0 * Math::PI
@@ -23,10 +22,8 @@ def convert_to_120_second_time_pst
   minutes_120_seconds = (total_120_seconds % 50) * 2
 
   # Format the output
-  formatted_time = format('%02d:%02d', hours_120_seconds, minutes_120_seconds)
-  formatted_time
+  format('%02d:%02d', hours_120_seconds, minutes_120_seconds)
 end
-
 
 class MoonIllumination
   def self.age(date = DateTime.now)
@@ -199,16 +196,23 @@ class CGMFS
   end
 
   def private_view?(r, user)
+    private = false
     if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'].nil?
       @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'] = false
       @@line_db[user].pad['blog_database', 'blog_profile_table'].save_everything_to_files!
     end
-    if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'] == true && session['user'] != user && !LOCAL # add admin access later
-      r.redirect("#{domain_name(r)}/blog/")
-    elsif @@line_db[user].pad['blog_database',
-                              'blog_profile_table'][0]['private_view'] == true && session['user'] != user && LOCAL
-      r.redirect("#{SERVER_IP_LOCAL}/blog/") if LOCAL
+    if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'] == true && session['user'] != user #  && !LOCAL # add admin access later
+      # r.redirect("#{domain_name(r)}/gallery/")
+      private = true
+      # local_redirect = false
     end
+    # elsif @@line_db[user].pad['blog_database',
+    #                           'blog_profile_table'][0]['private_view'] == true && session['user'] != user && LOCAL
+    # r.redirect("#{SERVER_IP_LOCAL}/gallery/") if LOCAL
+    #   redirect = true
+    #   local_redirect = true
+
+    r.redirect('/404') if private
   end
 
   # require_user_login_to_view?(user, r) # redirect to login if not logged in, or redirect to view if logged in
@@ -594,7 +598,7 @@ class CGMFS
             zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
 
             # Create the system call to zip the folder
-            #system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+            # system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
             view(@view, engine: 'html.erb', layout: 'layout.html')
           end
         end
@@ -962,7 +966,6 @@ class CGMFS
             ### INEFFICIENT save method
             # @@line_db[@user].pad['blog_database', 'blog_statistics_table'].save_everything_to_files!
             #
-
 
             view('blog/view', engine: 'html.erb', layout: 'layout.html')
           end

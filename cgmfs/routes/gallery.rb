@@ -85,16 +85,23 @@ class CGMFS
   # word.encode('ASCII-8BIT', invalid: :replace, undef: :replace, replace: '')
 
   def private_view?(r, user)
+    private = false
     if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'].nil?
       @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'] = false
       @@line_db[user].pad['blog_database', 'blog_profile_table'].save_everything_to_files!
     end
-    if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'] == true && session['user'] != user && !LOCAL # add admin access later
-      r.redirect("#{domain_name(r)}/gallery/")
-    elsif @@line_db[user].pad['blog_database',
-                              'blog_profile_table'][0]['private_view'] == true && session['user'] != user && LOCAL
-      r.redirect("#{SERVER_IP_LOCAL}/gallery/") if LOCAL
+    if @@line_db[user].pad['blog_database', 'blog_profile_table'][0]['private_view'] == true && session['user'] != user #  && !LOCAL # add admin access later
+      # r.redirect("#{domain_name(r)}/gallery/")
+      private = true
+      # local_redirect = false
     end
+    # elsif @@line_db[user].pad['blog_database',
+    #                           'blog_profile_table'][0]['private_view'] == true && session['user'] != user && LOCAL
+    # r.redirect("#{SERVER_IP_LOCAL}/gallery/") if LOCAL
+    #   redirect = true
+    #   local_redirect = true
+
+    r.redirect("/404") if private
   end
 
   def domain_name(r)

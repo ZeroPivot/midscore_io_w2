@@ -25,6 +25,16 @@
     <br>
     <br>
     <h1>For <%= @user %>'s tags: <%= parse_tags(user: @user, tag_string: @search_params) %></h1> <!-- todo: work on tag version of tags list (this) -->
+    
+    <h2><% @search_params.split(', ').each do |tag| %>            
+            <% if !@similar_tags_set[tag].nil?  %>            
+               <%= parse_tags(user: @user, tag_string: @similar_tags_set[tag].join(', ')) %>
+            <% end %>
+        <% end %>
+
+    </h2>
+
+    
     <div class="image-container">
         <% @images_to_find.each do |image| %>
             <% next if image.nil? %>

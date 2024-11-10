@@ -1,5 +1,5 @@
 ---
-pid: 181068
-control_url: unix:///tmp/puma-status-1729267136576-181068
-control_auth_token: 68ebabee64ca37d3df006c39df819b09
+pid: 676061
+control_url: unix:///tmp/puma-status-1731279276986-676061
+control_auth_token: 98bc2150efa7c48e6af99a236ff08dcf
 running_from: "/root/midscore_io"

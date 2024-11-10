@@ -101,7 +101,7 @@ class CGMFS
     #   redirect = true
     #   local_redirect = true
 
-    r.redirect("/404") if private
+    r.redirect('/404') if private
   end
 
   def domain_name(r)
@@ -768,6 +768,8 @@ class CGMFS
           @only_search = true
         end
 
+        @similar_tags_set = @@line_db[@user].pad['cache_system_database', 'cache_system_table'].get(0)['similar_tags']
+
         @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
           #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
           if hash['page_views'].nil?
@@ -822,6 +824,27 @@ class CGMFS
           @images = @gallery.data_arr.map { |image| image }
           @images = @images.compact
           @tags = @images.map { |image| image['tags'] }.flatten
+
+          @similar_tags = {}
+
+          @images.each do |image|
+            next if image['tags'].nil?
+
+            image_tags = image['tags'].split(', ')
+
+            image_tags.each do |tag|
+              @similar_tags[tag] ||= Set.new
+              @images.each do |other_image|
+                next if other_image['tags'].nil?
+
+                other_image_tags = other_image['tags'].split(', ')
+                @similar_tags[tag].merge(other_image_tags - [tag]) if other_image_tags.include?(tag)
+              end
+            end
+          end
+          @similar_tags.each { |tag, tags| @similar_tags[tag] = tags.to_a }
+          # @similar_tags.each { |tag, tags| @similar_tags[tag] = tags.uniq }
+
           @tags.each do |tag|
             next if tag.nil?
 
@@ -844,11 +867,12 @@ class CGMFS
             hash['tags_set'] = @tags_set
             hash['split_tags'] = @split_tags
             hash['recache'] = false
+            hash['similar_tags'] = @similar_tags
           end
           @cache.save_everything_to_files!
           GC.start
         else
-
+          @similar_tags = @cache.get(0)['similar_tags']
           @split_tags = @cache.get(0)['split_tags']
           @tags_set = @cache.get(0)['tags_set']
         end

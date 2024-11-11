@@ -27,11 +27,10 @@
     <h1>For <%= @user %>'s tags: <%= parse_tags(user: @user, tag_string: @search_params) %></h1> <!-- todo: work on tag version of tags list (this) -->
     
     <h2><% @search_params.split(', ').each do |tag| %>            
-            <% if !@similar_tags_set[tag].nil?  %>            
+            <% if @similar_tags_set.dig(tag) %>            
                <%= parse_tags(user: @user, tag_string: @similar_tags_set[tag].join(', ')) %>
             <% end %>
         <% end %>
-
     </h2>
 
     

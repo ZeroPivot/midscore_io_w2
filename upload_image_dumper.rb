@@ -5,7 +5,7 @@ require 'net/https'
 # Define the server URLs
 login_url = 'https://hudl.ink/blog/login' # Replace with the actual login URL
 base_post_url = 'https://hudl.ink/gallery/upload' # Replace with the base URL for posting files
-directory_path = '/root/alldump'
+directory_path = '/root/allporn'
 # Define your credentials
 username = 'stimkypawz'
 password = 'gUilmon#95458a'

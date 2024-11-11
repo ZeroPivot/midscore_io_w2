@@ -92,11 +92,21 @@ Dir.glob(File.join(directory_path, '*')) do |file_path|
                        ['tags', tags_and_titles.find { |x| x['file_path'] == file_path }['tags']],
                        ['description', 'no description']
                      ], 'multipart/form-data')
-    p response = http.request(request)
+    begin
+      response = nil
+      until response && response.is_a?(Net::HTTPSuccess)
+        response = http.request(request)
+        p response
+        sleep(1) unless response.is_a?(Net::HTTPSuccess)
+      end
+    rescue StandardError => e
+      p "An error occurred: #{e.message}"
+      retry
+    end
     p response.body
     p "#{file_path} uploaded successfully"
     p remaining_files_to_upload -= 1
-    sleep(3.0)
+    sleep(1.5)
   end
 end
 

@@ -1,6 +1,7 @@
 def family_logged_in?(r)
   return unless session['user']
   return unless session['password']
+
   r.redirect "#{domain_name(r)}/blog/login"
 end
 
@@ -19,22 +20,18 @@ def domain_name(r)
   # return "https://" + r.host
 end
 
-
 class CGMFS
   ROOT = ''
 
   hash_branch ROOT do |r|
-
     r.on do
-      r.redirect "https://thaiamerican.market/tam/index.html" if r.host == 'thaiamerican.market'
-      r.redirect "https://spiritologists.net/blog/spiritology" if (r.host == 'spiritologists.net' && r.path == '/')
+      r.redirect 'https://thaiamerican.market/tam/index.html' if r.host == 'thaiamerican.market' && r.path == '/'
+      r.redirect 'https://spiritologists.net/blog/spiritology' if r.host == 'spiritologists.net' && r.path == '/'
+      r.redirect 'https://meta-game.info/blog/the-metagame-project' if r.host == 'meta-game.info' && r.path == '/'
       family_logged_in?(r)
 
-      r.redirect "https://#{r.host}/blog" if !LOCAL
+      r.redirect "https://#{r.host}/blog" unless LOCAL
       r.redirect "http://#{r.host}:8080/blog" if LOCAL
-
     end
-
-
   end
 end

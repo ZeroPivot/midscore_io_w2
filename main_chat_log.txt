@@ -240,3 +240,5 @@ SL_MESSAGE: Idoru Venus: think I will pass ;P
 SL_MESSAGE: Idoru Venus: Hey Sin \:)
 SL_MESSAGE: Etherlyn Resident: yay Nadja!
 SL_MESSAGE: Lilou Atheria: oui
+SL_MESSAGE: ArityWolf Resident: /tt_show_
+SL_MESSAGE: ArityWolf Resident: /tt_show_

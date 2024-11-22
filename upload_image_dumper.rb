@@ -5,7 +5,7 @@ require 'net/https'
 # Define the server URLs
 login_url = 'https://hudl.ink/blog/login' # Replace with the actual login URL
 base_post_url = 'https://hudl.ink/gallery/upload' # Replace with the base URL for posting files
-directory_path = '/root/allporn'
+directory_path = '/root/alldump'
 # Define your credentials
 username = 'stimkypawz'
 password = 'gUilmon#95458a'
@@ -103,10 +103,10 @@ Dir.glob(File.join(directory_path, '*')) do |file_path|
       p "An error occurred: #{e.message}"
       retry
     end
-    p response.body
+   
     p "#{file_path} uploaded successfully"
     p remaining_files_to_upload -= 1
-    sleep(1.5)
+    sleep(0.0)
   end
 end
 

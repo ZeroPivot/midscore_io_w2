@@ -242,3 +242,6 @@ SL_MESSAGE: Etherlyn Resident: yay Nadja!
 SL_MESSAGE: Lilou Atheria: oui
 SL_MESSAGE: ArityWolf Resident: /tt_show_
 SL_MESSAGE: ArityWolf Resident: /tt_show_
+SL_MESSAGE: Shenanigans Enthusiast: 
+SL_MESSAGE: ArityWolf Resident: 
+SL_MESSAGE: ArityWolf Resident: https\://www\.twitch\.tv/directory/category/everquest

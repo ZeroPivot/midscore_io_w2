@@ -45,7 +45,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)
+$lockdown = true # lockdown mode (no public access to blog or gallery posts, etc)
 
 DO_TELEGRAM_LOGGING = true # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
 
@@ -102,7 +102,7 @@ class CGMFS < Roda
   version = version_file.readline.chomp
   timestamp = version_file.readline.chomp
   version_file.close
-  $dog_blog_version = "(v#️⃣#{version}):[ 🏗️#{timestamp} ] - \"The Stimky Sniffa\" - 🩲🍆😤" # used in layout.html.erb
+  $dog_blog_version = "(v#️⃣#{version}):[ 🏗️#{timestamp} ] - 🩲🍆😤" # used in layout.html.erb
 
   @@line_db = LineDB.new
   @@line_db["urls_redir"].pad.new_table!(database_name: "urls_database", database_table: "urls_table")

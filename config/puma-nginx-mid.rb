@@ -1,5 +1,4 @@
 #!/usr/bin/env puma
-# frozen_string_literal: true
 
 # The directory to operate out of.
 #
@@ -27,31 +26,39 @@
 # Set the environment in which the rack's app will run. The value must be a string.
 #
 # The default is "development".
-#
+
 environment 'production'
 
+
+#bind 'tcp://172.20.190.146:9292'
+
+ssl_bind '172.20.190.146', '8080', {
+  key: '/home/aylonarlon/midscore_io/config/server.key',
+  cert: '/home/aylonarlon/midscore_io/config/server.crt',
+  verify_mode: 'none'
+}
 # Daemonize the server into the background. Highly suggest that
 # this be combined with "pidfile" and "stdout_redirect".
 #
 # The default is "false".
 #
 # daemonize
-# daemonize true
+
 early_hints true
 # Store the pid of the server in the file at "path".
 #
-pidfile '/home/stinky/midscore_io/config/puma.pid'
+pidfile '/home/aylonarlon/midscore_io/config/puma.pid'
 
 # Use "path" as the file to store the server info state. This is
 # used by "pumactl" to query and control the server.
 #
-state_path '/home/stinky/midscore_io/config/puma.state'
+state_path '/home/aylonarlon/midscore_io/config/puma.state'
 
 # Redirect STDOUT and STDERR to files specified. The 3rd parameter
 # ("append") specifies whether the output is appended, the default is
 # "false".
 #
-stdout_redirect '/home/stinky/midscore_io/log/stdout', '/home/stinky/midscore_io/log/stderr', true
+stdout_redirect '/home/aylonarlon/midscore_io/log/stdout', '/home/aylonarlon/midscore_io/log/stderr', true
 # stdout_redirect '/u/apps/lolcat/log/stdout', '/u/apps/lolcat/log/stderr', true
 
 # Disable request logging.
@@ -74,7 +81,6 @@ threads 0, 32
 #
 # bind 'tcp:/0.0.0.0:80'
 
-bind 'tcp://0.0.0.0:8080'
 # bind 'unix://var/run/puma.sock'
 # bind 'unix://var/run/puma.sock?umask=0111'
 # bind 'ssl:/127.0.0.1:9292?key=path_to_key&cert=path_to_cert'
@@ -103,7 +109,7 @@ bind 'tcp://0.0.0.0:8080'
 # load puma itself (ie. 'ruby -Ilib bin/puma'), not the arguments
 # to puma, as those are the same as the original process.
 #
-restart_command '/home/stinky/midscore_io/restart_puma'
+restart_command '/home/aylonarlon/midscore_io/restart_puma'
 
 # === Cluster mode ===
 
@@ -201,5 +207,5 @@ worker_boot_timeout 25
 # activate_control_app 'unix://var/run/pumactl.sock'
 # activate_control_app 'unix://var/run/pumactl.sock', { auth_token: '12345' }
 # activate_control_app 'unix://var/run/pumactl.sock', { no_token: true }
-rackup '/home/stinky/midscore_io/config.ru'
+rackup '/home/aylonarlon/midscore_io/config.ru'
 activate_control_app

@@ -18,7 +18,6 @@ require 'net/http'
 require 'net/https'
 require 'yuicompressor'
 require 'roda/plugins/assets'
-require 'openai'
 
 require_relative 'require_dir' # for route auto-loading
 
@@ -72,8 +71,6 @@ class CGMFS < Roda
   compile_assets
   plugin :json
   plugin :json_parser
-
-  @@ai_client = OpenAI::Client.new(access_token: File.open("openai_api_key.txt", "r") { |f| f.read.chomp })
 
   PARTITION_AMOUNT = 9 # The initial, + 1
   OFFSET = 1 # This came with the math, but you can just state the PARTITION_AMOUNT in total and not worry about the offset in the end

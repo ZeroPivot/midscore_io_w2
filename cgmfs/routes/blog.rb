@@ -174,12 +174,16 @@ class CGMFS
     end
   end
 
+   def domain_name(r)   
 
+    r.redirect "https://#{r.host}:8080"
+    # return "https://" + r.host
+  end
 
   def logged_in?(r, user)
     return unless session['user'] != user
 
-    r.redirect "/blog/login"
+    r.redirect "#{domain_name(r)}:8080/blog/login"
   end
 
   def private_view?(r, user)
@@ -259,7 +263,7 @@ class CGMFS
     return if session['user'] == 'superadmin'
     return if r.path == '/blog/login' # Don't redirect if already at login
 
-    r.redirect "#{domain_name(r)}/blog/login"
+    #r.redirect "#{domain_name(r)}/blog/login"
   end
 
   # def check_boundaries!(id, user, r)

@@ -1,6 +1,9 @@
 def family_logged_in?(r)
-  return unless session['user']
-  return unless session['password']
+    return if session['user']
+  return if session['password']
+  return if session['user'] == 'superadmin'
+  return if r.path == '/blog/login' # Don't redirect if already at login
+  r.redirect '/blog/login'
 end
 
 class CGMFS
@@ -8,8 +11,8 @@ class CGMFS
 
   hash_branch ROOT do |r|
     r.on do
-      family_logged_in?(r)      
-      r.redirect "https://#{r.host}:8080/blog"
+      #family_logged_in?(r)      
+      r.redirect "#{domain_name(r)}/blog/login"
     end
   end
 end

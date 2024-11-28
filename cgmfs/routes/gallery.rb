@@ -32,7 +32,9 @@ class CGMFS
   end
 
   def logged_in?(r, user)
-    return unless session['user'] != user
+    return if session['user']
+    return if session['password']
+    return if session['user'] == 'superadmin'
 
     r.redirect "#{domain_name(r)}/blog/login"
   end
@@ -82,6 +84,14 @@ class CGMFS
     string_integers
   end
 
+
+  
+  def domain_name(r)   
+
+    "https://#{r.host}:8080"
+    # return "https://" + r.host
+  end
+
   # word.encode('ASCII-8BIT', invalid: :replace, undef: :replace, replace: '')
 
   def private_view?(r, user)
@@ -113,7 +123,7 @@ class CGMFS
     return if session['user'] == 'superadmin'
     return if r.path == '/blog/login' # Don't redirect if already at login
 
-    r.redirect "172.20.190.146:8080/blog/login"
+    #r.redirect "#{domain_name(r)}/blog/login"
   end
 
   def create_image_thumbnail!(image_path:, thumbnail_size:, thumbnail_path:)

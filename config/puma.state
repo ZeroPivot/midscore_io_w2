@@ -1,5 +1,5 @@
 ---
-pid: 8457
-control_url: unix:///tmp/puma-status-1732785347308-8457
-control_auth_token: 59de07ad5834d3ab3d00d0be4baf85ff
+pid: 16031
+control_url: unix:///tmp/puma-status-1732794091726-16031
+control_auth_token: 4fdebce6f5b0ed8d3cf9c597b8fa27cc
 running_from: "/home/aylonarlon/midscore_io"

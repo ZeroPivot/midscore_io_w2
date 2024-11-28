@@ -174,25 +174,12 @@ class CGMFS
     end
   end
 
-  def domain_name(r)
-    unless r
-      return SERVER_IP_LOCAL if LOCAL # cgmfs.rb
-      return DOMAIN_NAME unless LOCAL # cgmfs.rb ##
-    end
 
-    return 'http://localhost:8080' if DEBUG
-
-    return 'https://' + r.host unless LOCAL
-
-    "http://#{r.host}:8080" if LOCAL
-
-    # return "https://" + r.host
-  end
 
   def logged_in?(r, user)
     return unless session['user'] != user
 
-    r.redirect "#{domain_name(r)}/blog/login"
+    r.redirect "/blog/login"
   end
 
   def private_view?(r, user)
@@ -387,10 +374,8 @@ class CGMFS
 
     r.on 'signup' do
       r.is do
-        r.get do
-          if r.host == 'hudl.ink' || LOCAL == true
+        r.get do          
             view('blog/signup', engine: 'html.erb', layout: 'layout.html') # keep signups closed for now; open for our own personal purposes but needs to be closed for the public
-          end
           # "Signups are closed; see an admin please."
         end
 

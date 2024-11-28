@@ -104,20 +104,8 @@ class CGMFS
     r.redirect('/404') if private
   end
 
-  def domain_name(r)
-    unless r
-      return SERVER_IP_LOCAL if LOCAL # cgmfs.rb
-      return DOMAIN_NAME unless LOCAL # cgmfs.rb ##
-    end
-
-    return 'http://localhost:8080' if DEBUG
-
-    return 'https://' + r.host unless LOCAL
-
-    "http://#{r.host}:8080" if LOCAL
-
     # return "https://" + r.host
-  end
+
 
   def family_logged_in?(r)
     return if session['user']
@@ -125,7 +113,7 @@ class CGMFS
     return if session['user'] == 'superadmin'
     return if r.path == '/blog/login' # Don't redirect if already at login
 
-    r.redirect "#{domain_name(r)}/blog/login"
+    r.redirect "172.20.190.146:8080/blog/login"
   end
 
   def create_image_thumbnail!(image_path:, thumbnail_size:, thumbnail_path:)

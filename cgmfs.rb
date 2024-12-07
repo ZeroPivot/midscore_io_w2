@@ -46,7 +46,7 @@ DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
 $lockdown = true # lockdown mode (no public access to blog or gallery posts, etc)
 
-DO_TELEGRAM_LOGGING = true # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
+DO_TELEGRAM_LOGGING = false # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
 
 class CGMFS < Roda
   PATHS_INCLUDE_CSRF = { '/api/screens/upload' => true, '/u/shorten' => true, '/api/file/upload' => true,

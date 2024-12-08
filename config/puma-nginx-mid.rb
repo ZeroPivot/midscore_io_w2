@@ -27,7 +27,7 @@
 #
 # The default is "development".
 
-environment 'production'
+environment 'development'
 
 
 #bind 'tcp://172.20.190.146:9292'

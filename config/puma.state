@@ -1,5 +1,11 @@
 ---
+<<<<<<< HEAD
 pid: 302
 control_url: unix:///tmp/puma-status-1733636255570-302
 control_auth_token: 7e61c7d80599417e45ca6610ea08a9bb
+=======
+pid: 157
+control_url: unix:///tmp/puma-status-1733677321218-157
+control_auth_token: eb3b2d10b774d20e194851611b59af23
+>>>>>>> a9a9f73ed1e9c7ab325d43e1231906908bd61e28
 running_from: "/home/stinky/midscore_io"

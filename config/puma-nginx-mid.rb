@@ -72,7 +72,7 @@ stdout_redirect '/home/stinky/midscore_io/log/stdout', '/home/stinky/midscore_io
 #
 # The default is "0, 16".
 #
-threads 0, 32
+threads 0, 16
 
 # Bind the server to "url". "tcp:/", "unix:/" and "ssl:/" are the only
 # accepted protocols.

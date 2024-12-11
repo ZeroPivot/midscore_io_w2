@@ -33,8 +33,8 @@ environment 'development'
 #bind 'tcp://172.20.190.146:9292'
 
 ssl_bind '0.0.0.0', '8080', {
-  key: '/home/stinky/midscore_io/config/server.key',
-  cert: '/home/stinky/midscore_io/config/server.crt',
+  key: '/home/stinky/midscore_io/config/local.cert.key.pem',
+  cert: '/home/stinky/midscore_io/config/local.cert.pem',
   verify_mode: 'none'
 }
 # Daemonize the server into the background. Highly suggest that

@@ -1,11 +1,5 @@
 ---
-<<<<<<< HEAD
-pid: 1187
-control_url: unix:///tmp/puma-status-1733678207899-1187
-control_auth_token: 070fc127e260d0c6b77610dfebfb8de6
-=======
-pid: 3222
-control_url: unix:///tmp/puma-status-1733678629248-3222
-control_auth_token: 53f03dbd97731bfe37ae9c866bbe741b
->>>>>>> b23c66d1c5222c181568ff4a3c0d96f2ed6a7cd7
+pid: 14410
+control_url: unix:///tmp/puma-status-1733931039882-14410
+control_auth_token: f4079ceb6e6db213806ffc38e658337b
 running_from: "/home/stinky/midscore_io"

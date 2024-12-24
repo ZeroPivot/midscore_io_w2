@@ -35,7 +35,7 @@ environment 'development'
 ssl_bind '0.0.0.0', '8080', {
   key: '/home/stinky/midscore_io/config/local.cert.key.pem',
   cert: '/home/stinky/midscore_io/config/local.cert.pem',
-  verify_mode: 'none'
+  verify_mode: :none
 }
 # Daemonize the server into the background. Highly suggest that
 # this be combined with "pidfile" and "stdout_redirect".

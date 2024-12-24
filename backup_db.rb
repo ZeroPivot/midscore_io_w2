@@ -1,9 +1,9 @@
 # Define the folder to be zipped
 puts Dir.pwd
-folder_path = "/root/midscore_io/db"
+folder_path = "/home/stimky/db"
 
 # Define the location where the zip file will be placed
-zip_location = "/root/midscore_io/db_backup"
+zip_location = "/home/stimky/db_backup"
 
 # Create the zip file name
 zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"

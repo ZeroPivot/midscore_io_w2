@@ -32,12 +32,36 @@ environment 'development'
 
 # bind 'tcp://0.0.0.0:8080'
 
- ssl_bind '0.0.0.0', '8080', {
-  key: '/home/stinky/midscore_io/config/local.cert.key.pem',
-  cert: '/home/stinky/midscore_io/config/local.cert.pem',
-  verify_mode: :none
+
+
+
+require 'openssl'
+
+#def generate_csr(key_path, csr_path, subject)
+#  key = OpenSSL::PKey::RSA.new(File.read(key_path))
+
+#  csr = OpenSSL::X509::Request.new
+#  csr.version = 0
+#  csr.subject = OpenSSL::X509::Name.parse(subject)
+#  csr.public_key = key.public_key
+#  csr.sign(key, OpenSSL::Digest::SHA256.new)
+
+#  File.write(csr_path, csr.to_pem)
+# end
+
+key_path = '/mnt/e/home/stinky/midscore_io/config/mywebsite.key'
+csr_path = '/mnt/e/home/stinky/midscore_io/config/mywebsite.csr'
+subject = '/C=US/ST=California/L=Lucerne/O=IT/OU=CEO/CN=Duke Grable'
+
+
+
+# generate_csr(key_path, csr_path, subject)
+
+ssl_bind '0.0.0.0', '8080', {
+  key: '/mnt/e/home/stinky/midscore_io/config/mywebsite.key',
+  cert: '/mnt/e/home/stinky/midscore_io/config/mywebsite.csr',
+  # verify_mode: :ssl
 }
-# Daemonize the server into the background. Highly suggest that
 # this be combined with "pidfile" and "stdout_redirect".
 #
 # The default is "false".
@@ -47,18 +71,18 @@ environment 'development'
 early_hints true
 # Store the pid of the server in the file at "path".
 #
-pidfile '/home/stinky/midscore_io/config/puma.pid'
+pidfile '/mnt/e/home/stinky/midscore_io/config/puma.pid'
 
 # Use "path" as the file to store the server info state. This is
 # used by "pumactl" to query and control the server.
 #
-state_path '/home/stinky/midscore_io/config/puma.state'
+state_path '/mnt/e/home/stinky/midscore_io/config/puma.state'
 
 # Redirect STDOUT and STDERR to files specified. The 3rd parameter
 # ("append") specifies whether the output is appended, the default is
 # "false".
 #
-stdout_redirect '/home/stinky/midscore_io/log/stdout', '/home/stinky/midscore_io/log/stderr', true
+stdout_redirect '/mnt/e/home/stinky/midscore_io/log/stdout', '/mnt/e/home/stinky/midscore_io/log/stderr', true
 # stdout_redirect '/u/apps/lolcat/log/stdout', '/u/apps/lolcat/log/stderr', true
 
 # Disable request logging.
@@ -109,7 +133,7 @@ threads 0, 16
 # load puma itself (ie. 'ruby -Ilib bin/puma'), not the arguments
 # to puma, as those are the same as the original process.
 #
-restart_command '/home/stinky/midscore_io/restart_puma'
+restart_command '/mnt/e/home/stinky/midscore_io/restart_puma'
 
 # === Cluster mode ===
 
@@ -207,5 +231,5 @@ worker_boot_timeout 25
 # activate_control_app 'unix://var/run/pumactl.sock'
 # activate_control_app 'unix://var/run/pumactl.sock', { auth_token: '12345' }
 # activate_control_app 'unix://var/run/pumactl.sock', { no_token: true }
-rackup '/home/stinky/midscore_io/config.ru'
+rackup '/mnt/e/home/stinky/midscore_io/config.ru'
 activate_control_app

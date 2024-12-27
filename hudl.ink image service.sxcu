@@ -1,0 +1,13 @@
+{
+  "Version": "14.1.0",
+  "Name": "hudl.ink image service",
+  "DestinationType": "ImageUploader",
+  "RequestMethod": "POST",
+  "RequestURL": "https://hudl.ink/api/screen/upload",
+  "Body": "MultipartFormData",
+  "Arguments": {
+    "image_title": "{filename}"
+  },
+  "FileFormName": "form",
+  "URL": "{responseurl}"
+}

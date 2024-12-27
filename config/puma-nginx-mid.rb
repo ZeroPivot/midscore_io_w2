@@ -49,14 +49,6 @@ require 'openssl'
 #  File.write(csr_path, csr.to_pem)
 # end
 
-key_path = '/mnt/e/home/stinky/midscore_io/config/mywebsite.key'
-csr_path = '/mnt/e/home/stinky/midscore_io/config/mywebsite.csr'
-subject = '/C=US/ST=California/L=Lucerne/O=IT/OU=CEO/CN=Duke Grable'
-
-
-
-# generate_csr(key_path, csr_path, subject)
-
 ssl_bind '0.0.0.0', '8080', {
   key: '/mnt/e/home/stinky/midscore_io/config/mywebsite.key',
   cert: '/mnt/e/home/stinky/midscore_io/config/mywebsite.csr',

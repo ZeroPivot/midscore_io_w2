@@ -1,0 +1,15 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "name": "BashAssetFinal",
+            "path": "BashAssetFinal"
+        },
+        {
+            "name": "partitioned_array",
+            "path": "../../aylonarlon/partitioned_array"
+        }
+    ]
+}

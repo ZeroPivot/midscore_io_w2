@@ -1,0 +1,12 @@
+{
+  "Version": "14.1.0",
+  "Name": "hudl.ink url shortening service",
+  "DestinationType": "URLShortener",
+  "RequestMethod": "POST",
+  "RequestURL": "https://hudl.ink/u/shorten",
+  "Arguments": {
+    "url": "$input$"
+  },
+  "ResponseType": "Text",
+  "FileFormName": ""
+}

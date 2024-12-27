@@ -1,4 +1,0 @@
-function kill_process_by_name(process_name) {
-    cmd = "kill $(pgrep " process_name ")"
-    system(cmd)
-}

@@ -1,0 +1,247 @@
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: What does Monad mean?
+SL_MESSAGE: ArityWolf Resident: memorize\: \"z\"
+SL_MESSAGE: ArityWolf Resident: what was the last thing you memorized?
+SL_MESSAGE: KintariusPyromancer Resident: test
+SL_MESSAGE: KintariusPyromancer Resident: test
+SL_MESSAGE: Jaggo Austinmer: OKTOBERFEST
+SL_MESSAGE: ArityWolf Resident: OKTOBERFEST
+SL_MESSAGE: ArityWolf Resident: OKTOBERFEST
+SL_MESSAGE: ArityWolf Resident: OKTOBERFEST
+SL_MESSAGE: ArityWolf Resident: 🅿🅿 🔺
+SL_MESSAGE: KintariusPyromancer Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: Moo Boo: /me •\:*¨¨*\:•giggles•\:*¨¨*\:•
+SL_MESSAGE: Zeraphynx Resident: This here from the wiki
+SL_MESSAGE: Zeraphynx Resident: Q\: What about running scripts on the viewer-side if I want viewer-side effects? Does this have any interaction with the work adding Lua addons into the viewer?
+SL_MESSAGE: Moo Boo: o damn you died fast (≧ω≦)
+SL_MESSAGE: Ferry Mint: couldnt see
+SL_MESSAGE: Zeraphynx Resident: A\: No, the work on adding Lua addons to the viewer is a separate effort\. Lua scripts on SL will strictly run on the region, and not on the people\'s viewers\. We\'re focused on providing a high-quality replacement to the existing server-side scripts before we look at anything else\. Note that we are all too aware of the current difficulty of scripting HUD UIs for Second Life (we make a lot of our own) and we\'re thinking of ways we can make things better, but there are no definite plans, and it wouldn\'t involve running scripts on the viewer in the near-term\. The current UI tooling exposed to Lua viewer addons isn\'t tooled for being called from untrusted code either way, so lack of \"client-side\" scripts is unlikely to hinder any effort to create a better API for HUDs for in-world systems\.
+SL_MESSAGE: Moo Boo: yeah the camera\'s borked
+SL_MESSAGE: Ferry Mint: mount was in the way
+SL_MESSAGE: Moo Boo: i can\'t figure out the camera thing anyways
+SL_MESSAGE: Moo Boo: seems like it only wants to zoom out not in etc
+SL_MESSAGE: Moo Boo: it\'s really cursed
+SL_MESSAGE: Ferry Mint: gotta lock cam pos and focus pos thne
+SL_MESSAGE: Moo Boo: o i tried
+SL_MESSAGE: Zeraphynx Resident: Heya niko^^
+SL_MESSAGE: Moo Boo: liiiine\.\.
+SL_MESSAGE: Moo Boo: 524
+SL_MESSAGE: Moo Boo: \'ish
+SL_MESSAGE: Moo Boo: i tried position locked and focus locked, but it didn\'t work
+SL_MESSAGE: Moo Boo: so i turned it to false and that changed nothing apparently <-<
+SL_MESSAGE: Ferry Mint: you didnt lock thme tho
+SL_MESSAGE: Ferry Mint: both false
+SL_MESSAGE: Moo Boo: ya i set them to false now
+SL_MESSAGE: Ferry Mint: ehh
+SL_MESSAGE: Moo Boo: cause it wasn\'t working (≧ω≦)
+SL_MESSAGE: Moo Boo: iunno i\'m tempted to remove the whole camera thing
+SL_MESSAGE: Moo Boo: and just let people figure that out themselves
+SL_MESSAGE: Moo Boo: keep it simple, ykno?
+SL_MESSAGE: Zeraphynx Resident: https\://wiki\.secondlife\.com/wiki/Lua_FAQ
+SL_MESSAGE: Zeraphynx Resident: This should get you up to speed about the LSL changes regarding lua
+SL_MESSAGE: NikoBuck Resident: But I dun wanna
+SL_MESSAGE: Moo Boo: \"In fact, LSL will get better than ever before, running faster, and using less memory! \"
+SL_MESSAGE: Moo Boo: gonna put that to the test
+SL_MESSAGE: NikoBuck Resident: Read it to me Zera
+SL_MESSAGE: NikoBuck Resident: uwu
+SL_MESSAGE: Zeraphynx Resident: Yeh, script memory is rapidly becoming less of an issue
+SL_MESSAGE: Moo Boo: tldr\: speedy things go in, speedy things come out
+SL_MESSAGE: Zeraphynx Resident: xD
+SL_MESSAGE: Ferry Mint: i wouldnt get all hyped for it
+SL_MESSAGE: Ferry Mint: it was anounced jsut this year
+SL_MESSAGE: Moo Boo: what the fuck their comparison between lua and mono script
+SL_MESSAGE: Ferry Mint: so\.\.\. the fastest release will be next year
+SL_MESSAGE: Moo Boo: lua\'s like 6 lines, mono bytecode\'s like a book
+SL_MESSAGE: Ferry Mint: because its backwards compatible
+SL_MESSAGE: Ferry Mint: also its not a fair comparison
+SL_MESSAGE: Moo Boo: \.-\.
+SL_MESSAGE: Ferry Mint: there are some lua lines missing
+SL_MESSAGE: Moo Boo: \"Why Lua? I wanted C#! Great question!\"
+SL_MESSAGE: Ferry Mint: for val creation and write read
+SL_MESSAGE: Moo Boo: damn it linden
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: KintariusPyromancer Resident: test
+SL_MESSAGE: KintariusPyromancer Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: bla
+SL_MESSAGE: ArityWolf Resident: blah
+SL_MESSAGE: KintariusPyromancer Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: ArityWolf Resident: test
+SL_MESSAGE: Colarix Resident: lmao
+SL_MESSAGE: Colarix Resident: lmao
+SL_MESSAGE: ArityWolf Resident: lmao
+SL_MESSAGE: Workspace Buster - 4090 metres: Have a seat, Avalina Capalini\.
+SL_MESSAGE: Workspace Buster - 4090 metres: Have a seat, Avalina Capalini\.
+SL_MESSAGE: Workspace Buster - 4090 metres: Script reset\.
+SL_MESSAGE: Workspace Buster - 4090 metres: Script reset\.
+SL_MESSAGE: : Script reset.
+SL_MESSAGE: : Script reset.
+SL_MESSAGE: : Script reset.
+SL_MESSAGE: : Script reset.
+SL_MESSAGE: Workspace Buster - 4090 metres: You are not the owner\.
+SL_MESSAGE: Workspace Buster - 4090 metres: You are not the owner\.
+SL_MESSAGE: : You are not the owner.
+SL_MESSAGE: : You are not the owner.
+SL_MESSAGE: Workspace Buster - 4090 metres: Moving to 4090 meters\.
+SL_MESSAGE: Workspace Buster - 4090 metres: Moving to 4090 meters\.
+SL_MESSAGE: : Moving to 4090 meters.
+SL_MESSAGE: : Moving to 4090 meters.
+SL_MESSAGE: Aniviakun Resident: 𝙝𝙞 𝙨𝙝𝙖𝙧𝙠𝙗𝙤𝙮
+SL_MESSAGE: Aniviakun Resident: \\\\ o/
+SL_MESSAGE: Aniviakun Resident: good good c\:
+SL_MESSAGE: Aniviakun Resident: helldivers is finally good again
+SL_MESSAGE: Object: Hello, Avatar!
+SL_MESSAGE: : Hello, Avatar!
+SL_MESSAGE: PikoBean Resident: 🥄
+SL_MESSAGE: PikoBean Resident: 🥄
+SL_MESSAGE: Shnitzela Resident: persephone
+SL_MESSAGE: Shnitzela Resident: u not wearing the liner shine
+SL_MESSAGE: Shnitzela Resident: ehe
+SL_MESSAGE: Shnitzela Resident: lel
+SL_MESSAGE: AUXILIARY OwO: bom limits eye textures to 512x512
+SL_MESSAGE: austinwoofer Chapman: hi
+SL_MESSAGE: austinwoofer Chapman: hi5
+SL_MESSAGE: NixWasabi Resident: meep meep
+SL_MESSAGE: NixWasabi Resident: is this a new or old song?
+SL_MESSAGE: NixWasabi Resident: tune!
+SL_MESSAGE: PrettyKnees Resident: Hi
+SL_MESSAGE: Leeloo Graves: +* DITSCH*+
+SL_MESSAGE: Zuuch Resident: hey
+SL_MESSAGE: Zuuch Resident: can i say something?
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ 𝐤𝐢𝐬𝐬𝐞𝐬 ᴢᴜ ᴋᴀᴢᴏᴋᴜ\'s 𝐜𝐡𝐞𝐞𝐤𝐬\.
+SL_MESSAGE: Zuuch Resident: y no te enojas
+SL_MESSAGE: : ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ softly caresses and slaps ᴢᴜ ᴋᴀᴢᴏᴋᴜ\'s handsome face, but it is completely consensual and desired c\:
+SL_MESSAGE: Zuuch Resident: I LOVE WAREHOUSE !
+SL_MESSAGE: : ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ softly caresses and slaps ᴢᴜ ᴋᴀᴢᴏᴋᴜ\'s handsome face, but it is completely consensual and desired c\:
+SL_MESSAGE: Exotica Zhao: hi sharon
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ 𝐤𝐢𝐬𝐬𝐞𝐬 ᴢᴜ ᴋᴀᴢᴏᴋᴜ\'s 𝐥𝐢𝐩𝐬\.
+SL_MESSAGE: : ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ Lovesss ᴢᴜ ᴋᴀᴢᴏᴋᴜ\'s Thick Cock
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ 𝐤𝐢𝐬𝐬𝐞𝐬 ᴢᴜ ᴋᴀᴢᴏᴋᴜ\'s 𝐥𝐢𝐩𝐬\.
+SL_MESSAGE: Exotica Zhao: ooopsies
+SL_MESSAGE: : ᴢᴜ ᴋᴀᴢᴏᴋᴜ grabs ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ\'s hair and drags her around
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ 𝐤𝐢𝐬𝐬𝐞𝐬 ᴢᴜ ᴋᴀᴢᴏᴋᴜ\'s 𝐥𝐢𝐩𝐬\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ 𝐤𝐢𝐬𝐬𝐞𝐬 ᴢᴜ ᴋᴀᴢᴏᴋᴜ\'s 𝐥𝐢𝐩𝐬\.
+SL_MESSAGE: kiss lips: /me ♥ kisses ♥ AreeM88\' ♥ sweet lips ♥
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ 𝐤𝐢𝐬𝐬𝐞𝐬 ᴢᴜ ᴋᴀᴢᴏᴋᴜ\'s 𝐥𝐢𝐩𝐬\.
+SL_MESSAGE: Slave: ßℓɑςk ςɑгɲiѵɑℓe spanks M̴a̴z̴i̴\'s ass\.
+SL_MESSAGE: [KobZache] Kiss Lips v1.3: /me Mace Cale 𝘬𝘪𝘴𝘴𝘦𝘴 M̴a̴z̴i̴ \'s 𝘭𝘪𝘱𝘴
+SL_MESSAGE: Slave: Mace Cale spanks M̴a̴z̴i̴\'s ass\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ M̴a̴z̴i̴ 𝐬𝐩𝐚𝐧𝐤𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐚𝐬𝐬\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Mace Cale 𝐬𝐩𝐚𝐧𝐤𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐚𝐬𝐬\.
+SL_MESSAGE: DocSalino Resident: heya
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ 𝐤𝐢𝐬𝐬𝐞𝐬 ᴢᴜ ᴋᴀᴢᴏᴋᴜ\'s 𝐥𝐢𝐩𝐬\.
+SL_MESSAGE: : /me O̴l̴i̴v̴e̴r̴ kisses Ɗυυɲץα Ɲøιя\'s lips passionately\. Ɗυυɲץα Ɲøιя blushes deeply\.
+SL_MESSAGE: : /me O̴l̴i̴v̴e̴r̴ kisses Ɗυυɲץα Ɲøιя\'s lips passionately\. Ɗυυɲץα Ɲøιя blushes deeply\.
+SL_MESSAGE: : /me O̴l̴i̴v̴e̴r̴ kisses Ɗυυɲץα Ɲøιя\'s lips passionately\. Ɗυυɲץα Ɲøιя blushes deeply\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Paarl 𝐤𝐢𝐬𝐬𝐞𝐬 Cassidy\'s 𝐜𝐡𝐞𝐞𝐤𝐬\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Paarl 𝐤𝐢𝐬𝐬𝐞𝐬 Cassidy\'s 𝐜𝐡𝐞𝐞𝐤𝐬\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Mace Cale 𝐬𝐩𝐚𝐧𝐤𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐚𝐬𝐬\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Mace Cale 𝐑𝐮𝐛𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐩𝐮𝐬𝐬𝐲\.
+SL_MESSAGE: Lea Snowflake: *meow*
+SL_MESSAGE: Pacagaia Original - Basic Cigarette V2 // UNPACK: 
+SL_MESSAGE: Pacagaia Original - Basic Cigarette V2 // UNPACK: 
+SL_MESSAGE: Ayane kisser: /me ♥ kisses Ayane Lyla\'s sweet lips 💋
+SL_MESSAGE: Ayane kisser: /me ♥ kisses Ayane Lyla\'s sweet lips 💋
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Mace Cale 𝐬𝐩𝐚𝐧𝐤𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐚𝐬𝐬\.
+SL_MESSAGE: SookieDeSade Resident: iZZI !
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ O̴l̴i̴v̴e̴r̴ 𝐬𝐩𝐚𝐧𝐤𝐬 Ɗυυɲץα Ɲøιя\'s 𝐚𝐬𝐬\.
+SL_MESSAGE: Moni Kiyori: Black! Mace! Ayane! Dee! Auroro! Cassie! Izzy! jamie!
+SL_MESSAGE: Moni Kiyori: Everyone!
+SL_MESSAGE: Mace Cale: Hey Moni 💋
+SL_MESSAGE: NDF31 Resident: Moni 🖤
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ ßℓɑςk ςɑгɲiѵɑℓe 𝐑𝐮𝐛𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐩𝐮𝐬𝐬𝐲\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ ßℓɑςk ςɑгɲiѵɑℓe 𝐬𝐥𝐚𝐩𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐩𝐮𝐬𝐬𝐲\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Mace Cale 𝐬𝐩𝐚𝐧𝐤𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐚𝐬𝐬\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Mace Cale 𝐑𝐮𝐛𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐩𝐮𝐬𝐬𝐲\.
+SL_MESSAGE: Jamie Spanker with config and anims and moans: secondlife\:///app/agent/1699cbd8-e1e8-48f3-8a9a-4e700a01393c/displayname spanked secondlife\:///app/agent/fab80e13-7954-4988-b388-5193b9c0694c/displayname\'s appealing buns!
+SL_MESSAGE: Ayane Spanker with config and anims and moans: secondlife\:///app/agent/1699cbd8-e1e8-48f3-8a9a-4e700a01393c/displayname spanked secondlife\:///app/agent/3dc4a8fa-4871-461e-afb8-07e0247e8054/displayname\'s fascinating hindquarters!
+SL_MESSAGE: Ayane Spanker with config and anims and moans: secondlife\:///app/agent/1699cbd8-e1e8-48f3-8a9a-4e700a01393c/displayname spanked secondlife\:///app/agent/3dc4a8fa-4871-461e-afb8-07e0247e8054/displayname\'s drop-dead rump!
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Moni Kiyori 𝐬𝐩𝐚𝐧𝐤𝐬 Jamie Lyla\'s 𝐚𝐬𝐬\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Mace Cale 𝐬𝐩𝐚𝐧𝐤𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐚𝐬𝐬\.
+SL_MESSAGE: IzzySpirit Resident: Zoe!!!!!!!!!!!!
+SL_MESSAGE: Vera Hunghi: hi all
+SL_MESSAGE: NoahTerra Resident: Fredy ;)
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Briαnnα 𝐬𝐩𝐚𝐧𝐤𝐬 Lea Snowflake\'s 𝐚𝐬𝐬\.
+SL_MESSAGE: Ayane Spanker with config and anims and moans: secondlife\:///app/agent/1699cbd8-e1e8-48f3-8a9a-4e700a01393c/displayname spanked secondlife\:///app/agent/3dc4a8fa-4871-461e-afb8-07e0247e8054/displayname\'s kissable tush!
+SL_MESSAGE: [KobZache] Kiss Lips v1.3: /me Antoine De La Marlière 𝘬𝘪𝘴𝘴𝘦𝘴 M̴a̴z̴i̴ \'s 𝘭𝘪𝘱𝘴
+SL_MESSAGE: kiss lips with hearts ( add to be kissed ): /me ♥ kisses ♥ AntoineDLM\' ♥ sweet lips ♥
+SL_MESSAGE: [KobZache] Kiss Lips v1.3: /me Mace Cale 𝘬𝘪𝘴𝘴𝘦𝘴 M̴a̴z̴i̴ \'s 𝘭𝘪𝘱𝘴
+SL_MESSAGE: [KobZache] Kiss Lips v1.3: /me Mace Cale 𝘬𝘪𝘴𝘴𝘦𝘴 M̴a̴z̴i̴ \'s 𝘭𝘪𝘱𝘴
+SL_MESSAGE: silv288 Mahogany: jajajaa
+SL_MESSAGE: Azha Astral: nice
+SL_MESSAGE: silv288 Mahogany es>en: ha ha ha
+SL_MESSAGE: NDF31 Resident: ya me tardaba
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Mace Cale 𝐬𝐥𝐚𝐩𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐩𝐮𝐬𝐬𝐲\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Mace Cale 𝐬𝐩𝐚𝐧𝐤𝐬 ßℓɑςk ςɑгɲiѵɑℓe \'s 𝐚𝐬𝐬\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Lea Snowflake 𝐬𝐩𝐚𝐧𝐤𝐬 Kumiko Foxpaws\'s 𝐚𝐬𝐬\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Lea Snowflake 𝐑𝐮𝐛𝐬 Kumiko Foxpaws\'s 𝐚𝐬𝐬\.
+SL_MESSAGE: Jamie kisser 2: /me ♥ kisses Jamie Lyla\'s sweet lips 💋
+SL_MESSAGE: Ayane kisser: /me ♥ kisses Ayane Lyla\'s sweet lips 💋
+SL_MESSAGE: Azha Astral: just saw landmarks pic
+SL_MESSAGE: Azha Astral: is truly beautiful
+SL_MESSAGE: sbou Petrovic: 💋
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ Lea Snowflake 𝐑𝐮𝐛𝐬 Kumiko Foxpaws\'s 𝐚𝐬𝐬\.
+SL_MESSAGE: : /me O̴l̴i̴v̴e̴r̴ kisses Ɗυυɲץα Ɲøιя\'s lips passionately\. Ɗυυɲץα Ɲøιя blushes deeply\.
+SL_MESSAGE: : /me O̴l̴i̴v̴e̴r̴ kisses Ɗυυɲץα Ɲøιя\'s Neck passionately\.
+SL_MESSAGE: : ★ 𝐏𝐫𝐞𝐭𝐭𝐲 𝐋𝐢𝐚𝐫𝐬 ★ ღ ʏᴜᴍɪ ᴋᴀᴢᴏᴋᴜ ღ 𝐤𝐢𝐬𝐬𝐞𝐬 ᴢᴜ ᴋᴀᴢᴏᴋᴜ\'s 𝐥𝐢𝐩𝐬\.
+SL_MESSAGE: kiss lips: /me ♥ kisses ♥ AreeM88\' ♥ sweet lips ♥
+SL_MESSAGE: MiniMouse Starchild: sorry
+SL_MESSAGE: Erin Breck: Hey Starr! ♥
+SL_MESSAGE: *R* Jessi gives you an Ass spank: Izzy Spirit spanks Zoe Jimenez\'s ass\.
+SL_MESSAGE: KT Syakumi: because women are awesome and Dave is an enlightened guy
+SL_MESSAGE: Ameliey Resident: ♪ ♫ DAVE ♪
+SL_MESSAGE: Ameliey Resident: # # # # \\\\ _ / # # # #
+SL_MESSAGE: Ameliey Resident: #( )# | _ ( ) __ | #( )#
+SL_MESSAGE: Ameliey Resident: # # # # | / _ / | # # # #
+SL_MESSAGE: Ameliey Resident: #\" \"# | ___m/I _ //_____ | #\" \"#
+SL_MESSAGE: Ameliey Resident: # O # |____#-x\. \\\\ /++m \\\\ / \.x-#____| # O #
+SL_MESSAGE: Ameliey Resident: #m\.m# | / \" \\\\ /// ### \\\\ \\\\ \\\\ / \"\\\\ | #m\.m#
+SL_MESSAGE: Ameliey Resident: # # # # / # # # # / \\\\ # # # # \\\\ # # # #
+SL_MESSAGE: Ameliey Resident: ❤
+SL_MESSAGE: Ameliey Resident: hello Warehouse and welcome on air dave
+SL_MESSAGE: SilverSky23 Resident: Dave ♥
+SL_MESSAGE: Tiger Emotes HUD: /me walks up to Nenrio, snuggles and purrs contentedly
+SL_MESSAGE: North Shikami: HI Amy!
+SL_MESSAGE: Bish Boo: \.-\'\'\'\'-\.,\.-\'\'\'\'-\.
+SL_MESSAGE: Bish Boo: ! YOU\'RE !
+SL_MESSAGE: Bish Boo: \"\.Welcome\.\"
+SL_MESSAGE: Bish Boo: \'\'\'-\.,\.-
+SL_MESSAGE: Bish Boo: - Hāƕāƕāƕāƕāƕāƕāƕāƕ -
+SL_MESSAGE: Bish Boo: -\:¦\:-❊-\:¦\:-❊-\:¦\:-❊-\:¦\:- OH YEAH!!!! -\:¦\:-❊-\:¦\:-❊-\:¦\:-❊-\:¦\:-
+SL_MESSAGE: euleonisilveira Resident: Hello
+SL_MESSAGE: SilverSky23 Resident: ☆███▓▒░░\. \.ı\.lııllılı\.ılı\.! ! ! T U N E ! ! !ı\.lııllılı\.ılı\. \.░░▒▓███ ☆
+SL_MESSAGE: SilverSky23 Resident: ☆███▓▒░░\. \.ı\.lııllılı\.ılı\.! ! ! T U N E ! ! !ı\.lııllılı\.ılı\. \.░░▒▓███ ☆
+SL_MESSAGE: SilverSky23 Resident: ☆███▓▒░░\. \.ı\.lııllılı\.ılı\.! ! ! T U N E ! ! !ı\.lııllılı\.ılı\. \.░░▒▓███ ☆
+SL_MESSAGE: SilverSky23 Resident: ☆███▓▒░░\. \.ı\.lııllılı\.ılı\.! ! ! T U N E ! ! !ı\.lııllılı\.ılı\. \.░░▒▓███ ☆
+SL_MESSAGE: SilverSky23 Resident: ☆███▓▒░░\. \.ı\.lııllılı\.ılı\.! ! ! T U N E ! ! !ı\.lııllılı\.ılı\. \.░░▒▓███ ☆
+SL_MESSAGE: SilverSky23 Resident: \'\'#~OMG\.\.\. StAnD BaCk i´m Going to FAiNT\'\'#~
+SL_MESSAGE: SilverSky23 Resident: ==PhOnE Me ThE TuNe AmBuLaNcE!!===
+SL_MESSAGE: Idoru Venus: `bish
+SL_MESSAGE: Idoru Venus: bis
+SL_MESSAGE: Idoru Venus: ٭★=❤=★٭ Ɓ ί ѕ H ٭★=❤=★٭
+SL_MESSAGE: SilverSky23 Resident: Idoru ♥
+SL_MESSAGE: Idoru Venus: Hi Brielle \:) -`❤´-
+SL_MESSAGE: Bish Boo: ★°º¤ø,¸ \. !ÐoRu\. ¸,ø¤º°★
+SL_MESSAGE: Bish Boo: /me blows you a kiss 💋
+SL_MESSAGE: Idoru Venus: ( ͡° ³ ͡°) chu ❤
+SL_MESSAGE: Idoru Venus: Hi Bryn \:)
+SL_MESSAGE: [OO] Traveller's HUD 2.0a: Arrived at Mystic Harbor\.
+SL_MESSAGE: *uC* f Goth bmpr: Trying to outrun my shadow, and ran into you instead\.
+SL_MESSAGE: Idoru Venus: bolton\'s?dunno that one
+SL_MESSAGE: Idoru Venus: think I will pass ;P
+SL_MESSAGE: Idoru Venus: Hey Sin \:)
+SL_MESSAGE: Etherlyn Resident: yay Nadja!
+SL_MESSAGE: Lilou Atheria: oui
+SL_MESSAGE: ArityWolf Resident: /tt_show_
+SL_MESSAGE: ArityWolf Resident: /tt_show_
+SL_MESSAGE: Shenanigans Enthusiast: 
+SL_MESSAGE: ArityWolf Resident: 
+SL_MESSAGE: ArityWolf Resident: https\://www\.twitch\.tv/directory/category/everquest

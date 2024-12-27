@@ -1,0 +1,1 @@
+openssl req -new -key mywebsite.key -out mywebsite.csr && mv mywebsite.key ./config && mv mywebsite.csr ./config

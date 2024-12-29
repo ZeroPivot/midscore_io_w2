@@ -1,4 +1,11 @@
 # rubocop:disable Style/StringLiterals
+# Use the environment variable or command line option:
+# ruby -W0 -Ilib -rcgmfs -e 'CGMFS.run'
+# This disables frozen string literals globally.
+# Alternatively, put "# frozen_string_literal: false" at the top of each file.
+# disable auto frozen strings for everything
+# frozen_string_literal: false
+
 # VERSION v0.0.1 - kejento.net edited edition
 # EDITS: request_deflection(r) is disabled
 require 'resolv'
@@ -15,10 +22,16 @@ require 'net/http'
 require 'net/https'
 require 'yuicompressor'
 require 'roda/plugins/assets'
+require 'oj' # JSON binary parser
+require 'json' # JSON parser
+require 'openssl'
+require 'base64'
+require 'fileutils'
+require 'digest'
 
 require_relative 'require_dir' # for route auto-loading
 
-LATEST_PA_VERSION = "v2.0.0-mpa_v1.2.6-pa_v1.0.0a-mpafc" # deprecated
+LATEST_PA_VERSION = "v3.0.0+" # deprecated
 
 require_relative "lib/partitioned_array/lib/line_db" # magnum opus of computer science
 

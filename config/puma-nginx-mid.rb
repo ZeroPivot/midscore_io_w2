@@ -17,46 +17,25 @@
 #   [200, { 'Content-Type' => 'text/plain', 'Content-Length' => body.length.to_s }, [body]]
 # end
 
-# Load "path" as a rackup file.
-#
-# The default is "config.ru".
-#
-# rackup '/u/apps/lolcat/config.ru'
-
-# Set the environment in which the rack's app will run. The value must be a string.
-#
-# The default is "development".
-
-environment 'development'
-
-
-# bind 'tcp://0.0.0.0:8080'
-
-
-
+environment 'production'
 
 require 'openssl'
 
-def generate_csr(key_path, csr_path, subject)
+def generate_csr(key_path, csr_path)
   key = OpenSSL::PKey::RSA.new(File.read(key_path))
-
   csr = OpenSSL::X509::Request.new
   csr.version = 0
-  csr.subject = OpenSSL::X509::Name.parse(subject)
   csr.public_key = key.public_key
   csr.sign(key, OpenSSL::Digest::SHA256.new)
-
   File.write(csr_path, csr.to_pem)
 end
 
 key_path = '/mnt/e/home/stinky/midscore_io/config/mywebsite.key'
 csr_path = '/mnt/e/home/stinky/midscore_io/config/mywebsite.csr'
-subject = '/C=US/ST=California/L=Lucerne/O=Mid score/OU=IT Art/CN=*.midscoreio.ddns.net'
 
-generate_csr(key_path, csr_path, subject)
+generate_csr(key_path, csr_path)
 
-
-bind 'ssl://0.0.0.0:8080?key=/C=US/ST=California/L=Lucerne/O=Mid score/OU=IT Art/CN=*.midscoreio.ddns.net'
+bind 'ssl://0.0.0.0:8080?key=/mnt/e/home/stinky/midscore_io/config/mywebsite.key&cert=/mnt/e/home/stinky/midscore_io/config/mywebsite.crt'
 # this be combined with "pidfile" and "stdout_redirect".
 #
 # The default is "false".

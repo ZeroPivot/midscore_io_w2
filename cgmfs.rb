@@ -1,9 +1,6 @@
 # rubocop:disable Style/StringLiterals
 # VERSION v0.0.1 - kejento.net edited edition
 # EDITS: request_deflection(r) is disabled
-require 'roda'
-require 'json'
-require 'fileutils'
 require 'resolv'
 require 'tzinfo'
 require 'redcarpet'
@@ -30,12 +27,16 @@ require_relative 'logger'
 require_dir "./lib/dir_requires"
 RubyVM::YJIT.enable # enable Ruby 3.3+'s JIT compiler (YJIT)'
 DEBUG = false
-LOCAL = File.open("local.txt", "r").read.strip == "1"
+LOCAL = File.exist?("local.txt") && File.open("local.txt", "r").read.strip == "1"
 
 ## enable Resolv to use DNS (../views/layout.html.erb)
 $dns_enabled = false # enable dns (deprecated)
 
-SERVER_MAIN_DOMAIN_NAME = File.open("server_main_domain_name.txt", "r") { |f| f.read.chomp }
+# Ensure the file exists before reading
+server_main_domain_name_file = "server_main_domain_name.txt"
+FileUtils.touch(server_main_domain_name_file) unless File.exist?(server_main_domain_name_file)
+
+SERVER_MAIN_DOMAIN_NAME = File.read(server_main_domain_name_file).chomp
 
 # how to zip a file in terminal
 # zip -r archive_name.zip folder_to_compress
@@ -44,7 +45,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$lockdown = true # lockdown mode (no public access to blog or gallery posts, etc)
+$lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)
 
 DO_TELEGRAM_LOGGING = false # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
 
@@ -99,7 +100,7 @@ class CGMFS < Roda
   version = version_file.readline.chomp
   timestamp = version_file.readline.chomp
   version_file.close
-  $dog_blog_version = "(v#️⃣#{version}):[ 🏗️#{timestamp} ] - 🩲🍆😤" # used in layout.html.erb
+  $dog_blog_version = "(v#️⃣#{version}):[ 🏗️#{timestamp} ]" # used in layout.html.erb
 
   @@line_db = LineDB.new
   @@line_db["urls_redir"].pad.new_table!(database_name: "urls_database", database_table: "urls_table")

@@ -165,18 +165,15 @@ class CGMFS
   end
 
   def to_numer_string(words) # to get theoretical numerology number based on any type of character byte...
-    reduced_numbers = words.each_byte.inject(0) do |result, element|
-      result + element
-    end
+    reduced_numbers = words.each_byte.sum
 
     reduced_numbers.to_s.split('').inject(0) do |result, element|
       result.to_i + element.to_i
     end
   end
 
-   def domain_name(r)   
-
-    r.redirect "https://#{r.host}:8080"
+  def domain_name(r)
+    r.redirect "https://#{SERVER_MAIN_DOMAIN_NAME}:8080"
     # return "https://" + r.host
   end
 
@@ -261,9 +258,10 @@ class CGMFS
     return if session['user']
     return if session['password']
     return if session['user'] == 'superadmin'
-    return if r.path == '/blog/login' # Don't redirect if already at login
 
-    #r.redirect "#{domain_name(r)}/blog/login"
+    nil if r.path == '/blog/login' # Don't redirect if already at login
+
+    # r.redirect "#{domain_name(r)}/blog/login"
   end
 
   # def check_boundaries!(id, user, r)
@@ -378,8 +376,8 @@ class CGMFS
 
     r.on 'signup' do
       r.is do
-        r.get do          
-            view('blog/signup', engine: 'html.erb', layout: 'layout.html') # keep signups closed for now; open for our own personal purposes but needs to be closed for the public
+        r.get do
+          view('blog/signup', engine: 'html.erb', layout: 'layout.html') # keep signups closed for now; open for our own personal purposes but needs to be closed for the public
           # "Signups are closed; see an admin please."
         end
 

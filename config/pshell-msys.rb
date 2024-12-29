@@ -27,7 +27,7 @@
 #
 # The default is "development".
 
-environment 'development'
+environment 'production'
 
 
 # bind 'tcp://0.0.0.0:8080'
@@ -49,14 +49,17 @@ def generate_csr(key_path, csr_path, subject)
   File.write(csr_path, csr.to_pem)
 end
 
-key_path = '/mnt/e/home/stinky/midscore_io/config/mywebsite.key'
-csr_path = '/mnt/e/home/stinky/midscore_io/config/mywebsite.csr'
+key_path = '/e/home/stinky/midscore_io/config/mywebsite.key'
+csr_path = '/e/home/stinky/midscore_io/config/mywebsite.csr'
 subject = '/C=US/ST=California/L=Lucerne/O=Mid score/OU=IT Art/CN=*.midscoreio.ddns.net'
 
 generate_csr(key_path, csr_path, subject)
 
-
-bind 'ssl://0.0.0.0:8080?key=/C=US/ST=California/L=Lucerne/O=Mid score/OU=IT Art/CN=*.midscoreio.ddns.net'
+ssl_bind '0.0.0.0', '8080', {
+  key: '/e/home/stinky/midscore_io/config/local.cert.key.pem',
+  cert: '/e/home/stinky/midscore_io/config/local.cert.pem',
+  # verify_mode: :ssl
+}
 # this be combined with "pidfile" and "stdout_redirect".
 #
 # The default is "false".
@@ -66,18 +69,18 @@ bind 'ssl://0.0.0.0:8080?key=/C=US/ST=California/L=Lucerne/O=Mid score/OU=IT Art
 early_hints true
 # Store the pid of the server in the file at "path".
 #
-pidfile '/mnt/e/home/stinky/midscore_io/config/puma.pid'
+pidfile '/e/home/stinky/midscore_io/config/puma.pid'
 
 # Use "path" as the file to store the server info state. This is
 # used by "pumactl" to query and control the server.
 #
-state_path '/mnt/e/home/stinky/midscore_io/config/puma.state'
+state_path '/e/home/stinky/midscore_io/config/puma.state'
 
 # Redirect STDOUT and STDERR to files specified. The 3rd parameter
 # ("append") specifies whether the output is appended, the default is
 # "false".
 #
-stdout_redirect '/mnt/e/home/stinky/midscore_io/log/stdout', '/mnt/e/home/stinky/midscore_io/log/stderr', true
+stdout_redirect '/e/home/stinky/midscore_io/log/stdout', '/e/home/stinky/midscore_io/log/stderr', true
 # stdout_redirect '/u/apps/lolcat/log/stdout', '/u/apps/lolcat/log/stderr', true
 
 # Disable request logging.
@@ -128,7 +131,7 @@ threads 0, 16
 # load puma itself (ie. 'ruby -Ilib bin/puma'), not the arguments
 # to puma, as those are the same as the original process.
 #
-restart_command '/mnt/e/home/stinky/midscore_io/restart_puma'
+restart_command '/e/home/stinky/midscore_io/restart_puma'
 
 # === Cluster mode ===
 
@@ -226,5 +229,5 @@ worker_boot_timeout 25
 # activate_control_app 'unix://var/run/pumactl.sock'
 # activate_control_app 'unix://var/run/pumactl.sock', { auth_token: '12345' }
 # activate_control_app 'unix://var/run/pumactl.sock', { no_token: true }
-rackup '/mnt/e/home/stinky/midscore_io/config.ru'
+rackup '/e/home/stinky/midscore_io/config.ru'
 activate_control_app

@@ -35,7 +35,11 @@ csr_path = '/mnt/e/home/stinky/midscore_io/config/mywebsite.csr'
 
 generate_csr(key_path, csr_path)
 
-bind 'ssl://0.0.0.0:8080?key=/mnt/e/home/stinky/midscore_io/config/mywebsite.key&cert=/mnt/e/home/stinky/midscore_io/config/mywebsite.crt'
+ssl_bind '0.0.0.0', '8080', {
+  key: '/mnt/e/home/stinky/midscore_io/config/local.cert.key.pem',
+  cert: '/mnt/e/home/stinky/midscore_io/config/local.cert.pem'
+}
+
 # this be combined with "pidfile" and "stdout_redirect".
 #
 # The default is "false".

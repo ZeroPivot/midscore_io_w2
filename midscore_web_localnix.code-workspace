@@ -10,6 +10,10 @@
         {
             "name": "partitioned_array",
             "path": "../../aylonarlon/partitioned_array"
+        },
+        {
+            "name": "partitioned_array",
+            "path": "lib/partitioned_array"
         }
     ]
 }

@@ -28,7 +28,7 @@ require 'openssl'
 require 'base64'
 require 'fileutils'
 require 'digest'
-
+require 'oj'
 require_relative 'require_dir' # for route auto-loading
 
 LATEST_PA_VERSION = "v3.0.0+" # deprecated

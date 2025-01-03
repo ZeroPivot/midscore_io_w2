@@ -85,10 +85,10 @@ class CGMFS
   end
 
 
-  
-  def domain_name(r)   
 
-    "https://#{r.host}:8080"
+  def domain_name(r)
+
+    "https://#{r.host}"
     # return "https://" + r.host
   end
 

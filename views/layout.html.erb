@@ -63,7 +63,7 @@
   <% stop_rendering_time = Time.now.to_f %>
   <b></b> <%= ((stop_rendering_time - @start_rendering_time.to_f)).round(5) %>s [<%= ((stop_rendering_time - @start_rendering_time.to_f)*1000).round(5) %>ms]<br><br>
 <% if !@page_views %>
-  <% File.open("/root/midscore_io/views/page_views.txt", "r+") do |file| %>
+  <% File.open("/home/midscore_io/views/page_views.txt", "r+") do |file| %>
     <% @page_views = file.read.to_i %>
     <% @page_views += 1 %>
     <% file.rewind %>
@@ -91,8 +91,8 @@
 
 <% if @r %>
 <% File.open('main_request_log.txt', 'a') do |f| %>
-     
-     <% 
+
+     <%
       # Log the request method
       f.puts "request_method: #{@r.request_method}"
 

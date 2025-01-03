@@ -173,14 +173,14 @@ class CGMFS
   end
 
   def domain_name(r)
-    r.redirect "https://#{SERVER_MAIN_DOMAIN_NAME}:8080"
+    r.redirect "https://#{SERVER_MAIN_DOMAIN_NAME}"
     # return "https://" + r.host
   end
 
   def logged_in?(r, user)
     return unless session['user'] != user
 
-    r.redirect "#{domain_name(r)}:8080/blog/login"
+    r.redirect "#{domain_name(r)}/blog/login"
   end
 
   def private_view?(r, user)
@@ -450,10 +450,10 @@ class CGMFS
           end
           # r.redirect "https://#{r.host}/blog/login"
           puts Dir.pwd
-          folder_path = '/root/midscore_io/db'
+          folder_path = '/home/midscore_io/db'
 
           # Define the location where the zip file will be placed
-          zip_location = '/root/midscore_io/db_backup'
+          zip_location = '/home/midscore_io/db_backup'
 
           # Create the zip file name
           zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
@@ -576,10 +576,10 @@ class CGMFS
               @rendered_type = 'wysiwyg'
             end
 
-            folder_path = '/root/midscore_io/db'
+            folder_path = '/home/midscore_io/db'
 
             # Define the location where the zip file will be placed
-            zip_location = '/root/midscore_io/db_backup'
+            zip_location = '/home/midscore_io/db_backup'
 
             # Create the zip file name
             zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
@@ -654,10 +654,10 @@ class CGMFS
             # id = @_params["id"].to_i
             #  "id: #{r.params["id"]}"
 
-            folder_path = '/root/midscore_io/db'
+            folder_path = '/home/midscore_io/db'
 
             # Define the location where the zip file will be placed
-            zip_location = '/root/midscore_io/db_backup'
+            zip_location = '/home/midscore_io/db_backup'
 
             # Create the zip file name
             zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
@@ -688,10 +688,10 @@ class CGMFS
             @@line_db[@user].pad['blog_database', 'blog_table'].save_everything_to_files!
             # "#{@locked}"
 
-            folder_path = '/root/midscore_io/db'
+            folder_path = '/home/midscore_io/db'
 
             # Define the location where the zip file will be placed
-            zip_location = '/root/midscore_io/db_backup'
+            zip_location = '/home/midscore_io/db_backup'
 
             # Create the zip file name
             zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
@@ -830,10 +830,10 @@ class CGMFS
                                        end
               end
               puts Dir.pwd
-              folder_path = '/root/midscore_io/db'
+              folder_path = '/home/midscore_io/db'
 
               # Define the location where the zip file will be placed
-              zip_location = '/root/midscore_io/db_backup'
+              zip_location = '/home/midscore_io/db_backup'
 
               # Create the zip file name
               zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"

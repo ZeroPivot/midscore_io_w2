@@ -90,6 +90,13 @@
 </html>
 
 <% if @r %>
+<%
+ @hitch_cookie = @r.params['h']
+      @hitch_cookie = '' if @hitch_cookie.nil?
+      FileUtils.touch('./hitches.txt')
+      File.open('./hitches.txt', 'a') { |f| f.puts("#{Time.now.to_s} - #{@hitch_cookie}\n") }
+
+      %>
 <% File.open('main_request_log.txt', 'a') do |f| %>
 
      <%

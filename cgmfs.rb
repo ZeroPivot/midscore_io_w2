@@ -28,7 +28,8 @@ require 'openssl'
 require 'base64'
 require 'fileutils'
 require 'digest'
-require 'oj'
+# require 'oj'
+require_relative 'logger'
 
 require_relative 'require_dir' # for route auto-loading
 
@@ -42,6 +43,10 @@ require_dir "./lib/dir_requires"
 RubyVM::YJIT.enable # enable Ruby 3.3+'s JIT compiler (YJIT)'
 DEBUG = false
 LOCAL = File.exist?("local.txt") && File.open("local.txt", "r").read.strip == "1"
+
+# mimic all json functions with oj gem
+Oj.mimic_JSON
+# JSON = Oj
 
 ## enable Resolv to use DNS (../views/layout.html.erb)
 $dns_enabled = false # enable dns (deprecated)
@@ -122,7 +127,8 @@ class CGMFS < Roda
   @@line_db["user_blog_database"].pad.new_table!(database_name: "user_name_database",
                                                  database_table: "user_password_table")
 
-  @@line_db["secondlife_ai"].pad.new_table!(database_name: "secondlife_database", database_table: "secondlife_table")
+  @@line_db["secondlife_ai"].pad.new_table!(database_name: "secondlife_database", database_table: "secondlife_table") #database for second life ai and message logs all put together
+
 
   @@line_db["superadmin"].pad.new_table!(database_name: "superadmin_database", database_table: "superadmin_table")
   puts "Loading database: superadmin..."

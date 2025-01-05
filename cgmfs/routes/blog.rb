@@ -388,31 +388,31 @@ class CGMFS
           message = 'User creation failed.'
           user_name_check = @@line_db[user_name]
           if user_name_check.nil?
-            log "Creating user: #{user_name}..."
+            puts "Creating user: #{user_name}..."
             @@line_db.add_db!(user_name.downcase)
             @@line_db.update_databases
             @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table') # load the blog database
             @@line_db['user_blog_database'].pad.new_table!(database_name: 'user_name_database', database_table: 'user_name_table') # load the user blog database
             @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database', database_table: 'blog_table')
-            log '...Loading blog_pinned_table.'
+            puts '...Loading blog_pinned_table.'
             @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database',
                                                          database_table: 'blog_pinned_table')
-            log '...Loading blog_profile_table.'
+            puts '...Loading blog_profile_table.'
             @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database',
                                                          database_table: 'blog_profile_table')
-            log '...Loading blog_statistics_table.'
+            puts '...Loading blog_statistics_table.'
             @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database',
                                                          database_table: 'blog_statistics_table')
-            log '...Loading blog_profile_table.'
+            puts '...Loading blog_profile_table.'
             @@line_db[user_name.downcase].pad.new_table!(database_name: 'blog_database',
                                                          database_table: 'blog_profile_table')
             @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].set(0) do |hash|
               hash[user_name] = password
             end
             @@line_db['user_blog_database'].pad['user_name_database', 'user_password_table'].save_everything_to_files!
-            log '...Loading gallery_database + gallery_table.'
+            puts '...Loading gallery_database + gallery_table.'
             @@line_db[user_name.downcase].pad.new_table!(database_name: 'gallery_database', database_table: 'gallery_table')
-            log '...Loading cache system database...'
+            puts '...Loading cache system database...'
             @@line_db[user_name.downcase].pad.new_table!(database_name: 'cache_system_database', database_table: 'cache_system_table')
             puts '... Loading uwu collections system database...'
             @@line_db[user_name.downcase].pad.new_table!(database_name: 'uwu_collections_database', database_table: 'uwu_collections_table')

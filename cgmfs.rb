@@ -188,7 +188,6 @@ class CGMFS < Roda
   # end
 
   not_found do
-    # if honeypot check fails, redirect elswehere
     "error: 404"
   end
 

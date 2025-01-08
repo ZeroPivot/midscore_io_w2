@@ -24,7 +24,7 @@ require 'json'
 require 'base64'
 require 'uri'
 require 'oj'
-
+require_relative 'log'
 
 
 
@@ -116,7 +116,7 @@ class CGMFS
       end
     end
 
-    r.is 'add' do
+    r.on 'add' do
       r.get do
         r.params.to_s
       end
@@ -137,24 +137,24 @@ class CGMFS
 
           @captured_by = data['captured_by']
           @avatar_name = data['avatar_name'] # implement better version later
-          log("SL_MESSAGE: #{@avatar_name}: #{@message}", filename: '/home/midscore_io/main_chat_log.txt')
+
           #  log(@@telegram_logger.send_message("adding sl entry test"))
 
           #@@line_db
           #@@line_db["secondlife_ai"].pad(database_name: "secondlife_database", database_table: "secondlife_table")
-          @@line_db["secondlife_ai"].pad(database_name: "secondlife_database", database_table: "secondlife_table") do |hash|
-            hash['timestamp'] = Time.at(data['timestamp']).utc.localtime('-07:00').to_s
-            hash['avatar_name'] = data['avatar_name']
-            hash['avatar_id'] = data['avatar_id']
-            hash['message'] = @message
-            hash['x_pos'] = data['x_pos']
-            hash['y_pos'] = data['y_pos']
-            hash['z_pos'] = data['z_pos']
-            hash['sim_name'] = data['sim_name']
-            hash['captured_by'] = @captured_by || 'not_implemented'
-          end
-          @@line_db["secondlife_ai"].pad(database_name: "secondlife_database", database_table: "secondlife_table").save_everything_to_files!
-          log("SL_MESSAGE: #{@avatar_name}: #{@message}")
+          #@@line_db["secondlife_ai"].pad(database_name: "secondlife_database", database_table: "secondlife_table") do |hash|
+          #  hash['timestamp'] = Time.at(data['timestamp']).utc.localtime('-07:00').to_s
+          #  hash['avatar_name'] = data['avatar_name']
+          #  hash['avatar_id'] = data['avatar_id']
+          #  hash['message'] = @message
+          #  hash['x_pos'] = data['x_pos']
+          #  hash['y_pos'] = data['y_pos']
+          #  hash['z_pos'] = data['z_pos']
+          #  hash['sim_name'] = data['sim_name']
+          #  hash['captured_by'] = @captured_by || 'not_implemented'
+          #end
+          #@@line_db["secondlife_ai"].pad(database_name: "secondlife_database", database_table: "secondlife_table").save_everything_to_file!
+          log("SL_MESSAGE: #{@avatar_name}: #{@message}", filename: '/home/midscore_io/cgmfs/routes/sl/sl.log')
 
           # log("entry: #{entry}")
 

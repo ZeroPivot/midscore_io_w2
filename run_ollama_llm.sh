@@ -1,1 +1,1 @@
-ollama run llama3.1
+ollama run moondream

@@ -818,62 +818,64 @@ class CGMFS
         end
 
         if @recache
-          GC.start
-          @images = @gallery.data_arr.map { |image| image }
-          @images = @images.compact
-          @tags = @images.map { |image| image['tags'] }.flatten
+          Thread.new do
+            @images = @gallery.data_arr.map { |image| image }
+            @images = @images.compact
+            @tags = @images.map { |image| image['tags'] }.flatten
 
-          @similar_tags = {}
+            @similar_tags = {}
 
-          @images.each do |image|
-            next if image['tags'].nil?
+            @images.each do |image|
+              next if image['tags'].nil?
 
-            image_tags = image['tags'].split(', ')
+              image_tags = image['tags'].split(', ')
 
-            image_tags.each do |tag|
-              @similar_tags[tag] ||= Set.new
-              @images.each do |other_image|
-                next if other_image['tags'].nil?
+              image_tags.each do |tag|
+                @similar_tags[tag] ||= Set.new
+                @images.each do |other_image|
+                  next if other_image['tags'].nil?
 
-                other_image_tags = other_image['tags'].split(', ')
-                @similar_tags[tag].merge(other_image_tags - [tag]) if other_image_tags.include?(tag)
+                  other_image_tags = other_image['tags'].split(', ')
+                  @similar_tags[tag].merge(other_image_tags - [tag]) if other_image_tags.include?(tag)
+                end
               end
             end
-          end
-          @similar_tags.each { |tag, tags| @similar_tags[tag] = tags.to_a }
-          # @similar_tags.each { |tag, tags| @similar_tags[tag] = tags.uniq }
+            @similar_tags.each { |tag, tags| @similar_tags[tag] = tags.to_a }
+            # @similar_tags.each { |tag, tags| @similar_tags[tag] = tags.uniq }
 
-          @tags.each do |tag|
-            next if tag.nil?
+            @tags.each do |tag|
+              next if tag.nil?
 
-            tag.split(', ').each do |split_tag|
-              @tags_array << split_tag
+              tag.split(', ').each do |split_tag|
+                @tags_array << split_tag
+              end
             end
-          end
-          @tags_array = @tags_array.uniq
-          @images_set = @images.to_set
-          @images_set = @images_set.reject { |image| image['tags'].nil? }
+            @tags_array = @tags_array.uniq
+            @images_set = @images.to_set
+            @images_set = @images_set.reject { |image| image['tags'].nil? }
 
-          @split_tags = @tags_array
+            @split_tags = @tags_array
 
-          @split_tags.each do |tag|
-            tag_quantity = @gallery.data_arr.count { |image| image['tags']&.split(', ')&.include?(tag) }
-            @tags_set << "<a href='#{domain_name(@r)}/gallery/view/#{@user}/tags/search/?search_tags=#{tag}'>#{tag}(#{tag_quantity})</a>"
-          end
+            @split_tags.each do |tag|
+              tag_quantity = @gallery.data_arr.count { |image| image['tags']&.split(', ')&.include?(tag) }
+              @tags_set << "<a href='#{domain_name(@r)}/gallery/view/#{@user}/tags/search/?search_tags=#{tag}'>#{tag}(#{tag_quantity})</a>"
+            end
 
-          @cache.set(0) do |hash|
-            hash['tags_set'] = @tags_set
-            hash['split_tags'] = @split_tags
-            hash['recache'] = false
-            hash['similar_tags'] = @similar_tags
+            @cache.set(0) do |hash|
+              hash['tags_set'] = @tags_set
+              hash['split_tags'] = @split_tags
+              hash['recache'] = false
+              hash['similar_tags'] = @similar_tags
+            end
+            @cache.save_everything_to_files!
+
           end
-          @cache.save_everything_to_files!
-          GC.start
         else
           @similar_tags = @cache.get(0)['similar_tags']
           @split_tags = @cache.get(0)['split_tags']
           @tags_set = @cache.get(0)['tags_set']
         end
+
 
         @@line_db[@user].pad['blog_database', 'blog_statistics_table'].set(1) do |hash|
           #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1

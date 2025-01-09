@@ -33,9 +33,6 @@ file_extensions = ['.jpg', '.jpeg', '.png'] # Define the valid file extensions
 
 tags_and_titles = [] # Initialize an array to store the tags and titles
 
-
-
-
 # Iterate over each file in the directory
 Dir.glob(File.join(directory_path, '*')) do |file_path|
   # Check if the file has a valid extension

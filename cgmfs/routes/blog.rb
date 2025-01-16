@@ -1,3 +1,12 @@
+require 'uri'
+require 'fastimage'
+require 'fileutils'
+require 'tzinfo'
+require 'redcarpet'
+require 'json'
+require 'oj'
+
+#
 # rubocop:disable Style/RedundantInterpolation
 # rubocop:disable Layout/LineLength
 # rubocop:disable Metrics/MethodLength
@@ -255,13 +264,14 @@ class CGMFS
   end
 
   def family_logged_in?(r)
+    return unless $lockdown == true
     return if session['user']
     return if session['password']
     return if session['user'] == 'superadmin'
 
     nil if r.path == '/blog/login' # Don't redirect if already at login
 
-    # r.redirect "#{domain_name(r)}/blog/login"
+    r.redirect "#{domain_name(r)}/blog/login"
   end
 
   # def check_boundaries!(id, user, r)

@@ -1,4 +1,13 @@
 # rubocop:disable Metrics/BlockLength, Layout/LineLength, Metrics/ClassLength, Metrics/MethodLength
+#
+require 'uri'
+require 'fastimage'
+require 'fileutils'
+require 'tzinfo'
+require 'redcarpet'
+require 'json'
+require 'oj'
+
 class CGMFS
   def user_failcheck(username, r)
     return if @@line_db.databases.include?(username)
@@ -118,12 +127,13 @@ class CGMFS
 
 
   def family_logged_in?(r)
+    return unless $lockdown == true
     return if session['user']
     return if session['password']
     return if session['user'] == 'superadmin'
     return if r.path == '/blog/login' # Don't redirect if already at login
 
-    #r.redirect "#{domain_name(r)}/blog/login"
+    r.redirect "#{domain_name(r)}/blog/login"
   end
 
   def create_image_thumbnail!(image_path:, thumbnail_size:, thumbnail_path:)
@@ -277,8 +287,7 @@ class CGMFS
           @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
             hash['recache'] = true
           end
-
-          # set the id of the image to the id of the image in the database
+         # set the id of the image to the id of the image in the database
           @@line_db[@user].pad['gallery_database', 'gallery_table'].set(id) do |hash|
             hash['id'] = id
           end
@@ -818,7 +827,9 @@ class CGMFS
         end
 
         if @recache
-          Thread.new do
+         GC.start
+         thread = Thread.new do
+
             @images = @gallery.data_arr.map { |image| image }
             @images = @images.compact
             @tags = @images.map { |image| image['tags'] }.flatten

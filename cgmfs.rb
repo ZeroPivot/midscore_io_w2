@@ -64,7 +64,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)
+$lockdown = true # lockdown mode (no public access to blog or gallery posts, etc)
 
 DO_TELEGRAM_LOGGING = true # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
 
@@ -100,6 +100,7 @@ class CGMFS < Roda
   @@urls = ManagedPartitionedArray.new(endless_add: true, has_capacity: false, db_size: DB_SIZE,
                                        partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: './db/url_shorten', db_name: 'url_slice')
   @@urls = @@urls.load_from_archive!
+
   # @@urls.load_last_entry_from_file!
   # @@urls.load_max_partition_archive_from_file!
   # @@urls.load_partition_archive_id_from_file!
@@ -127,8 +128,7 @@ class CGMFS < Roda
   @@line_db["user_blog_database"].pad.new_table!(database_name: "user_name_database",
                                                  database_table: "user_password_table")
 
-  @@line_db["secondlife_ai"].pad.new_table!(database_name: "secondlife_database", database_table: "secondlife_table") #database for second life ai and message logs all put together
-
+  @@line_db["secondlife_ai"].pad.new_table!(database_name: "secondlife_database", database_table: "secondlife_table") # database for second life ai and message logs all put together
 
   @@line_db["superadmin"].pad.new_table!(database_name: "superadmin_database", database_table: "superadmin_table")
   puts "Loading database: superadmin..."

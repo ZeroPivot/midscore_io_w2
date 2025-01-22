@@ -1,11 +1,11 @@
 # Common configuration.
 
 AllCops:
-  TargetRubyVersion: 3.4.1
+  TargetRubyVersion: 3.5.0dev
   NewCops: enable
   SuggestExtensions: true
   RubyInterpreters:
-    - ruby-head
+    - 3.5.0dev
   # Include common Ruby source files.
   Include:
     - '**/*.rb'

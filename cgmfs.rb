@@ -38,7 +38,7 @@ LATEST_PA_VERSION = "v3.0.0+" # deprecated
 require_relative "lib/partitioned_array/lib/line_db" # magnum opus of computer science
 
 require_relative 'lib/shortened/shortened_url' # shortened url class
-require_relative 'logger'
+
 require_dir "./lib/dir_requires"
 RubyVM::YJIT.enable # enable Ruby 3.3+'s JIT compiler (YJIT)'
 DEBUG = false
@@ -64,7 +64,7 @@ SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
 DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 
-$lockdown = true # lockdown mode (no public access to blog or gallery posts, etc)
+$lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)
 
 DO_TELEGRAM_LOGGING = true # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
 

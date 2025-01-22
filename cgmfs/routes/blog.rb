@@ -305,11 +305,15 @@ class CGMFS
           # @pin = @@line_db[@user].pad['blog_database', 'blog_pinned_table'].get(0)
           @body = @@line_db[@user].pad['blog_database', 'blog_pinned_table'].get(0)['blog_post_body'] # get pinned post
           @title = @@line_db[@user].pad['blog_database', 'blog_pinned_table'].get(0)['blog_post_title']
+
+          r.redirect('/404') if @body.nil? # redirect to 404 if no pinned post
         else
           @post = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id.to_i)
           @rendered_type = @post['blog_post_rendered_type']
           @body = @post['blog_post_body']
           @title = @@line_db[@user].pad['blog_database', 'blog_table'].get(0)['blog_post_title']
+          
+          r.redirect('/404') if @post.nil?
         end
 
         if @rendered_type == 'markdown'

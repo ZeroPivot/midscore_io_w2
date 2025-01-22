@@ -720,8 +720,10 @@ class CGMFS
           end
           @@line_db[@user].pad['cache_system_database', 'cache_system_table'].save_everything_to_files!
           "Gallery post with id #{@id} deleted successfully. <a href='#{domain_name(r)}/gallery/view/#{@user}'>Back TO Gallery</a>"
+          r.redirect "#{domain_name(r)}/gallery/view/#{@user}"
         else
           "No gallery post found with id #{@id}."
+          r.redirect "#{domain_name(r)}/gallery/view/#{@user}"
         end
       end
     end

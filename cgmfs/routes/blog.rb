@@ -312,7 +312,7 @@ class CGMFS
           @rendered_type = @post['blog_post_rendered_type']
           @body = @post['blog_post_body']
           @title = @@line_db[@user].pad['blog_database', 'blog_table'].get(0)['blog_post_title']
-          
+
           r.redirect('/404') if @post.nil?
         end
 
@@ -608,7 +608,7 @@ class CGMFS
           # for post edits, check to see if markdown is enabled
           # when you first post, you are sending markdown, but when you edit, you are sending html
           # so, if you are editing, you need to convert the html to markdown
-          @user = user
+          @user = session['user']
           @r = r
           @_params = {}
           valid = true
@@ -625,7 +625,7 @@ class CGMFS
           @_params['blog_post_status'] = r.params['blog_post_status'].to_s
           @_params['blog_status_locked'] = r.params['blog_status_locked'].to_s
           @rendered_type = @_params['rendered_type'] = r.params['rendered_type'].to_s
-          @_params['id'] = r.params['id'].to_i
+          @_params['id'] = r.params['id'].to_s
           parse_blog_status = r.params['blog_status_locked'].to_s
           if parse_blog_status == '0'
             @_params['blog_status_locked'] = false
@@ -678,10 +678,7 @@ class CGMFS
 
             # Create the system call to zip the folder
             # system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
-
             r.redirect("/blog/#{@user}/edit/#{@_params['id']}")
-          else
-            message = 'Something was left blank; please fill in all fields.'
           end
         end
       end

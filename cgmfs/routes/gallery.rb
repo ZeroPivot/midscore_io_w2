@@ -189,6 +189,14 @@ class CGMFS
         view('blog/gallery/list_gallery_users', engine: 'html.erb', layout: 'layout.html')
       end
     end
+    r.on 'secondlifeapi' do
+      r.get do
+        view('blog/gallery/secondlifeapi', engine: 'html.erb', layout: 'layout.html')
+      end
+      r.post do
+      end
+
+    end
 
     r.on 'upload', 'url' do
       # get user session in roda

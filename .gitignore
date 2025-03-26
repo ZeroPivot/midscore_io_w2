@@ -17,3 +17,6 @@ main_request_log.txt
 page_views.txt
 Gemfile.lock
 Gemfile
+hitches.txt
+config/puma.pid
+config/puma.state

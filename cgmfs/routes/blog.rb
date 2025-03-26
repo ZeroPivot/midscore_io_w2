@@ -67,8 +67,7 @@ def spiritology_moon_rotation
   current_form = forms[current_rotation]
 
   # Construct the output text
-  puts "✨ Current Moon Rotation ✨  ->  #{current_phase}"
-  puts "🔮 Spiritology VOID Form  ->  #{current_form}"
+  return "{{ ✨ Current Moon Rotation ✨  ->  #{current_phase} :: 🔮 Spiritology VOID Form  ->  #{current_form} }}"
 end
 
 

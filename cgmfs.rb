@@ -40,7 +40,7 @@ require_relative "lib/partitioned_array/lib/line_db" # magnum opus of computer s
 require_relative 'lib/shortened/shortened_url' # shortened url class
 
 require_dir "./lib/dir_requires"
-RubyVM::YJIT.enable # enable Ruby 3.3+'s JIT compiler (YJIT)'
+
 DEBUG = false
 LOCAL = File.exist?("local.txt") && File.open("local.txt", "r").read.strip == "1"
 
@@ -97,21 +97,11 @@ class CGMFS < Roda
   DB_SIZE = 20 # Caveat: The DB_SIZE is th # Caveat: The DB_SIZE is the total # of partitions, but you subtract it by one since the first partition is 0, in code.
   PARTITION_ADDITION_AMOUNT = 2
 
-  @@urls = ManagedPartitionedArray.new(endless_add: true, has_capacity: false, db_size: DB_SIZE,
-                                       partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: './db/url_shorten', db_name: 'url_slice')
-  @@urls = @@urls.load_from_archive!
+
 
   # @@urls.load_last_entry_from_file!
   # @@urls.load_max_partition_archive_from_file!
   # @@urls.load_partition_archive_id_from_file!
-
-  @@test = ManagedPartitionedArray.new(max_capacity: "data_arr_size", db_size: DB_SIZE,
-                                       partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: "./db/sl2", db_name: 'sl_slice2')
-
-  @@sl_db = ManagedPartitionedArray.new(max_capacity: "data_arr_size", db_size: DB_SIZE,
-                                        partition_amount_and_offset: PARTITION_AMOUNT + OFFSET, db_path: "./db/sl", db_name: 'sl_slice')
-  @@sl_db.allocate
-  @@sl_db = @@sl_db.load_from_archive!
 
   # @@sl_db.load_last_entry_from_file!
   # @@sl_db.load_max_partition_archive_from_file!

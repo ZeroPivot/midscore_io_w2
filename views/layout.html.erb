@@ -96,11 +96,16 @@
 <% if @r %>
 <%
  @hitch_cookie = @r.params['h']
-      @hitch_cookie = '' if @hitch_cookie.nil?
+      @hitch_cookie = '' if @hitch_cookie.nil? || @hitch_cookie.empty? || @hitch_cookie == 'undefined'
+      #@hitch_cookie = @hitch_cookie.gsub(/[^a-zA-Z0-9]/, '') # Sanitize the hitch cookie to allow only alphanumeric characters
       FileUtils.touch('./hitches.txt')
-      File.open('./hitches.txt', 'a') { |f| f.puts("#{Time.now.to_s} - #{@hitch_cookie}\n") }
+      File.open('./hitches.txt', 'a') { |f| f.puts("#{request.ip} - #{Time.now.to_s} - #{@hitch_cookie}\n") }
+
 
       %>
+
+      <% FileUtils.touch("./main_request_log.txt") %>
+
 <% File.open('main_request_log.txt', 'a') do |f| %>
 
      <%
@@ -121,7 +126,7 @@
       # Log the POST parameters
       f.puts "POST_params: #{@r.POST}"
       begin
-        hostname = Resolv.getname(@r.ip) if $resolv
+        hostname = Resolv.getname(request.ip) if $resolv
         f.puts "hostname: #{hostname}" if $resolv
       rescue Resolv::ResolvError
         f.puts "hostname: unknown" if $resolv

@@ -65,7 +65,7 @@ stdout_redirect '/root/midscore_io/log/stdout', '/root/midscore_io/log/stderr', 
 #
 # The default is "0, 16".
 #
-threads 0, 2
+threads 0, 16
 
 # Bind the server to "url". "tcp://", "unix://" and "ssl://" are the only
 # accepted protocols.

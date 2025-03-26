@@ -10,7 +10,6 @@ db
 public
 log.txt
 local.txt
-lib/partitioned_array
 aritywolf_redir.txt
 artywalf_redir.txt
 main_request_log.txt

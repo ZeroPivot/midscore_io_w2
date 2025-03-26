@@ -99,7 +99,7 @@ class CGMFS
   end
 
   def image_bytes_to_num_id(user:, filename:)
-    File.open("public/gallery/#{user}/#{filename}", 'rb') do |file|
+    File.open("public/gallery_index/#{user}/#{filename}", 'rb') do |file|
       sum = file.read.each_byte.sum
       @sum_identifier = sum.to_i
     end
@@ -284,8 +284,8 @@ class CGMFS
         file_contents = URI.open(uploaded_filehandle).read
         # @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename)
         # Write the file to a temporary gallery location
-        FileUtils.mkdir_p("public/gallery/#{@user}")
-        file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
+        FileUtils.mkdir_p("public/gallery_index/#{@user}")
+        file_path = "public/gallery_index/#{@user}/#{original_to_new_filename}"
 
         File.open(file_path, 'w') do |file|
           file.write(file_contents)
@@ -297,7 +297,7 @@ class CGMFS
 
         if %i[jpeg png gif].include?(file_type)
           uploadable = true
-          FileUtils.mkdir_p("public/gallery/#{@user}")
+          FileUtils.mkdir_p("public/gallery_index/#{@user}")
           # Rename the file to include the extension
           file_type = FastImage.type(uploaded_filehandle)
           file_extension = case file_type
@@ -307,17 +307,17 @@ class CGMFS
                              ''
                            end
           # make sure to check for file extension type, and possibly return an error if not a valid image type
-          file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
+          file_path = "public/gallery_index/#{@user}/#{original_to_new_filename}"
           original_to_new_filename += file_extension
-          new_file_path = "public/gallery/#{@user}/#{original_to_new_filename}"
+          new_file_path = "public/gallery_index/#{@user}/#{original_to_new_filename}"
           File.rename(file_path, new_file_path)
           @sum_identifier = image_bytes_to_num_id_spec_fullpath(filename: new_file_path)
 
           Thread.new do
-            create_image_thumbnail!(image_path: new_file_path, thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
+            create_image_thumbnail!(image_path: new_file_path, thumbnail_size: 350, thumbnail_path: "public/gallery_index/#{@user}/thumbnail_#{original_to_new_filename}")
           end
           Thread.new do
-            resize_image!(image_path: new_file_path, size: 1920, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+            resize_image!(image_path: new_file_path, size: 1920, resized_image_path: "public/gallery_index/#{@user}/resized_#{original_to_new_filename}")
           end
         else
           uploadable = false
@@ -414,14 +414,14 @@ class CGMFS
         #
         if ['.jpg', '.jpeg', '.png', '.bmp', '.gif'].include?(file_extension) && %i[jpeg png gif].include?(file_type) # add .zip later, et al.
           uploadable = true
-          FileUtils.mkdir_p("public/gallery/#{@user}")
-          File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
+          FileUtils.mkdir_p("public/gallery_index/#{@user}")
+          File.open("public/gallery_index/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
           Thread.new do
-            create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 350, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
+            create_image_thumbnail!(image_path: "public/gallery_index/#{@user}/#{original_to_new_filename}", thumbnail_size: 350, thumbnail_path: "public/gallery_index/#{@user}/thumbnail_#{original_to_new_filename}")
           end
 
           Thread.new do
-            resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1920, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+            resize_image!(image_path: "public/gallery_index/#{@user}/#{original_to_new_filename}", size: 1920, resized_image_path: "public/gallery_index/#{@user}/resized_#{original_to_new_filename}")
           end
         else
           uploadable = false
@@ -669,7 +669,7 @@ class CGMFS
         @attachments = @image['attachments']
         @title = "Delete Attachment Id #{@id} by #{@user}"
 
-        File.delete("public/gallery/#{@user}/attachments/#{@attachments[attachment_id]['file_attachment_name']}")
+        File.delete("public/gallery_index/#{@user}/attachments/#{@attachments[attachment_id]['file_attachment_name']}")
         @attachments.delete_at(attachment_id)
         @gallery.set(@id) do |hash|
           hash['attachments'] = @attachments
@@ -710,8 +710,8 @@ class CGMFS
 
           @file_name = Time.now.to_f.to_s + '_attachment' + '.' + @meta
 
-          FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
-          File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
+          FileUtils.mkdir_p("public/gallery_index/#{@user}/attachments")
+          File.open("public/gallery_index/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
           @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
           @id = id
           @image = @gallery.get(@id)
@@ -736,8 +736,8 @@ class CGMFS
         else
           @uploaded_filehandle = r.params['file'][:tempfile].read
           @file_name = Time.now.to_f.to_s + '_' + r.params['file'][:filename]
-          FileUtils.mkdir_p("public/gallery/#{@user}/attachments")
-          File.open("public/gallery/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
+          FileUtils.mkdir_p("public/gallery_index/#{@user}/attachments")
+          File.open("public/gallery_index/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
           @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
           @id = id
           @image = @gallery.get(@id)
@@ -770,7 +770,7 @@ class CGMFS
         @title = "Delete Gallery Post ID #{@id}"
         if @image
           @gallery.data_arr[@id] = {}
-          File.delete("public/gallery/#{@user}/#{@image['file']}")
+          File.delete("public/gallery_index/#{@user}/#{@image['file']}")
           @gallery.save_partition_by_id_to_file!(@id)
           @@line_db[@user].pad['cache_system_database', 'cache_system_table'].set(0) do |hash|
             hash['recache'] = true
@@ -1011,13 +1011,13 @@ class CGMFS
           #
           if ['.jpg', '.jpeg', '.png', '.bmp'].include?(file_extension) # add .zip later, et al.
             uploadable = true
-            FileUtils.mkdir_p("public/gallery/#{@user}")
-            File.open("public/gallery/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
+            FileUtils.mkdir_p("public/gallery_index/#{@user}")
+            File.open("public/gallery_index/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
             Thread.new do
-              create_image_thumbnail!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", thumbnail_size: 255, thumbnail_path: "public/gallery/#{@user}/thumbnail_#{original_to_new_filename}")
+              create_image_thumbnail!(image_path: "public/gallery_index/#{@user}/#{original_to_new_filename}", thumbnail_size: 255, thumbnail_path: "public/gallery_index/#{@user}/thumbnail_#{original_to_new_filename}")
             end
             Thread.new do
-              resize_image!(image_path: "public/gallery/#{@user}/#{original_to_new_filename}", size: 1080, resized_image_path: "public/gallery/#{@user}/resized_#{original_to_new_filename}")
+              resize_image!(image_path: "public/gallery_index/#{@user}/#{original_to_new_filename}", size: 1080, resized_image_path: "public/gallery_index/#{@user}/resized_#{original_to_new_filename}")
             end
 
             @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename) # code later, but add a binary number adder to the image file, and then add the sum identifier to the image file, and then check the sum identifier to see if the image is the same as the original image.

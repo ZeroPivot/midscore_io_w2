@@ -35,12 +35,12 @@
             <div id="gallery_images">
               <p style="text-align: center;"><%= convert_ints_to_emoji(image['owo_count']) %> OwOs</p>
               <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= image['id'] %>" border="0">
-                <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= image['file'] %>" alt="<%= @title %>">
+                <img src="<%= domain_name(@r) %>/gallery_index/<%= @user %>/thumbnail_<%= image['file'] %>" alt="<%= @title %>">
               </a>
               <% if !image['attachments'].nil? %>
                 <% image['attachments'].each_with_index do |attachment, index| %>
                   <div class="attachment">
-                    *️⃣ <a href="/gallery/<%= @user %>/attachments/<%= attachment['file_attachment_name'] %>"><%= attachment['file_attachment_name'] %></a>
+                    *️⃣ <a href="/gallery_index/<%= @user %>/attachments/<%= attachment['file_attachment_name'] %>"><%= attachment['file_attachment_name'] %></a>
                     <% if @user == session['user'] %>
                      <a href="/gallery/view/<%= @user %>/id/<%= image['id'] %>/attachments/delete/<%= index %>">DELETE</a>
                     <% end %>
@@ -85,7 +85,7 @@
           <td>
           <div id="gallery_images">
             <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= hash['id'] %>" border="0">
-            <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= hash['file'] %>" alt="<%= @title %>">
+            <img src="<%= domain_name(@r) %>/gallery_index/<%= @user %>/thumbnail_<%= hash['file'] %>" alt="<%= @title %>">
             </a>
           </div>
           </td>

@@ -3,7 +3,7 @@
 <%# Add your HTML and ERB code here for the edit page %>
 <h1>Edit User Gallery ID (<%= @id %>)</h1>
 <br>
-<img src="<%= "#{domain_name(@r)}/gallery/#{@user}/thumbnail_#{@file}" %>"><br><br>
+<img src="<%= "#{domain_name(@r)}/gallery_index/#{@user}/thumbnail_#{@file}" %>"><br><br>
 <form action="/gallery/edit/<%= @user %>/id/<%= @id %>" method="post" enctype="multipart/form-data">
   <input type="hidden" name="_method" value="patch">
   <!-- Add your form fields here -->

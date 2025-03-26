@@ -91,7 +91,7 @@
     </center>
     <br>
     <div class="image-container">
-        <img id="gallery-image" src="<%= "#{domain_name(@r)}/gallery/#{@user}/resized_#{@image["file"]}" %>" onclick="toggleImageSize()" alt="<%= @title %>">
+        <img id="gallery-image" src="<%= "#{domain_name(@r)}/gallery_index/#{@user}/resized_#{@image["file"]}" %>" onclick="toggleImageSize()" alt="<%= @title %>">
     </div>
     <center><button onclick="fitToScreenSize()">(🗜️)</button></center>
     <div class="table">
@@ -137,7 +137,7 @@
         </div>
           <div class="table-row">
             <div class="table-header"><strong>(⏬💾)</strong></div>
-            <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{@image["file"]}" %>" style="color: white;">DOWNLOAD</a></div>
+            <div class="table-data"><a href="<%= "#{domain_name(@r)}/gallery_index/#{@user}/#{@image["file"]}" %>" style="color: white;">DOWNLOAD</a></div>
         </div>
           <div class="table-row">
             <div class="table-header"><strong>(🔗)</strong></div>

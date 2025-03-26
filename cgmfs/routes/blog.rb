@@ -524,7 +524,7 @@ class CGMFS
           zip_file_name = "#{Time.now.strftime('%Y-%m-%d_%H-%M-%S')}_#{File.basename(folder_path)}.zip"
 
           # Create the system call to zip the folder
-          system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
+          # system("zip -r #{zip_location}/#{zip_file_name} #{folder_path}")
           # sleep(11)
           message
         end

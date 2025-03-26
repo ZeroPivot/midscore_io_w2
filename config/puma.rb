@@ -76,7 +76,18 @@ threads 0, 2
 
 # bind 'unix:///root/midscore_io/config/puma.sock'
 
-bind 'tcp://209.46.120.242:80'
+
+
+# ...existing code...
+
+# Update with the actual paths to your key and certificate
+ssl_bind '209.46.120.242', '443', {
+  key: '/root/midscore_io/config/miaedscore.online_private_key.key',
+  cert: '/root/midscore_io/config/miaedscore.online_ssl_certificate.cer',
+  verify_mode: 'none'
+}
+
+# ...existing code...
 
 # bind 'unix:///var/run/puma.sock'
 # bind 'unix:///var/run/puma.sock?umask=0111'

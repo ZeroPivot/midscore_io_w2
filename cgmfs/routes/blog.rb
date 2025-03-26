@@ -182,7 +182,7 @@ class CGMFS
   end
 
   def domain_name(r)
-    r.redirect "https://#{SERVER_MAIN_DOMAIN_NAME}"
+    "http://#{SERVER_MAIN_DOMAIN_NAME}"
     # return "https://" + r.host
   end
 
@@ -239,7 +239,7 @@ class CGMFS
 
     # @@line_db.new_database!(username)
     # @@line_db[username].pad.new_table!(database_name: "#{username}_database", database_table: "#{username}_table")
-    r.redirect "http://#{r.host}:8080" if LOCAL
+    r.redirect "http://#{r.host}:80" if LOCAL
     r.redirect "https://#{r.host}" unless LOCAL
   end
 

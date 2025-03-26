@@ -96,8 +96,7 @@ class CGMFS
 
 
   def domain_name(r)
-
-    "https://#{r.host}"
+    "http://#{SERVER_MAIN_DOMAIN_NAME}"
     # return "https://" + r.host
   end
 

@@ -42,7 +42,7 @@ require_relative 'lib/shortened/shortened_url' # shortened url class
 require_dir "./lib/dir_requires"
 
 DEBUG = false
-LOCAL = File.exist?("local.txt") && File.open("local.txt", "r").read.strip == "1"
+LOCAL = true
 
 # mimic all json functions with oj gem
 Oj.mimic_JSON
@@ -62,13 +62,15 @@ SERVER_MAIN_DOMAIN_NAME = File.read(server_main_domain_name_file).chomp
 
 SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
-DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
+DOMAIN_NAME = "http://#{SERVER_MAIN_DOMAIN_NAME}"
+puts "Domain name: #{DOMAIN_NAME}"
 
 $lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)
 
-DO_TELEGRAM_LOGGING = true # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
+DO_TELEGRAM_LOGGING = false # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
 
 class CGMFS < Roda
+  
   PATHS_INCLUDE_CSRF = { '/api/screens/upload' => true, '/u/shorten' => true, '/api/file/upload' => true,
                          '/api/text/upload' => true }
   PUBLIC_URL_PATH = :static
@@ -180,11 +182,13 @@ class CGMFS < Roda
   not_found do
     "error: 404"
   end
-
+  puts "loading routed routes..."
+  # load all routes in cgmfs/routes directory
   require_dir './cgmfs/routes'
+  puts "loaded routes."
   route do |r|
     # log("request path: #{r.path} ; request host: #{r.host}")
-
+    puts "hash routes: #{r.hash_routes}"
     r.public
     r.assets # for public assets
     r.hash_routes

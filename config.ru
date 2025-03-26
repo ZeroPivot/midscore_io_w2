@@ -6,6 +6,7 @@
 require 'rubygems'
 require 'roda'
 # require 'sinatra'
+# In your Rack config or middleware
 
 require File.expand_path 'cgmfs.rb', __dir__
 # require "/root/comicman-remote-modular-midscore/comic.rb"

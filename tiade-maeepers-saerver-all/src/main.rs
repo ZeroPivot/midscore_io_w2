@@ -52,9 +52,58 @@ async fn main() -> tide::Result<()> {
 
     use std::collections::HashMap;
     use tide::{Request, Response, StatusCode};
+
+use url::Url;
     let rustby_eval_title = rustby_eval_title.clone();
 
+    // Bridge route - should be registered before other similar routes.
+    app.at("/home/*rest").get(|req: tide::Request<AppState>| async move {
+      // Extract the wildcard part from the URL.
+      let rest = req.param("rest").unwrap_or("");
+      // Construct the target URL on the iframed server.
+      let target_url = format!("https://miaedscore.online:8080/{}", rest);
 
+      // Make a brief connection (a lightweight HEAD request) to the iframed server.
+      // Note: Ensure the 'surf' crate is added in Cargo.toml as a dependency.
+      let _ = surf::head(&target_url).await;
+
+      // Return an acknowledgement so that the main server can continue loading.
+      //Ok(tide::Response::new(tide::StatusCode::Ok))
+      let redirect_url = format!("/rustby?vlog={}", rest);
+      let mut res = tide::Response::new(tide::StatusCode::Found);
+      res.insert_header("Location", redirect_url);
+      Ok(res)
+      
+    });
+
+    app.at("/parse_plink").get(|req: tide::Request<AppState>| async move {
+      
+      // Expect a query parameter "text" that includes a full URL (e.g., "https://miaedscore.online:8080/some/path?query=val")
+      let query: HashMap<String, String> = req.query().unwrap_or_default();
+      let input_text = query.get("text").map(|s| s.as_str()).unwrap_or("");
+      if input_text.is_empty() {
+        return Ok(tide::Response::new(StatusCode::BadRequest));
+      }
+
+      // Parse the provided URL string.
+      let parsed_url = match Url::parse(input_text) {
+        Ok(url) => url,
+        Err(_) => return Ok(tide::Response::new(StatusCode::BadRequest)),
+      };
+
+      // Extract the path and query parts to form the rustby GET parameter.
+      let mut vlog = parsed_url.path().to_string();
+      if let Some(q) = parsed_url.query() {
+        vlog.push('?');
+        vlog.push_str(q);
+      }
+
+      // Construct the redirection URL to /rustby with the extracted "vlog" parameter.
+      let redirect_url = format!("/rustby?vlog={}", vlog);
+      let mut res = tide::Response::new(StatusCode::Found);
+      res.insert_header("Location", redirect_url);
+      Ok(res)
+    });
     
 
     app.at("/").get(|_| async {
@@ -106,7 +155,7 @@ async fn main() -> tide::Result<()> {
                 .unwrap_or_else(|| "".to_string());
 
             let title = rustby_eval_title.to_string();
-            let base_iframe_url = format!("https://miaedscore.online:8080{}", vlog);
+            let base_iframe_url = format!("https://miaedscore.online:8080/{}", vlog);
 
             let html_content = format!(r######"<!DOCTYPE html>
 <html lang="en">

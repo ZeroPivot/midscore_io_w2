@@ -8,14 +8,12 @@ use tide::http::Method;
 use tide::http::Request as TideRequest;
 use tide::http::Response as TideResponse;
 use tide::http::StatusCode as TideStatusCode;
-
-
-use serde_json::{json, Value};
-
-//implement a partitioned array/linedb database in rustby that encapsulates all partitioned array functions and is capable of storing files if possible; tide will perform surf calls to it
+use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
-struct AppState {}
+struct AppState;
+
+// Removed RubySender and related functionality
 
 #[async_std::main]
 async fn main() -> tide::Result<()> {
@@ -26,7 +24,20 @@ async fn main() -> tide::Result<()> {
         Ok(res)
     }));
     // Several GET endpoints
-    app.at("/").get(|_| async { Ok("Main server") });
+    //app.at("/").get(|_| async { Ok("Main server") });
+    app.at("/").get(|_| async {
+        let html_content = r#"
+            <html>
+                <body>
+                    <iframe src="https://miaedscore.online:8080" title="miaedscore.online" style="width:100%; height:100%; border:3px solid black;"></iframe>
+                </body>
+            </html>
+        "#;
+        Ok(Response::builder(StatusCode::Ok)
+            .content_type("text/html")
+            .body(html_content)
+            .build())
+    });
     app.at("/health").get(|_| async { Ok("Health check OK") });
     app.at("/hello/:name").get(|req: Request<AppState>| async move {
         let name = req.param("name").unwrap_or("world");
@@ -38,6 +49,8 @@ async fn main() -> tide::Result<()> {
         let body = req.body_string().await.unwrap_or_default();
         Ok(format!("You sent: {}", body))
     });
+
+    // Removed Ruby eval endpoint
 
     // Add a file
     app.at("/file/add").post(|mut req: Request<AppState>| async move {
@@ -58,8 +71,6 @@ async fn main() -> tide::Result<()> {
         .addrs("209.46.120.242:443")
         .cert(cert_path)
         .key(key_path);
-
-    
 
     app.listen(main_listener).await?;
     Ok(())

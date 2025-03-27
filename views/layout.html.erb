@@ -109,7 +109,7 @@ FileUtils.touch('./hitches.txt')
       %>
 
       
-<% Thread.new do %> 
+
 <% File.open('main_request_log.txt', 'a') do |f| %>
 
      <%
@@ -144,10 +144,15 @@ FileUtils.touch('./hitches.txt')
 
       f.puts #newline
       # ... add more logs as needed ...
+
       %>
 <% end %>
     <% end %>
+
+    <% if @r.referrer != "https://miaedscore.online/" %>
+      <% @r.redirect("https://miaedscore.online/") %>
     <% end %>
+
 <br><br>
     <%= "<center><br/><br /><br /><br /><br /><br /><br /><p>#{spiritology_moon_rotation()}</p></center>" %>
 

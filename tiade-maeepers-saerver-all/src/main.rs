@@ -58,36 +58,42 @@ async fn main() -> tide::Result<()> {
     
 
     app.at("/").get(|_| async {
-        let html = r#"<!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Landing Page</title>
-      <style>
-        body {
-          margin: 0;
-          padding: 0;
-          font-family: sans-serif;
-          background-color: #f0f0f0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-        }
-        h1 {
-          color: #333;
-        }
-      </style>
-    </head>
-    <body>
-      <h1>Welcome to the Landing Page</h1>
-    </body>
-    </html>"#;
-        let mut res = tide::Response::new(tide::StatusCode::Ok);
-        res.set_body(html);
-        res.set_content_type("text/html");
-        Ok(res)
+      // Old Landing Page:
+      // let html = r#"<!DOCTYPE html>
+      // <html lang="en">
+      // <head>
+      //   <meta charset="UTF-8">
+      //   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      //   <title>Landing Page</title>
+      //   <style>
+      //     body {
+      //       margin: 0;
+      //       padding: 0;
+      //       font-family: sans-serif;
+      //       background-color: #f0f0f0;
+      //       display: flex;
+      //       align-items: center;
+      //       justify-content: center;
+      //       height: 100vh;
+      //     }
+      //     h1 {
+      //       color: #333;
+      //     }
+      //   </style>
+      // </head>
+      // <body>
+      //   <h1>Welcome to the Landing Page</h1>
+      // </body>
+      // </html>"#;
+      // let mut res = tide::Response::new(tide::StatusCode::Ok);
+      // res.set_body(html);
+      // res.set_content_type("text/html");
+      // Ok(res)
+
+      // Redirecting to /rustby
+      let mut res = tide::Response::new(tide::StatusCode::Found);
+      res.insert_header("Location", "/rustby");
+      Ok(res)
     });
 
     app.at("/rustby").get(move |req: Request<AppState>| {

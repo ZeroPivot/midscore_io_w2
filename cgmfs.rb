@@ -188,6 +188,10 @@ class CGMFS < Roda
   # @line_db[line].pad.new_table!(database_name: "blog_database", database_table: "blog_table")
   # end
 
+
+
+ 
+
   not_found do
     "error: 404"
   end
@@ -197,6 +201,7 @@ class CGMFS < Roda
   puts "loaded routes."
   route do |r|
     # log("request path: #{r.path} ; request host: #{r.host}")
+    
     puts "hash routes: #{r.hash_routes}"
     r.public
     r.assets # for public assets

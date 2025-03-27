@@ -9,6 +9,13 @@ use tide::http::Request as TideRequest;
 use tide::http::Response as TideResponse;
 use tide::http::StatusCode as TideStatusCode;
 use std::sync::{Arc, Mutex};
+use magnus::{eval, Error, RString};
+/// Evaluates Ruby code and always returns a String.
+fn call_rustby_eval(code: &str) -> Result<String, Error> {
+    let result = eval::<RString>(code)?;
+    Ok(result.to_string()?)
+}
+
 
 #[derive(Clone)]
 struct AppState;
@@ -23,24 +30,76 @@ async fn main() -> tide::Result<()> {
         println!("Main server request handled");
         Ok(res)
     }));
+    // Initialize the Ruby interpreter
+    let _ruby = unsafe { magnus::embed::init() };
     // Several GET endpoints
     //app.at("/").get(|_| async { Ok("Main server") });
-    app.at("/").get(|_| async {
-        let html_content = r#"
-            <html>
-                <body>
-                    <iframe src="https://miaedscore.online:8080" title="miaedscore.online" style="width:100%; height:100%; border:3px solid black;"></iframe>
-                </body>
+   let rustby_eval_title: String = call_rustby_eval("puts 'Hello from Ruby!'; 'RustbySpace'").unwrap();
+    
+ 
+
+    app.at("/").get(move |_| {
+        let title = rustby_eval_title.clone();
+        async move {
+            let html_content = format!(r######"
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>{}</title>
+                <meta name="description" content="A simple HTML page with an embedded iFrame, wip">
+                <meta name="author" content="TIADE-MAEPPERS">
+                <meta name="keywords" content="HTML, iFrame, example">
+                <meta name="theme-color" content="#ffffff">
+                <meta name="robots" content="index, follow">
+                <meta name="googlebot" content="index, follow">
+                <meta name="google" content="notranslate">
+                <meta name="msapplication-TileColor" content="#ffffff">
+                <meta name="msapplication-TileImage" content="https://example.com/favicon.png">
+                <meta name="apple-mobile-web-app-capable" content="yes">
+                <meta name="apple-mobile-web-app-status-bar-style" content="default">
+                <meta name="apple-mobile-web-app-title" content="Embedded iFrame">
+                <meta name="application-name" content="Embedded iFrame">
+                <meta name="format-detection" content="telephone=no">
+                <link rel="icon" href="https://example.com/favicon.png">
+                <style>
+                    .iframe-container {{
+                        position: relative;
+                        width: 100%;
+                        height: 100vh;
+                        border: 3px solid black;
+                        overflow: hidden;
+                    }}
+                    .iframe-container iframe {{
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        border: none;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="iframe-container">
+                    <iframe src="https://miaedscore.online:8080" title="miaedscore.online"></iframe>
+                </div>
+            </body>
             </html>
-        "#;
-        Ok(Response::builder(StatusCode::Ok)
-            .content_type("text/html")
-            .body(html_content)
-            .build())
+            "######, title);
+            Ok(Response::builder(StatusCode::Ok)
+                .content_type("text/html")
+                .body(html_content)
+                .build())
+        }
     });
     app.at("/health").get(|_| async { Ok("Health check OK") });
     app.at("/hello/:name").get(|req: Request<AppState>| async move {
-        let name = req.param("name").unwrap_or("world");
+        let name = match req.param("name") {
+            Ok(name) => name,
+            Err(_) => "world",
+        };
         Ok(format!("Hello, {}!", name))
     });
 

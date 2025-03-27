@@ -1,0 +1,15 @@
+[package]
+name = "tiade-maeepers-saerver-all"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+async-native-tls = "0.5.0"
+async-std = { version = "1.13.1", features = ["async-attributes", "async-process", "attributes", "futures-core", "io_safety", "unstable"] }
+chrono = { version = "0.4.40", features = ["pure-rust-locales", "rkyv-64", "rkyv-validation", "serde"] }
+native-tls = "0.2.14"
+surf = { version = "2.3.2", features = ["h1-client", "h1-client-rustls", "async-native-tls", "hyper-client", "rustls_crate", "wasm-client"] }
+tide = { version = "0.16.0", features = ["docs", "unstable"] }
+tide-rustls = "0.3.0"
+tokio =  { version = "1.44.1", features = ["full"] }
+tokio-native-tls = "0.3.1"

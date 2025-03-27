@@ -53,6 +53,7 @@ $dns_enabled = false # enable dns (deprecated)
 
 # Ensure the file exists before reading
 server_main_domain_name_file = "server_main_domain_name.txt"
+
 FileUtils.touch(server_main_domain_name_file) unless File.exist?(server_main_domain_name_file)
 
 SERVER_MAIN_DOMAIN_NAME = File.read(server_main_domain_name_file).chomp
@@ -62,7 +63,7 @@ SERVER_MAIN_DOMAIN_NAME = File.read(server_main_domain_name_file).chomp
 
 SERVER_IP = SERVER_MAIN_DOMAIN_NAME
 SERVER_IP_LOCAL = 'localhost'
-DOMAIN_NAME = "http://#{SERVER_MAIN_DOMAIN_NAME}"
+DOMAIN_NAME = "https://#{SERVER_MAIN_DOMAIN_NAME}"
 puts "Domain name: #{DOMAIN_NAME}"
 $resolv = true # enable DNS resolution
 $lockdown = false # lockdown mode (no public access to blog or gallery posts, etc)

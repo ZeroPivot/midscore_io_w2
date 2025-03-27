@@ -155,7 +155,7 @@ use url::Url;
                 .unwrap_or_else(|| "".to_string());
 
             let title = rustby_eval_title.to_string();
-            let base_iframe_url = format!("https://missionforce.araety.org/{}", vlog);
+            let base_iframe_url = format!("https://miadscore.online:8080/{}", vlog);
 
             let html_content = format!(r######"<!DOCTYPE html>
 <html lang="en">
@@ -265,7 +265,7 @@ use url::Url;
     app.at("/ae").get(|req: Request<AppState>| async move {
         let query: HashMap<String, String> = req.query().unwrap_or_default();
         let route = query.get("route").cloned().unwrap_or_else(|| "/".to_string());
-        let standard_route = format!("https://missionforce.araety.org{}", route);
+        let standard_route = format!("https://miaedscore.online{}", route);
         let rustby_route = format!("https://miaedscore.online/rustby?vlog={}", route);
         let html = format!(r#"<!DOCTYPE html>
 <html lang="en">

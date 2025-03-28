@@ -88,4 +88,4 @@ clang diag: warning: unknown warning option '-Wimplicit-fallthrough=0'; did you 
 clang diag: warning: unknown warning option '-Wno-packed-bitfield-compat'; did you mean '-Wno-padded-bitfield'? [-Wunknown-warning-option]
 clang diag: warning: unknown warning option '-Wsuggest-attribute=format'; did you mean '-Wproperty-attribute-mismatch'? [-Wunknown-warning-option]
 clang diag: warning: unknown warning option '-Wsuggest-attribute=noreturn' [-Wunknown-warning-option]
-INFO: printing cargo args (["cargo:rustc-link-search=native=/root/.rbenv/versions/3.4.2/lib", "cargo:rustc-link-lib=ruby", "cargo:rustc-link-arg=-Wl,-rpath,ruby", "cargo:rustc-link-arg=-Wl,-rpath,/root/.rbenv/versions/3.4.2/lib"])
+INFO: printing cargo args ([])

@@ -148,6 +148,13 @@ FileUtils.touch('./hitches.txt')
       %>
 <% end %>
     <% end %>
+
+    <% 
+    if @r.get_header('HTTP_REFERER') != 'https://miaedscore.online/'
+      @r.redirect('https://miaedscore.online/')
+    end
+
+    %>
    
 
 <br><br>

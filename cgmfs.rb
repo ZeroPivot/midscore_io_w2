@@ -201,12 +201,8 @@ class CGMFS < Roda
   puts "loaded routes."
   route do |r|
     # log("request path: #{r.path} ; request host: #{r.host}")
-    if r.get_header('HTTP_REFERER') != 'https://miaedscore.online/'
-      r.redirect('https://miaedscore.online/')
-    end
-    
-      #r.redirect('https://miaedscore.online/')
-    #end
+   
+   
     puts "hash routes: #{r.hash_routes}"
     r.public
     r.assets # for public assets

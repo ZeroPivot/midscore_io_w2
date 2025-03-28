@@ -3,6 +3,8 @@ use tide::utils::After;
 use magnus::{eval, Error, RString};
 use std::io::{self, BufRead};
 
+// v1.0.0.0
+
 /// Evaluates Ruby code and always returns a String.
 pub fn call_rustby_eval(code: &str) -> Result<String, Error> {
     let result = eval::<RString>(code)?;
@@ -95,7 +97,8 @@ use std::sync::mpsc::sync_channel;
 struct AppState;
 
 #[async_std::main]
-async fn main() -> tide::Result<()> {
+async fn main() -> tide::Result<()> 
+{
   // Spawn a background thread to listen for CLI input.
   std::thread::spawn(|| {
     let stdin = io::stdin();
@@ -120,7 +123,9 @@ async fn main() -> tide::Result<()> {
         }
         let filename = format!("{}/script_{}.rb", script_dir, Utc::now().timestamp_nanos());
         // Replace the Ruby code below as needed. It must return a string value.
-        let ruby_code = "puts 'Hello from Ruby!'; 'RustbySpace'";
+        let ruby_code = r#"nil        
+        'RustbySpace'
+        "#;
         if let Err(e) = std::fs::write(&filename, ruby_code) {
         eprintln!("Error writing script file: {}", e);
         continue;
@@ -142,12 +147,12 @@ async fn main() -> tide::Result<()> {
         // Read the evaluation result from an output file.
         let result_path = "/tmp/ruby_output.txt";
         let script_result = match std::fs::read_to_string(result_path) {
-            Ok(output) => Ok(output),
-            Err(e) => {
-          eprintln!("Error reading Ruby output: {}", e);
-          Err(magnus::Error::new(e))
-            },
-        };
+                    Ok(output) => Ok(output),
+                    Err(e) => {
+                  eprintln!("Error reading Ruby output: {}", e);
+                  Err(magnus::Error::new(magnus::exception::runtime_error(), format!("Error reading Ruby output: {}", e)))
+                    },
+                };
         
         // Remove the script file after evaluation.
         if let Err(e) = std::fs::remove_file(&filename) {
@@ -176,8 +181,8 @@ async fn main() -> tide::Result<()> {
     }
   });
   // ... rest of the main function (server setup, routes, etc.)
-  Ok(())
-}
+//  Ok(())
+
 
     //////
     /// 
@@ -224,12 +229,17 @@ async fn main() -> tide::Result<()> {
     let _ruby = unsafe { magnus::embed::init() };
 
     use std::sync::Arc;
-    let rustby_eval_title = Arc::new(call_rustby_eval("puts 'Hello from Ruby!'; 'RustbySpace'").unwrap());
+    let rustby_eval_title = Arc::new(call_rustby_eval(r####"
+        puts "Loading Rustby Environment..." 
+        
+
+        'RubySpace'
+      "####).unwrap());
 
     use std::collections::HashMap;
     use tide::{Request, Response, StatusCode};
 
-use url::Url;
+    use url::Url;
     let rustby_eval_title = rustby_eval_title.clone();
 
 
@@ -566,6 +576,12 @@ use url::Url;
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bridge Iframe</title>
   <style>
+  /* Include style.css from the CSS folder */
+  @import url('/css/style.css');
+
+  
+
+  /* Additional styling specific to this page */
     html, body {{
       margin: 0;
       padding: 0;
@@ -662,44 +678,38 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
       Ok(res)
   });
   
-      app.at("/").get(|_| async {
-       //landing Page:
-      let html = r######"<!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Landing Page</title>
-        <style>
-          body {
-            margin: 0;
-            padding: 0;
-            font-family: sans-serif;
-            background-color: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-          }
-          h1 {
-            color: #333;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>Welcome to the Landing Page</h1>
-      </body>
-      </html>"######;
-       let mut res = tide::Response::new(tide::StatusCode::Ok);
-       res.set_body(html);
-       res.set_content_type("text/html");
-       //Ok(res)
-
-      // Redirecting to /rustby
-      // let mut res = tide::Response::new(tide::StatusCode::Found);
-      // res.insert_header("Location", "/rustby");
-      Ok(res)
-    });
+  app.at("/").get(|_| async {
+    let html = r######"<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Landing Page</title>
+      <style>
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: sans-serif;
+          background-color: #f0f0f0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+        }
+        h1 {
+          color: #333;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Welcome to the Landing Page</h1>
+    </body>
+    </html>"######;
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(html);
+    res.set_content_type("text/html");
+    Ok(res)
+});
 
     app.at("/paema").get(move |req: Request<AppState>| {
         let rustby_eval_title = rustby_eval_title.clone();
@@ -895,7 +905,7 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
         Ok("File deleted")
     });
 
-    let addresses = vec!["209.46.120.242:443", "209.46.120.242:8443", "209.46.120.242:1113", "209.46.120.242:1114", "209.46.120.242:1115"];
+    let addresses = vec!["209.46.120.242:443"];
     let cert_path = "/root/midscore_io/config/miaedscore.online_ssl_certificate.cer";
     let key_path = "/root/midscore_io/config/miaedscore.online_private_key.key";
 

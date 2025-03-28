@@ -4,8 +4,7 @@
 
 <!DOCTYPE html>
 <html>
-<head>
-    <%= assets(:css) %>
+<head>    
     <link rel="shortcut icon" type="image/x-icon" href="<%= domain_name(@r) %>/favicon.ico">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -29,6 +28,75 @@
   <body>
 <div class="gcse-search"></div>
   <style>
+   
+  
+
+body {
+	color: white;
+    background-color: rgb(85, 115, 145);
+	font-size: 16px;
+	font-family: Arial, Helvetica, sans-serif;
+
+}
+
+
+.text
+{
+	color: white;
+	background-color: lightslategray;
+	font-size: 18px;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+	display: flex;
+}
+
+.node {
+	flex: 1;
+	flex-basis: auto;
+}
+
+
+a:link {
+	color:rgb(39, 38, 38);
+
+}
+
+a:visited {
+	color:rgb(255, 255, 255);
+}
+
+
+a:active {
+	color:red;
+}
+
+
+div.galleryTable {
+  width: 100%;
+  height: 100%;
+  font-size: 1;
+
+}
+
+
+.divTable.galleryTable .divTableCell, .divTable.galleryTable .divTableHead {
+
+
+}
+.divTable{ display: table; }
+.divTableRow { display: table-row; }
+.divTableHeading { display: table-header-group;}
+.divTableCell, .divTableHead { display: table-cell;}
+.divTableHeading { display: table-header-group;}
+.divTableFoot { display: table-footer-group;}
+.divTableBody { display: table-row-group;}
+
+
+
+
+
     .day { border: 1px solid black; padding: 10px; display: inline-block; width: 40px; text-align: center; }
     .week { clear: both; }
   </style>    
@@ -149,12 +217,7 @@ FileUtils.touch('./hitches.txt')
 <% end %>
     <% end %>
 
-    <% 
-    if @r.get_header('HTTP_REFERER') != 'https://miaedscore.online/'
-      @r.redirect('https://miaedscore.online/')
-    end
 
-    %>
    
 
 <br><br>

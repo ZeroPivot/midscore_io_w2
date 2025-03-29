@@ -100,47 +100,47 @@ struct AppState;
 async fn main() -> tide::Result<()> 
 {
   // Spawn a background thread to listen for CLI input.
-  std::thread::spawn(|| {
-    let stdin = io::stdin();
-    for line in stdin.lock().lines() {
-    if let Ok(input) = line {
-      match input.trim() {
-      "exit" => {
-        println!("Exiting server abruptly.");
-        std::process::exit(0);
-      }
+ // std::thread::spawn(|| {
+  //  let stdin = io::stdin();
+  //  for line in stdin.lock().lines() {
+  ////  if let Ok(input) = line {
+   //   match input.trim() {
+   //   "exit" => {
+   /////     println!("Exiting server abruptly.");
+   //    std::process::exit(0);
+    //  }
 
       // When the "rustby" command is input, write the Ruby code to a .rb file
       // in a shared directory ("./rustby_scripts"). Then, immediately load (evaluate)
       // the file using Magnus. The file is deleted after evaluation. The Ruby code in
       // the file is expected to return a string.
-      "rustby" => {
-        println!("Running Ruby code via named pipe sharing system...");
-        let script_dir = "./rustby_scripts";
-        if let Err(e) = std::fs::create_dir_all(script_dir) {
-        eprintln!("Failed to create script directory: {}", e);
-        continue;
-        }
-        let filename = format!("{}/script_{}.rb", script_dir, Utc::now().timestamp_nanos());
+  //    "rustby" => {
+ //       println!("Running Ruby code via named pipe sharing system...");
+ //       let script_dir = "./rustby_scripts";
+  //      if let Err(e) = std::fs::create_dir_all(script_dir) {
+   //     eprintln!("Failed to create script directory: {}", e);
+   //     continue;
+   //     }
+   //     let filename = format!("{}/script_{}.rb", script_dir, Utc::now().timestamp_nanos());
         // Replace the Ruby code below as needed. It must return a string value.
-        let ruby_code = r#"nil        
-        'RustbySpace'
-        "#;
-        if let Err(e) = std::fs::write(&filename, ruby_code) {
-        eprintln!("Error writing script file: {}", e);
-        continue;
-        }
-        println!("Script file written: {}", filename);
+    //    let ruby_code = r#"nil        
+   //     'RustbySpace'
+   //     "#;
+    //    if let Err(e) = std::fs::write(&filename, ruby_code) {
+    //    eprintln!("Error writing script file: {}", e);
+     //   continue;
+   //     }
+  //      println!("Script file written: {}", filename);
 
         // Instead of calling the Ruby evaluator directly (which cannot be done in a thread),
         // write the Ruby load command to a named pipe for external processing.
-        let pipe_path = "/tmp/ruby_pipe";
-        if let Err(e) = std::fs::write(pipe_path, format!("load '{}'\n", filename)) {
-            eprintln!("Error writing to named pipe: {}", e);
-        } else {
-            println!("Command sent to Ruby evaluator via pipe: {}", pipe_path);
-        }
-        
+   //     let pipe_path = "/tmp/ruby_pipe";
+     //   if let Err(e) = std::fs::write(pipe_path, format!("load '{}'\n", filename)) {
+     //       eprintln!("Error writing to named pipe: {}", e);
+    //    } else {
+    //        println!("Command sent to Ruby evaluator via pipe: {}", pipe_path);
+    //    }
+    /*   
         // Wait briefly for the external process to evaluate the script and write the result.
         std::thread::sleep(std::time::Duration::from_millis(100));
         
@@ -180,6 +180,8 @@ async fn main() -> tide::Result<()>
     }
     }
   });
+
+  */
   // ... rest of the main function (server setup, routes, etc.)
 //  Ok(())
 
@@ -190,6 +192,9 @@ async fn main() -> tide::Result<()>
     /// 
     /// 
     /// 
+  
+  
+  /*
     ///
      // Example: Spawn 3 independent Ruby interpreter threads.
      let mut handles: Vec<JoinHandle<Result<(), Error>>> = Vec::new();
@@ -203,7 +208,7 @@ async fn main() -> tide::Result<()>
              Err(_) => eprintln!("A thread panicked."),
          }
      }
- 
+ */
      // Continue with the rest of your server setup…
      //Ok(())
      // 

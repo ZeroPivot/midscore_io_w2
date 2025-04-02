@@ -1,1 +1,1 @@
-miaedscore.online:8080
+miaedscore.online

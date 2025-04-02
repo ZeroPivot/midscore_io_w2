@@ -81,7 +81,7 @@ threads 0, 16
 # ...existing code...
 
 # Update with the actual paths to your key and certificate
-ssl_bind '209.46.120.242', '8080', {
+ssl_bind '209.46.120.242', '443', {
   key: '/root/midscore_io/config/miaedscore.online_private_key.key',
   cert: '/root/midscore_io/config/miaedscore.online_ssl_certificate.cer',
   verify_mode: 'none'

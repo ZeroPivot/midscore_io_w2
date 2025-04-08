@@ -10,10 +10,6 @@
         {
             "name": "partitioned_array",
             "path": "lib/partitioned_array"
-        },
-        {
-            "name": "partitioned_array",
-            "path": "partitioned_array"
         }
     ]
 }

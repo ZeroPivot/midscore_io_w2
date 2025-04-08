@@ -910,9 +910,9 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
         Ok("File deleted")
     });
 
-    let addresses = vec!["209.46.120.242:443"];
-    let cert_path = "/root/midscore_io/config/miaedscore.online_ssl_certificate.cer";
-    let key_path = "/root/midscore_io/config/miaedscore.online_private_key.key";
+    let addresses = vec!["65.38.99.230:443"];
+    let cert_path = "/root/midscore_io/config/www.stimky.info_ssl_certificate.cer";
+    let key_path = "/root/midscore_io/config/www.stimky.info_private_key.key";
 
     let mut tasks = vec![];
     for addr in addresses {

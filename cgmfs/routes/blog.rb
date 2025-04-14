@@ -21,245 +21,240 @@ end
 # BEGIN: 6f7b8d9hjkl3
 
 # === Constants and Definitions ===
-  
-  # Average length of a full lunar cycle (in days)
-  MOON_CYCLE_DAYS = 29.53
-  
-  # The 15 fabled moon rotations with emojis:
-  MOON_ROTATIONS = [
-    "New Moon 🌑",            # 0
-    "Waxing Crescent 🌒",     # 1
-    "First Quarter 🌓",       # 2
-    "Waxing Gibbous 🌔",       # 3
-    "Full Moon 🌕",           # 4
-    "Waning Gibbous 🌖",      # 5
-    "Last Quarter 🌗",        # 6
-    "Waning Crescent 🌘",     # 7
-    "Supermoon 🌝",           # 8
-    "Blue Moon 🔵🌙",         # 9
-    "Blood Moon 🩸🌙",        # 10
-    "Harvest Moon 🍂🌕",      # 11
-    "Hunter's Moon 🌙🔭",     # 12
-    "Wolf Moon 🐺🌕",         # 13
-    "Pink Moon 🌸🌕"          # 14
-  ]
-  
-  # Define 15 corresponding species with emojis.
-  SPECIES = [
-    "Dogg 🐶",                     # New Moon
-    "Folf 🦊🐺",                   # Waxing Crescent
-    "Aardwolf 🐾",                 # First Quarter
-    "Spotted Hyena 🐆",            # Waxing Gibbous
-    "Folf Hybrid 🦊✨",             # Full Moon
-    "Striped Hyena 🦓",            # Waning Gibbous
-    "Dogg Prime 🐕⭐",              # Last Quarter
-    "WolfFox 🐺🦊",                # Waning Crescent
-    "Brown Hyena 🦴",              # Supermoon
-    "Dogg Celestial 🐕🌟",          # Blue Moon
-    "Folf Eclipse 🦊🌒",            # Blood Moon
-    "Aardwolf Luminous 🐾✨",        # Harvest Moon
-    "Spotted Hyena Stellar 🐆⭐",   # Hunter's Moon
-    "Folf Nova 🦊💥",              # Wolf Moon
-    "Brown Hyena Cosmic 🦴🌌"       # Pink Moon
-  ]
-  
-  # Define 15 corresponding were-forms with emojis.
-  WERE_FORMS = [
-    "WereDogg 🐶🌑",                     # New Moon
-    "WereFolf 🦊🌙",                     # Waxing Crescent
-    "WereAardwolf 🐾",                   # First Quarter
-    "WereSpottedHyena 🐆",               # Waxing Gibbous
-    "WereFolfHybrid 🦊✨",                # Full Moon
-    "WereStripedHyena 🦓",               # Waning Gibbous
-    "WereDoggPrime 🐕⭐",                 # Last Quarter
-    "WereWolfFox 🐺🦊",                  # Waning Crescent
-    "WereBrownHyena 🦴",                 # Supermoon
-    "WereDoggCelestial 🐕🌟",             # Blue Moon
-    "WereFolfEclipse 🦊🌒",               # Blood Moon
-    "WereAardwolfLuminous 🐾✨",          # Harvest Moon
-    "WereSpottedHyenaStellar 🐆⭐",       # Hunter's Moon
-    "WereFolfNova 🦊💥",                 # Wolf Moon
-    "WereBrownHyenaCosmic 🦴🌌"           # Pink Moon
-  ]
-  
-  # Each moon phase is assumed to share an equal slice of the lunar cycle.
-  PHASE_COUNT  = MOON_ROTATIONS.size      # 15 total phases
-  PHASE_LENGTH = MOON_CYCLE_DAYS / PHASE_COUNT  # Days per phase
-  
-   # === Constants and Definitions ===
-  
-  # Average length of a full lunar cycle (in days)
-  MOON_CYCLE_DAYS = 29.53
-  
-  # The 15 fabled moon rotations with emojis:
-  MOON_ROTATIONS = [
-    "New Moon 🌑",            # 0
-    "Waxing Crescent 🌒",     # 1
-    "First Quarter 🌓",       # 2
-    "Waxing Gibbous 🌔",       # 3
-    "Full Moon 🌕",           # 4
-    "Waning Gibbous 🌖",      # 5
-    "Last Quarter 🌗",        # 6
-    "Waning Crescent 🌘",     # 7
-    "Supermoon 🌝",           # 8
-    "Blue Moon 🔵🌙",         # 9
-    "Blood Moon 🩸🌙",        # 10
-    "Harvest Moon 🍂🌕",      # 11
-    "Hunter's Moon 🌙🔭",     # 12
-    "Wolf Moon 🐺🌕",         # 13
-    "Pink Moon 🌸🌕"          # 14
-  ]
-  
-  # Define 15 corresponding species with emojis.
-  SPECIES = [
-    "Dogg 🐶",                     # New Moon
-    "Folf 🦊🐺",                   # Waxing Crescent
-    "Aardwolf 🐾",                 # First Quarter
-    "Spotted Hyena 🐆",            # Waxing Gibbous
-    "Folf Hybrid 🦊✨",             # Full Moon
-    "Striped Hyena 🦓",            # Waning Gibbous
-    "Dogg Prime 🐕⭐",              # Last Quarter
-    "WolfFox 🐺🦊",                # Waning Crescent
-    "Brown Hyena 🦴",              # Supermoon
-    "Dogg Celestial 🐕🌟",          # Blue Moon
-    "Folf Eclipse 🦊🌒",            # Blood Moon
-    "Aardwolf Luminous 🐾✨",        # Harvest Moon
-    "Spotted Hyena Stellar 🐆⭐",   # Hunter's Moon
-    "Folf Nova 🦊💥",              # Wolf Moon
-    "Brown Hyena Cosmic 🦴🌌"       # Pink Moon
-  ]
-  
-  # Define 15 corresponding were-forms with emojis.
-  WERE_FORMS = [
-    "WereDogg 🐶🌑",                     # New Moon
-    "WereFolf 🦊🌙",                     # Waxing Crescent
-    "WereAardwolf 🐾",                   # First Quarter
-    "WereSpottedHyena 🐆",               # Waxing Gibbous
-    "WereFolfHybrid 🦊✨",                # Full Moon
-    "WereStripedHyena 🦓",               # Waning Gibbous
-    "WereDoggPrime 🐕⭐",                 # Last Quarter
-    "WereWolfFox 🐺🦊",                  # Waning Crescent
-    "WereBrownHyena 🦴",                 # Supermoon
-    "WereDoggCelestial 🐕🌟",             # Blue Moon
-    "WereFolfEclipse 🦊🌒",               # Blood Moon
-    "WereAardwolfLuminous 🐾✨",          # Harvest Moon
-    "WereSpottedHyenaStellar 🐆⭐",       # Hunter's Moon
-    "WereFolfNova 🦊💥",                 # Wolf Moon
-    "WereBrownHyenaCosmic 🦴🌌"           # Pink Moon
-  ]
-  
-  # Each moon phase is assumed to share an equal slice of the lunar cycle.
-  PHASE_COUNT  = MOON_ROTATIONS.size      # 15 total phases
-  PHASE_LENGTH = MOON_CYCLE_DAYS / PHASE_COUNT  # Days per phase
-  
-  # === Core Function ===
-  
-  # Calculate the current moon phase index and return the corresponding phase, species, and were-form.
-  # Input: date (a Date object)
-  def current_moon_details(date, moon_rotations, species, were_forms, phase_length)
-    # Use a reference new moon date (commonly: January 6, 2000)
-    reference_date = Date.new(2000, 1, 6)
-    
-    # Calculate the number of days elapsed between the provided date and the reference date.
-    days_since_reference = (date - reference_date).to_f
-    
-    # Determine the current position within the lunar cycle.
-    lunar_position = days_since_reference % MOON_CYCLE_DAYS
-    
-    # Calculate which of the 15 phases is current.
-    phase_index = (lunar_position / phase_length).floor
-    
-    current_phase     = moon_rotations[phase_index % moon_rotations.size]
-    current_species   = species[phase_index % species.size]
-    current_were_form = were_forms[phase_index % were_forms.size]
-    
-    return current_phase, current_species, current_were_form
-  end
-  
-  # === HTML-Generating Functions ===
-  
-  # Returns an HTML document with the current moon details
-  def render_current_moon_html(date)
-    current_phase, current_species, current_were_form =
-      current_moon_details(date, MOON_ROTATIONS, SPECIES, WERE_FORMS, PHASE_LENGTH)
-  
-    html = <<~HTML
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <title>Current Moon Phase</title>
-        <style>
-          body { font-family: Arial, sans-serif; background-color: #f5f7fa; margin: 2rem; }
-          .container { max-width: 600px; margin: 0 auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-          h1 { text-align: center; }
-          p { font-size: 1.2rem; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>Current Moon Phase Details</h1>
-          <p><strong>Today:</strong> #{date} 📅</p>
-          <p><strong>Moon Phase:</strong> #{current_phase} 🌌</p>
-          <p><strong>Corresponding Species:</strong> #{current_species} ✨</p>
-          <p><strong>Corresponding Were-Form:</strong> #{current_were_form} 🔮</p>
-        </div>
-      </body>
-      </html>
-    HTML
-  
-    html
-  end
-  
-  # Returns an HTML document with the complete 15-phase rotation schedule.
-  def render_full_schedule_html
-    rows = ""
-    MOON_ROTATIONS.each_with_index do |phase_name, index|
-      rows << <<~ROW
-        <tr>
-          <td>#{phase_name}</td>
-          <td>#{SPECIES[index]}</td>
-          <td>#{WERE_FORMS[index]}</td>
-        </tr>
-      ROW
-    end
-  
-    html = <<~HTML
-        <div class="container">
-          <h1>Complete Moon Rotation Schedule</h1>
-          <table>
-            <thead>
-              <tr>
-                <th>Moon Phase</th>
-                <th>Species</th>
-                <th>Were-Form</th>
-              </tr>
-            </thead>
-            <tbody>
-              #{rows}
-            </tbody>
-          </table>
-        </div>
-      
-    HTML
-  
-    html
-  end
-  
-  # === Example Usage for HTML ===
-  
-  # if __FILE__ == $0
-   # today = Date.today
-  
-    # To get HTML for the current moon phase details:
-   # current_html = render_current_moon_html(today)
-  # puts current_html
-  
-    # To get HTML for the complete moon rotation schedule:
-  #  schedule_html = render_full_schedule_html
-  #  puts schedule_html
-  #end
 
+# Average length of a full lunar cycle (in days)
+MOON_CYCLE_DAYS = 29.53
+
+# The 15 fabled moon rotations with emojis:
+MOON_ROTATIONS = [
+  'New Moon 🌑',            # 0
+  'Waxing Crescent 🌒',     # 1
+  'First Quarter 🌓',       # 2
+  'Waxing Gibbous 🌔', # 3
+  'Full Moon 🌕',           # 4
+  'Waning Gibbous 🌖',      # 5
+  'Last Quarter 🌗',        # 6
+  'Waning Crescent 🌘',     # 7
+  'Supermoon 🌝',           # 8
+  'Blue Moon 🔵🌙',         # 9
+  'Blood Moon 🩸🌙',        # 10
+  'Harvest Moon 🍂🌕',      # 11
+  "Hunter's Moon 🌙🔭",     # 12
+  'Wolf Moon 🐺🌕',         # 13
+  'Pink Moon 🌸🌕'          # 14
+]
+
+# Define 15 corresponding species with emojis.
+SPECIES = [
+  'Dogg 🐶', # New Moon
+  'Folf 🦊🐺', # Waxing Crescent
+  'Aardwolf 🐾',                 # First Quarter
+  'Spotted Hyena 🐆',            # Waxing Gibbous
+  'Folf Hybrid 🦊✨',             # Full Moon
+  'Striped Hyena 🦓',            # Waning Gibbous
+  'Dogg Prime 🐕⭐',              # Last Quarter
+  'WolfFox 🐺🦊', # Waning Crescent
+  'Brown Hyena 🦴',              # Supermoon
+  'Dogg Celestial 🐕🌟',          # Blue Moon
+  'Folf Eclipse 🦊🌒',            # Blood Moon
+  'Aardwolf Luminous 🐾✨', # Harvest Moon
+  'Spotted Hyena Stellar 🐆⭐', # Hunter's Moon
+  'Folf Nova 🦊💥', # Wolf Moon
+  'Brown Hyena Cosmic 🦴🌌' # Pink Moon
+]
+
+# Define 15 corresponding were-forms with emojis.
+WERE_FORMS = [
+  'WereDogg 🐶🌑',                     # New Moon
+  'WereFolf 🦊🌙',                     # Waxing Crescent
+  'WereAardwolf 🐾',                   # First Quarter
+  'WereSpottedHyena 🐆',               # Waxing Gibbous
+  'WereFolfHybrid 🦊✨',                # Full Moon
+  'WereStripedHyena 🦓',               # Waning Gibbous
+  'WereDoggPrime 🐕⭐',                 # Last Quarter
+  'WereWolfFox 🐺🦊', # Waning Crescent
+  'WereBrownHyena 🦴',                 # Supermoon
+  'WereDoggCelestial 🐕🌟',             # Blue Moon
+  'WereFolfEclipse 🦊🌒',               # Blood Moon
+  'WereAardwolfLuminous 🐾✨',          # Harvest Moon
+  'WereSpottedHyenaStellar 🐆⭐',       # Hunter's Moon
+  'WereFolfNova 🦊💥', # Wolf Moon
+  'WereBrownHyenaCosmic 🦴🌌' # Pink Moon
+]
+
+# Each moon phase is assumed to share an equal slice of the lunar cycle.
+PHASE_COUNT  = MOON_ROTATIONS.size # 15 total phases
+PHASE_LENGTH = MOON_CYCLE_DAYS / PHASE_COUNT # Days per phase
+
+# === Constants and Definitions ===
+
+# Average length of a full lunar cycle (in days)
+MOON_CYCLE_DAYS = 29.53
+
+# The 15 fabled moon rotations with emojis:
+MOON_ROTATIONS = [
+  'New Moon 🌑',            # 0
+  'Waxing Crescent 🌒',     # 1
+  'First Quarter 🌓',       # 2
+  'Waxing Gibbous 🌔', # 3
+  'Full Moon 🌕',           # 4
+  'Waning Gibbous 🌖',      # 5
+  'Last Quarter 🌗',        # 6
+  'Waning Crescent 🌘',     # 7
+  'Supermoon 🌝',           # 8
+  'Blue Moon 🔵🌙',         # 9
+  'Blood Moon 🩸🌙',        # 10
+  'Harvest Moon 🍂🌕',      # 11
+  "Hunter's Moon 🌙🔭",     # 12
+  'Wolf Moon 🐺🌕',         # 13
+  'Pink Moon 🌸🌕'          # 14
+]
+
+# Define 15 corresponding species with emojis.
+SPECIES = [
+  'Dogg 🐶', # New Moon
+  'Folf 🦊🐺', # Waxing Crescent
+  'Aardwolf 🐾',                 # First Quarter
+  'Spotted Hyena 🐆',            # Waxing Gibbous
+  'Folf Hybrid 🦊✨',             # Full Moon
+  'Striped Hyena 🦓',            # Waning Gibbous
+  'Dogg Prime 🐕⭐',              # Last Quarter
+  'WolfFox 🐺🦊', # Waning Crescent
+  'Brown Hyena 🦴',              # Supermoon
+  'Dogg Celestial 🐕🌟',          # Blue Moon
+  'Folf Eclipse 🦊🌒',            # Blood Moon
+  'Aardwolf Luminous 🐾✨', # Harvest Moon
+  'Spotted Hyena Stellar 🐆⭐', # Hunter's Moon
+  'Folf Nova 🦊💥', # Wolf Moon
+  'Brown Hyena Cosmic 🦴🌌' # Pink Moon
+]
+
+# Define 15 corresponding were-forms with emojis.
+WERE_FORMS = [
+  'WereDogg 🐶🌑',                     # New Moon
+  'WereFolf 🦊🌙',                     # Waxing Crescent
+  'WereAardwolf 🐾',                   # First Quarter
+  'WereSpottedHyena 🐆',               # Waxing Gibbous
+  'WereFolfHybrid 🦊✨',                # Full Moon
+  'WereStripedHyena 🦓',               # Waning Gibbous
+  'WereDoggPrime 🐕⭐',                 # Last Quarter
+  'WereWolfFox 🐺🦊', # Waning Crescent
+  'WereBrownHyena 🦴',                 # Supermoon
+  'WereDoggCelestial 🐕🌟',             # Blue Moon
+  'WereFolfEclipse 🦊🌒',               # Blood Moon
+  'WereAardwolfLuminous 🐾✨',          # Harvest Moon
+  'WereSpottedHyenaStellar 🐆⭐',       # Hunter's Moon
+  'WereFolfNova 🦊💥', # Wolf Moon
+  'WereBrownHyenaCosmic 🦴🌌' # Pink Moon
+]
+
+# Each moon phase is assumed to share an equal slice of the lunar cycle.
+PHASE_COUNT  = MOON_ROTATIONS.size # 15 total phases
+PHASE_LENGTH = MOON_CYCLE_DAYS / PHASE_COUNT # Days per phase
+
+# === Core Function ===
+
+# Calculate the current moon phase index and return the corresponding phase, species, and were-form.
+# Input: date (a Date object)
+def current_moon_details(date, moon_rotations, species, were_forms, phase_length)
+  # Use a reference new moon date (commonly: January 6, 2000)
+  reference_date = Date.new(2000, 1, 6)
+
+  # Calculate the number of days elapsed between the provided date and the reference date.
+  days_since_reference = (date - reference_date).to_f
+
+  # Determine the current position within the lunar cycle.
+  lunar_position = days_since_reference % MOON_CYCLE_DAYS
+
+  # Calculate which of the 15 phases is current.
+  phase_index = (lunar_position / phase_length).floor
+
+  current_phase     = moon_rotations[phase_index % moon_rotations.size]
+  current_species   = species[phase_index % species.size]
+  current_were_form = were_forms[phase_index % were_forms.size]
+
+  [current_phase, current_species, current_were_form]
+end
+
+# === HTML-Generating Functions ===
+
+# Returns an HTML document with the current moon details
+def render_current_moon_html(date)
+  current_phase, current_species, current_were_form =
+    current_moon_details(date, MOON_ROTATIONS, SPECIES, WERE_FORMS, PHASE_LENGTH)
+
+  <<~HTML
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Current Moon Phase</title>
+      <style>
+        body { font-family: Arial, sans-serif; background-color: #f5f7fa; margin: 2rem; }
+        .container { max-width: 600px; margin: 0 auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { text-align: center; }
+        p { font-size: 1.2rem; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Current Moon Phase Details</h1>
+        <p><strong>Today:</strong> #{date} 📅</p>
+        <p><strong>Moon Phase:</strong> #{current_phase} 🌌</p>
+        <p><strong>Corresponding Species:</strong> #{current_species} ✨</p>
+        <p><strong>Corresponding Were-Form:</strong> #{current_were_form} 🔮</p>
+      </div>
+    </body>
+    </html>
+  HTML
+end
+
+# Returns an HTML document with the complete 15-phase rotation schedule.
+def render_full_schedule_html
+  rows = ''
+  MOON_ROTATIONS.each_with_index do |phase_name, index|
+    rows << <<~ROW
+      <tr>
+        <td>#{phase_name}</td>
+        <td>#{SPECIES[index]}</td>
+        <td>#{WERE_FORMS[index]}</td>
+      </tr>
+    ROW
+  end
+
+  <<~HTML
+    <div class="container">
+      <h1>Complete Moon Rotation Schedule</h1>
+      <table>
+        <thead>
+          <tr>
+            <th>Moon Phase</th>
+            <th>Species</th>
+            <th>Were-Form</th>
+          </tr>
+        </thead>
+        <tbody>
+          #{rows}
+        </tbody>
+      </table>
+    </div>
+
+  HTML
+end
+
+# === Example Usage for HTML ===
+
+# if __FILE__ == $0
+# today = Date.today
+
+# To get HTML for the current moon phase details:
+# current_html = render_current_moon_html(today)
+# puts current_html
+
+# To get HTML for the complete moon rotation schedule:
+#  schedule_html = render_full_schedule_html
+#  puts schedule_html
+# end
 
 def convert_to_120_second_time_pst
   current_time = TZInfo::Timezone.get('America/Los_Angeles').utc_to_local(Time.now)
@@ -274,7 +269,6 @@ def convert_to_120_second_time_pst
   # Format the output
   format('%02d:%02d', hours_120_seconds, minutes_120_seconds)
 end
-
 
 # Example usage:
 # today = Date.today
@@ -437,6 +431,7 @@ class CGMFS
     @start_rendering_time = Time.now.to_f
     r.hash_branches
     @r = r
+    @type = 'blog'
 
     r.is do
       view('blog/blog', engine: 'html.erb', layout: 'layout.html')
@@ -520,7 +515,7 @@ class CGMFS
             user_password_check = @@line_db['user_blog_database'].pad['user_name_database',
                                                                       'user_password_table'].get(0)
             password_check = user_password_check[user_name]
-            if (password_check == password && user_name_check == @@line_db[user_name]) && (super_password == super_password_params)
+            if password_check == password && user_name_check == @@line_db[user_name] && (super_password == super_password_params)
               session['user'] = user_name
               session['password'] = password
               r.redirect "/blog/#{user_name}/view"
@@ -979,11 +974,7 @@ class CGMFS
             @username_session = session['user']
             if @username_session == user
               @@line_db[user].pad['blog_database', 'blog_profile_table'].set(0) do |hash|
-                hash['private_view'] = if hash['private_view'].nil?
-                                         true
-                                       else
-                                         !hash['private_view']
-                                       end
+                hash['private_view'] = (hash['private_view'].nil? || !hash['private_view'])
               end
               puts Dir.pwd
               folder_path = '/home/midscore_io/db'

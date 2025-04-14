@@ -23,7 +23,7 @@
             <p><%= image[1]['title'] %></p>
             <p><%= image[1]['description'] %></p>
             <a href="<%= domain_name(@r) %>/gallery/view/<%= @user %>/id/<%= image[0] %>" border="0">
-                <img src="<%= domain_name(@r) %>/gallery/<%= @user %>/thumbnail_<%= image[1]['file'] %>" alt="<%= image[1]['title'] %>">
+                <img src="<%= domain_name(@r) %>/gallery_index/<%= @user %>/thumbnail_<%= image[1]['file'] %>" alt="<%= image[1]['title'] %>">
             </a>
             <a href="<%= "#{domain_name(@r)}/gallery/uwu/delete_image/uwu_id/#{@id}/gallery_id/#{image[0]}" %>">DELETE</a>
         </div>

@@ -15,7 +15,7 @@ class CGMFS
 
     # @@line_db.new_database!(username)
     # @@line_db[username].pad.new_table!(database_name: "#{username}_database", database_table: "#{username}_table")
-    r.redirect "http://#{r.host}:8080" if LOCAL
+    r.redirect "https://#{r.host}" if LOCAL
     r.redirect "https://#{r.host}" unless LOCAL
   end
 

@@ -1,6 +1,10 @@
 use tide_rustls::TlsListener;
 use tide::utils::After;
-use magnus::{eval, Error, RString};
+use magnus::embed::init;
+use magnus::{eval,
+    Error, RArray, RClass, RFile, RFloat, RHash, RModule, RObject, RRegexp, RString, RStruct, Ruby,
+    Value, function, method, prelude::*, rb_assert, typed_data, value::Lazy, value::Opaque,
+};
 use std::io::{self, BufRead};
 
 // v1.0.0.0
@@ -11,7 +15,19 @@ pub fn call_rustby_eval(code: &str) -> Result<String, Error> {
     Ok(result.to_string()?)
 }
 
+/// Evaluates Ruby code from a &str and prints the result.
+/// This function initializes a Ruby VM, evaluates the code, and prints the output.
+/// If evaluation fails, it prints the error.
+fn execute_ruby_code(ruby_code: &str) {
+  match eval::<magnus::Value>(ruby_code) {
+    Ok(val) => println!("Ruby result: {:?}", val),
+    Err(e) => eprintln!("Ruby error: {}", e),
+  }
+}
 
+async fn init_ruby_vm() {
+  Ruby::init(|_ruby| Ok(())).unwrap();
+}
 
 // Helper: Create a JSON response.
 pub fn json_response<T: serde::Serialize>(data: T) -> tide::Response {
@@ -231,21 +247,16 @@ async fn main() -> tide::Result<()>
     app.with(LogRoute);
 
     // Initialize the Ruby interpreter
-    let _ruby = unsafe { magnus::embed::init() };
+    let _ruby = init_ruby_vm().await;
 
     use std::sync::Arc;
-    let rustby_eval_title = Arc::new(call_rustby_eval(r####"
-        puts "Loading Rustby Environment..." 
-        
-
-        'RubySpace'
-      "####).unwrap());
+   
 
     use std::collections::HashMap;
     use tide::{Request, Response, StatusCode};
 
     use url::Url;
-    let rustby_eval_title = rustby_eval_title.clone();
+    //let rustby_eval_title = rustby_eval_title.clone();
 
 
     // Utility function to list files in a directory with a specific extension.
@@ -358,23 +369,6 @@ async fn main() -> tide::Result<()>
       content: String,
     }
 
-    app.at("/praexy-saerver").get(|_| async move {
-      let html_page = r#"
-      <!DOCTYPE html>
-      <html>
-        <body>
-        <form action="/praexy-saerver" method="POST">
-          <textarea name="content"></textarea>
-          <button type="submit">Submit</button>
-        </form>
-        </body>
-      </html>
-      "#;
-      Ok(tide::Response::builder(200)
-        .body(html_page)
-        .content_type(tide::http::mime::HTML)
-        .build())
-    });
 
     app.at("/praexy-saerver").post(|mut req: tide::Request<AppState>| async move {
       let form_data: PraexyForm = req.body_form().await.unwrap_or(PraexyForm { content: String::new() });
@@ -715,7 +709,7 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
     res.set_content_type("text/html");
     Ok(res)
 });
-
+/*
     app.at("/paema").get(move |req: Request<AppState>| {
         let rustby_eval_title = rustby_eval_title.clone();
         async move {
@@ -825,7 +819,7 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
             Ok(res)
         }
     });
-
+*/
     // New "ae" route that displays an iframe similar to /rustby.
     // It takes a query parameter "route" corresponding to the path on port 8080.
     // It displays a text link for the standard port 8080 route and embeds the /rustby iframe.

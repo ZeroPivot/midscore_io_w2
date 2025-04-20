@@ -41,6 +41,10 @@ a:active {
 	color:red;
 }
 
+div {
+  word-wrap: break-word;
+}
+
 
 div.galleryTable {
   width: 100%;

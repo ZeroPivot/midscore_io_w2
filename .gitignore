@@ -20,3 +20,4 @@ hitches.txt
 config/puma.pid
 config/puma.state
 page_views_local.txt
+server_main_domain_name.txt

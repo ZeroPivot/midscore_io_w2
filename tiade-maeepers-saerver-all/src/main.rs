@@ -564,7 +564,7 @@ async fn main() -> tide::Result<()>
     // Extract the wildcard part from the URL.
     let rest = req.param("rest").unwrap_or("");
     // Build the target URL for the 8080 server.
-    let target_url = format!("https://miaedscore.online:8080/{}", rest);
+    let target_url = format!("https://miaedscore.online/{}", rest);
     
     // Build an HTML page with an iframe loading the target URL.
     // A JavaScript snippet removes any query parameters from the browser URL.
@@ -602,7 +602,7 @@ async fn main() -> tide::Result<()>
   </script>
 </head>
 <body>
-  <iframe src="{0}" title="Bridge - Embedded 8080 Server"></iframe>
+  <iframe src="{0}" title="Stimky.info -> miadscore.online [B]log/Gallery"></iframe>
 </body>
 </html>"#, target_url);
 
@@ -689,11 +689,7 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
           margin: 0;
           padding: 0;
           font-family: sans-serif;
-          background-color: #f0f0f0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
+          background-color: #f0f0f0;        
         }
         h1 {
           color: #333;
@@ -701,7 +697,32 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
       </style>
     </head>
     <body>
-      <h1>Welcome to the Landing Page</h1>
+      <h1>Landing page for the Infini-Vaerias</h1>
+      <br />
+      <center>
+      <h3><a href="https://miaedscore.online/gallery/the-field-testers">ART PORTFOLIO</a><h3>
+      <h3><a href="https://miaedscore.online/blog/the-field-testers/view">BLOG</h3>
+      <h3><a href="https://docs.google.com/document/d/1pdNbmPgFyXkRmxRGQ7mKmTFIu7D50VnOnoTwY8k6KBs/edit?tab=t.0#heading=h.yhslfamnj34l">COMMISSION Sheet</a></h3>
+      <h3><a href="https://github.com/ZeroPivot">CODING Portfolio</a></h3>
+      <iframe src="https://github.com/sponsors/ZeroPivot/card" title="Sponsor ZeroPivot" height="225" width="600" style="border: 0;"></iframe><br />
+      <h3>e-mail: midscore.io@gmail.com</h3>
+      <h3><a href="https://docs.google.com/document/d/1OyPcoBelY0BwqSCUIFdzUIAUJRoaUcb05W3eEKjbIW4/edit?tab=t.0#heading=h.3c37zycm53bd">Spiritology's MindWeave Language and PhDs Dissertation</a></h3>
+      This is a rust server with the TIDE/MEEPERs crate that is a work in progress, especially with the Ruby/Rustby-c Virtual Machine that is going to work on the command line and return nothing but strings.
+      <br><br />
+      <br />
+      For now it will include links to most of my works, social media, e-mail, etc. Home of the stimky Infini-Vaeria beings. #muskium #illustration #art.
+      <br />
+      This Page :: <a href="https://stimky.info">Stimky.info</a><br />
+      BlueSky :: ART ==> <a href="https://bsky.app/profile/stimky.info">Stimky.info</a><br />      
+      Blog/Gallery :: MAIN ==> <a href="https://miaedscore.online">Miaedscore</a><br />
+      <br />
+      <h4>Instant Messaging/Gaming</h4>     
+      DISCORD :: TheFieldTester<br />
+      STEAM :: https://steamcommunity.com/id/midscore/ 
+      <br /><br /><br />
+      <hr>
+      External Google Blog: <a href="https://infini-vaeria.blogspot.com">Infini-Vaeria</a>
+      </center>
     </body>
     </html>"######;
     let mut res = tide::Response::new(tide::StatusCode::Ok);

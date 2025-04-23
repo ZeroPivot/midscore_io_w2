@@ -6,23 +6,22 @@
 <html>
 <head>    
     <link rel="shortcut icon" type="image/x-icon" href="<%= domain_name(@r) %>/favicon.ico">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta property="og:title" content="<%= @title %> - by <%= @user %>">
-    <meta property="og:image" content="<%= domain_name(@r) %>/card_banner.jpg">
-    <meta property="og:url" content="<%= domain_name(@r) %>/<%= @type %>/<%= @user %>/view/<%= @id %>">
-    <meta property="og:site_name" content="<%= domain_name(@r) %>">
-    <meta property="og:type" content="object">
-    <meta property="og:image:width" content="500"><!-- added 2021-04-07 -->
-    <meta property="og:image:height" content="500"> <!-- added 2021-04-07 -->
-    <meta property="og:description" content="Post By <%= @description || @title || @user %>">
-    <meta name="description" content="Post By <%= @description || @title || @user %>">
-    <meta name="keywords" content="stimky.info, info, stinky info, stimky info, onlyfurs, only furs, onlyfans, porn, pr0n, pornography, nsfw, sfw, gay, homosexual, faggot, faggotry, stinky faggotry, stimky faggotry, stinky stimky champions, champions, gods of stink, gods of musk, gods of stimk, stinky gods, stinky wolf gods, stinky dogg gods, stinky yeen gods, miaedscore.online, miaedscore, miaed-score, vore, vorny, musk, musky, stinky, stimky, acetone, stinky acetone, stinky stimky champions, codename sniffa, sniffa, demiurge, simulation, simulator, sim, second life, stinky, stimky, stinky.zip, stimky.zip onemoondogg, pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, wolf, one moon planet, onemoonplane, blog,  gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art, zoophile hunters, pedophile hunters, bigot hunters, trans hunters, trans exposers, bigot exposers, pedophile exposers, democrat, republican, cenrist, democrat lol, sexy, signup, mega-game.net, meta game, meta, metaworld, furfaggotry, blogger, blog, gnosis, gnostic, gnocticism, ai, artificlal intelligence, service, blogger, gallery, furry gallery, furry bloggers, furry blogger, gay, homosexual, queer, twin flames, rhuxwolf, aylowolf, rhuxfolf, aylofolf, metagame, game, gaming, games, video games, software, hardware">
-    <meta name="author" content="Midae-Score">
-    <meta property="og:image" content="<%= domain_name(@r) %>/card_banner.jpg">
-    <meta name="twitter:card" content="summary_large_image"> <!-- changed 2021-04-15 -->
-    <meta name="twitter:site" content="@infaeniVaraea.bsky.social">
-    <meta name="twitter:title" content="<%= @title %>">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta property="og:title" content="<%= @title %> - by <%= @user %>" />
+    <meta property="og:image" content="<%= domain_name(@r) %>/card_banner.jpg" />
+    <meta property="og:url" content="<%= domain_name(@r) %>/<%= @type %>/<%= @user %>/view/<%= @id %>" />
+    <meta property="og:site_name" content="<%= domain_name(@r) %>" />
+    <meta property="og:image:width" content="500" /><!-- added 2021-04-07 -->
+    <meta property="og:image:height" content="500" /> <!-- added 2021-04-07 -->
+    <meta property="og:description" content="Post By <%= @description || @title || @user %>" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta name="description" content="Post By <%= @description || @title || @user %>" />
+    <meta name="keywords" content="stimky.info, info, stinky info, stimky info, onlyfurs, only furs, onlyfans, porn, pr0n, pornography, nsfw, sfw, gay, homosexual, faggot, faggotry, stinky faggotry, stimky faggotry, stinky stimky champions, champions, gods of stink, gods of musk, gods of stimk, stinky gods, stinky wolf gods, stinky dogg gods, stinky yeen gods, miaedscore.online, miaedscore, miaed-score, vore, vorny, musk, musky, stinky, stimky, acetone, stinky acetone, stinky stimky champions, codename sniffa, sniffa, demiurge, simulation, simulator, sim, second life, stinky, stimky, stinky.zip, stimky.zip onemoondogg, pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, wolf, one moon planet, onemoonplane, blog,  gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art, zoophile hunters, pedophile hunters, bigot hunters, trans hunters, trans exposers, bigot exposers, pedophile exposers, democrat, republican, cenrist, democrat lol, sexy, signup, mega-game.net, meta game, meta, metaworld, furfaggotry, blogger, blog, gnosis, gnostic, gnocticism, ai, artificlal intelligence, service, blogger, gallery, furry gallery, furry bloggers, furry blogger, gay, homosexual, queer, twin flames, rhuxwolf, aylowolf, rhuxfolf, aylofolf, metagame, game, gaming, games, video games, software, hardware" />
+    <meta name="author" content="Midae-Score">  
+    <meta name="twitter:card" content="summary_large_image" /> <!-- changed 2021-04-15 -->
+    <meta name="twitter:site" content="@Midscore.online" />
+    <meta name="twitter:title" content="<%= @title %>" />
     <meta name="twitter:description" content="<%=h @description || @title || @user %>" />
     <title><%= @title %></title>
   </head>

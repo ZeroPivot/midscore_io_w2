@@ -126,9 +126,8 @@ module LambdaFunctions
       "env.get(:#{fn}).value.call("
     end
 
-    # --- KEY FIX: Just wrap in begin...end, don't assign to __result__ ---
-    rewritten = "begin\n#{rewritten}\nend"
-    # ----- PATCH END -----
+    # Remove trailing semicolons
+    rewritten.gsub!(/;\s*\z/, '')
 
     # (Optional: For debugging purposes, print the final transformed code)
     puts "FINAL CODE: #{rewritten.inspect}" if $DEBUG
@@ -211,7 +210,7 @@ module LambdaFunctions
           lambda do |*args|
             env = ObjectSpace._id2ref(#{env.object_id})
             Thread.current[:mindweave_env] = env
-            #{assigns}
+      #{'      '}
              # Simple, direct return of result
       result = begin
         rewritten.gsub!(/return\s+/, '') # Remove any return statements#{' '}
@@ -278,6 +277,13 @@ module LambdaFunctions
       right = ::Regexp.last_match(3).strip
       terminator = ::Regexp.last_match(4) # Capture terminator
       "#{prefix}Operations.str_concat(#{left}, #{right})#{terminator}"
+    end
+
+    # Handle expressions with <+> operator
+    result.gsub!(/(.+?)\s*<\+>\s*(.+)/) do
+      left = ::Regexp.last_match(1)
+      right = ::Regexp.last_match(2)
+      "Operations.str_concat(#{left}, #{right})"
     end
 
     result
@@ -503,148 +509,47 @@ module Operations
     end
   end
 
-  def self.add(a, b)
-    a + b
-  end
-
-  def self.sub(a, b)
-    a - b
-  end
-
-  def self.mul(a, b)
-    a * b
-  end
-
-  def self.div(a, b)
-    a / b
-  end
-
-  def self.mod(a, b)
-    a % b
-  end
-
-  def self.exp(a, b)
-    a**b
-  end
-
-  def self.sqrt(a)
-    Math.sqrt(a)
-  end
-
-  def self.sin(a)
-    Math.sin(a)
-  end
-
-  def self.cos(a)
-    Math.cos(a)
-  end
-
-  def self.tan(a)
-    Math.tan(a)
-  end
-
-  def self.set_union(set1, set2)
-    set1 | set2
-  end
-
-  def self.set_intersection(set1, set2)
-    set1 & set2
-  end
-
-  def self.set_difference(set1, set2)
-    set1 - set2
-  end
-
-  def self.set_symdiff(set1, set2)
-    (set1 - set2) | (set2 - set1)
-  end
-
-  def self.cartesian(set1, set2)
-    set1.product(set2)
-  end
-
-  def self.add(a, b)
-    a + b
-  end
-
-  def self.sub(a, b)
-    a - b
-  end
-
-  def self.mul(a, b)
-    a * b
-  end
-
-  def self.div(a, b)
-    a / b
-  end
-
-  def self.mod(a, b)
-    a % b
-  end
-
-  def self.exp(a, b)
-    a**b
-  end
-
-  def self.sqrt(a)
-    Math.sqrt(a)
-  end
-
-  def self.sin(a)
-    Math.sin(a)
-  end
-
-  def self.cos(a)
-    Math.cos(a)
-  end
-
-  def self.tan(a)
-    Math.tan(a)
-  end
-
-  def self.set_union(set1, set2)
-    set1 | set2
-  end
-
-  def self.set_intersection(set1, set2)
-    set1 & set2
-  end
-
-  def self.set_difference(set1, set2)
-    set1 - set2
-  end
-
-  def self.set_symdiff(set1, set2)
-    (set1 - set2) | (set2 - set1)
-  end
-
-  def self.cartesian(set1, set2)
-    set1.product(set2)
-  end
-
   def self.interpolate(str)
-    return str unless str.is_a?(String)
-    return str unless str.include?('{{')
+    return str unless str.is_a?(String) && str.include?('{{')
 
-    str.gsub(/\{\{(.*?)\}\}/) do
-      expr = ::Regexp.last_match(1).strip
-      env = Thread.current[:mindweave_env]
-      if env && env.get(expr.to_sym)
-        wrapper = env.get(expr.to_sym)
-        value = wrapper.value
-        value.is_a?(Array) ? value.inspect : value.to_s
-      else
-        # Log a debug message and attempt a fallback evaluation.
-        puts "[DEBUG interpolate] No env value for '#{expr}', attempting fallback evaluation."
-        begin
-          eval(expr).to_s
-        rescue Exception => e
-          puts "[DEBUG interpolate] Fallback evaluation failed for '#{expr}': #{e.message}"
-          "{{#{expr}}}"
+    # Only use thread-local environment, not global
+    env = Thread.current[:mindweave_env]
+    return str unless env
+
+    prev = nil
+    while str != prev
+      prev = str
+      str = str.gsub(/\{\{(.*?)\}\}/) do
+        placeholder = ::Regexp.last_match(1).strip
+        if placeholder.include?('.') # Support dot notation, e.g. data.inspect
+          parts = placeholder.split('.').map(&:strip)
+          base_var = parts.shift
+          wrapper = env.get(base_var.to_sym)
+          if wrapper && wrapper.respond_to?(:value)
+            result = wrapper.value
+            parts.each do |method_name|
+              if result.respond_to?(method_name)
+                result = result.send(method_name)
+              else
+                result = "{{#{placeholder}}}"
+                break
+              end
+            end
+            result.to_s
+          else
+            "{{#{placeholder}}}"
+          end
+        else
+          wrapper = env.get(placeholder.to_sym)
+          if wrapper && wrapper.respond_to?(:value)
+            wrapper.value.to_s
+          else
+            "{{#{placeholder}}}"
+          end
         end
       end
     end
+    str
   end
 end
 
@@ -656,36 +561,45 @@ module MindWeave
       @env = SpiritualEnvironment.new
     end
 
+    # Fix the let method in Interpreter
     def let(var, value, type = 'Unknown', aura = 'Neutral')
-      eval_value =
-        if value.is_a?(String) && value.strip =~ /\A["'].*["']\z/
-          # Quoted string, interpolate
-          Operations.interpolate(value[1..-2])
-        elsif value.is_a?(String) && value.strip =~ /\A\[(.*)\]\z/
-          # Array literal, parse as Ruby array
-          begin
-            arr = eval(value)
-            arr
-          rescue StandardError
-            value
-          end
-        else
-          begin
-            env = @env
-            expr = value.gsub(/\b([a-zA-Z_]\w*)\b/) do |v|
-              if env.get(v) && env.get(v).respond_to?(:value)
-                env.get(v).value.inspect
-              else
-                v
-              end
+      eval_value = nil
+      begin
+        Thread.current[:mindweave_env] = @env # Use @env, not @interpreter.env since we're already in Interpreter
+        eval_value =
+          if value.is_a?(String) && value.strip =~ /\A["'].*["']\z/
+            inner = value[1..-2]
+            Operations.interpolate(inner)
+          elsif value.is_a?(String) && value.strip =~ /\A\[(.*)\]\z/
+            begin
+              elements_str = ::Regexp.last_match(1)
+              elements_str.split(',').map { |el| evaluate_expression(el.strip) }
+            rescue StandardError => e
+              puts "[ERROR] Failed to evaluate array literal in LET: #{value}. Error: #{e.message}"
+              value
             end
-            eval(expr)
-          rescue Exception
-            value
+          elsif value.is_a?(String) && value.strip =~ /\APtr\((.*)\)\z/i
+            inner_val_str = ::Regexp.last_match(1).strip
+            inner_val = evaluate_expression(inner_val_str)
+            Pointer.new(inner_val)
+          else
+            begin
+              computed = evaluate_expression(value)
+              computed = Operations.interpolate(computed) if computed.is_a?(String)
+              computed
+            rescue Exception => e
+              puts "[WARN] LET evaluation fallback failed for '#{value}': #{e.message}. Treating as string."
+              value
+            end
           end
-        end
+      ensure
+        Thread.current[:mindweave_env] = nil
+      end
 
+      # THIS LINE IS CRUCIAL - actually set the variable in the environment
       @env.set(var, eval_value, type, aura)
+      puts "[DEBUG LET] #{var} set to #{eval_value.inspect} (type: #{type})"
+      eval_value
     end
 
     def get(var)
@@ -1113,6 +1027,8 @@ module MindWeave
           true
         elsif expr_str == 'false'
           false
+        elsif expr_str =~ /\A"(.*)"\z/ || expr_str =~ /\A'(.*)'\z/
+          Operations.interpolate(::Regexp.last_match(1))
         # Otherwise, assume it's a variable name
         else
           v = @interpreter.get(expr_str)
@@ -1140,28 +1056,28 @@ module MindWeave
           eval_value =
             if value.is_a?(String) && value.strip =~ /\A["'].*["']\z/
               # Quoted strings are interpolated first.
-              Operations.interpolate(value[1..-2]) # Interpolate needs the env
+              Operations.interpolate(value[1..-2])
             elsif value.is_a?(String) && value.strip =~ /\A\[(.*)\]\z/
               begin
                 elements_str = ::Regexp.last_match(1)
-                # Evaluate elements within the current env context
                 elements_str.split(',').map { |el| evaluate_expression(el.strip) }
               rescue StandardError => e
                 puts "[ERROR] Failed to evaluate array literal in LET: #{value}. Error: #{e.message}"
-                value # Fallback to original string
+                value
               end
             elsif value.is_a?(String) && value.strip =~ /\APtr\((.*)\)\z/i
               inner_val_str = ::Regexp.last_match(1).strip
-              # Evaluate inner value within the current env context
               inner_val = evaluate_expression(inner_val_str)
               Pointer.new(inner_val)
             else
               begin
-                # Evaluate general expressions within the current env context
-                evaluate_expression(value)
+                eval_value = evaluate_expression(value)
+                # --- PATCH: Interpolate if result is a String ---
+                eval_value = Operations.interpolate(eval_value) if eval_value.is_a?(String)
+                eval_value
               rescue Exception => e
                 puts "[WARN] LET evaluation fallback failed for '#{value}': #{e.message}. Treating as string."
-                value # Fallback to original string
+                value
               end
             end
         ensure
@@ -1190,35 +1106,37 @@ module MindWeave
         end
 
         @interpreter.env.set(var, eval_value, type, aura)
+        # Debug output to verify variable assignment
         puts "[DEBUG LET] #{var} set to #{eval_value.inspect} (type: #{type})"
       end
 
       # ...rest of your DSL methods...
 
-      # In class MindWeave::Completer::DSL, modify the print_var method:
+      # In your print_var and let methods, ensure thread-local is always set/cleared
       def print_var(expr)
-        # Special handling for "Final Environment:"
-        if expr =~ /\A["']Final Environment:["']\z/
-          puts '[PRINT] Final Environment:'
-          @interpreter.env.vars.each do |key, wrapper|
-            puts "#{key}: #{wrapper}"
-          end
-          return 'Environment displayed'
-        end
-        # Set the thread-local environment so interpolation can lookup variables
+        # Set thread-local env for interpolation
         Thread.current[:mindweave_env] = @interpreter.env
-        evaluated_value = evaluate_expression(expr)
-        # Force interpolation by converting to string and applying Operations.interpolate repeatedly
-        str_value = evaluated_value.to_s
-        loop do
-          new_value = Operations.interpolate(str_value)
-          break if new_value == str_value
+        begin
+          # First, evaluate the expression to get its value
+          evaluated_value = evaluate_expression(expr)
 
-          str_value = new_value
+          # For quoted strings, directly pass to interpolate
+          result = if expr.is_a?(String) && (expr =~ /\A"(.*)"\z/ || expr =~ /\A'(.*)'\z/)
+                     Operations.interpolate(Regexp.last_match(1))
+                   else
+                     # For other expressions, convert to string first then interpolate
+                     Operations.interpolate(evaluated_value.to_s)
+                   end
+
+          puts "[PRINT] #{result}"
+          result
+        rescue StandardError => e
+          puts "[ERROR in print_var] #{e.message}"
+          puts e.backtrace.first(5)
+          evaluated_value.to_s
+        ensure
+          Thread.current[:mindweave_env] = nil
         end
-        Thread.current[:mindweave_env] = nil
-        puts "[PRINT] #{str_value}"
-        str_value
       end
       # Inside class MindWeave::Completer::Parser
 
@@ -1708,34 +1626,45 @@ module MindWeave
         end
       end
 
+      # Update let to enforce types & interpolate string results
       def let(var, value, type = 'Unknown', aura = 'Neutral')
-        eval_value =
-          if value.is_a?(String) && value.strip =~ /\A["'].*["']\z/
-            Operations.interpolate(value[1..-2])
-          elsif value.is_a?(String) && value.strip =~ /\A\[(.*)\]\z/
-            begin
-              elements_str = ::Regexp.last_match(1)
-              elements_str.split(',').map { |el| evaluate_expression(el.strip) }
-            rescue StandardError => e
-              puts "[ERROR] Failed to evaluate array literal in LET: #{value}. Error: #{e.message}"
-              value
-            end
-          elsif value.is_a?(String) && value.strip =~ /\APtr\((.*)\)\z/i
-            inner_val_str = ::Regexp.last_match(1).strip
-            inner_val = evaluate_expression(inner_val_str)
-            Pointer.new(inner_val)
-          else
-            begin
-              evaluate_expression(value)
-            rescue Exception => e
-              puts "[WARN] LET evaluation fallback failed for '#{value}': #{e.message}. Treating as string."
-              value
-            end
-          end
+        eval_value = nil
+        begin
+          # Set thread-local env so interpolation works during evaluation
+          Thread.current[:mindweave_env] = @interpreter.env
 
-        @interpreter.env.set(var, eval_value, type, aura)
-        # Debug output to verify variable assignment
-        puts "[DEBUG LET] #{var} set to #{eval_value.inspect} (type: #{type})"
+          eval_value =
+            if value.is_a?(String) && value.strip =~ /\A["'].*["']\z/
+              # For quoted strings, strip quotes and interpolate recursively.
+              inner = value[1..-2]
+              Operations.interpolate(inner)
+            elsif value.is_a?(String) && value.strip =~ /\A\[(.*)\]\z/
+              begin
+                elements_str = ::Regexp.last_match(1)
+                elements_str.split(',').map { |el| evaluate_expression(el.strip) }
+              rescue StandardError => e
+                puts "[ERROR] Failed to evaluate array literal in LET: #{value}. Error: #{e.message}"
+                value
+              end
+            elsif value.is_a?(String) && value.strip =~ /\APtr\((.*)\)\z/i
+              inner_val_str = ::Regexp.last_match(1).strip
+              inner_val = evaluate_expression(inner_val_str)
+              Pointer.new(inner_val)
+            else
+              begin
+                computed = evaluate_expression(value)
+                # --- PATCH: Interpolate if the computed result is a String ---
+                computed = Operations.interpolate(computed) if computed.is_a?(String)
+                computed
+              rescue Exception => e
+                puts "[WARN] LET evaluation fallback failed for '#{value}': #{e.message}. Treating as string."
+                value
+              end
+            end
+        ensure
+          # Clear thread-local env after LET processing
+          Thread.current[:mindweave_env] = nil
+        end
       end
 
       # Ensure func also sets the environment correctly for the lambda
@@ -1747,37 +1676,61 @@ module MindWeave
       end
 
       def op(expression)
-        # Parse OP(add(x,y)), OP(fagtorial(5)), etc.
-        return unless expression =~ /^(\w+)\((.*?)\)$/i
+        # Parse OP(add(x,y)), OP(factorial(5)), etc.
+        if expression =~ /^(\w+)\((.*?)\)$/i
+          op_name = ::Regexp.last_match(1)
+          args_str = ::Regexp.last_match(2)
+          # Use evaluate_expression to handle nested calls properly
+          args = args_str.split(',').map { |arg_str| evaluate_expression(arg_str.strip) }
 
-        op_name = ::Regexp.last_match(1)
-        args_str = ::Regexp.last_match(2)
-        # Use evaluate_expression to handle nested calls properly
-        args = args_str.split(',').map { |arg_str| evaluate_expression(arg_str.strip) }
-        if Operations.respond_to?(op_name)
-          # Operations module handling (unchanged)...
-        else
-          # Function lookup and calling from environment
-          func_wrapper = @interpreter.get(op_name)
-          if func_wrapper && func_wrapper.value.respond_to?(:call)
-            begin
-              puts "[DEBUG op] Calling function '#{op_name}' from environment with args: #{args.inspect}"
-              # The key fix: convert string number args to actual integers
-              converted_args = args.map do |arg|
-                arg.is_a?(String) && arg =~ /^\d+$/ ? arg.to_i : arg
+          # Convert string number args to actual integers/floats
+          converted_args = args.map do |arg|
+            if arg.is_a?(String)
+              if arg =~ /^\d+$/
+                arg.to_i  # Convert to integer
+              elsif arg =~ /^\d+\.\d+$/
+                arg.to_f  # Convert to float
+              else
+                arg       # Keep as string
               end
-              result = func_wrapper.value.call(*converted_args)
-              puts "[DSL Completer] OP (env): #{op_name}(#{args.inspect}) => #{result}"
-              result # Explicit return ensures value is passed back
+            else
+              arg         # Keep non-string as-is
+            end
+          end
+
+          if Operations.respond_to?(op_name)
+            # Fixed: Actually call the operation and return the result
+            begin
+              result = Operations.send(op_name, *converted_args)
+              puts "[DSL Completer] OP: #{op_name}(#{converted_args.inspect}) => #{result}"
+              return result
             rescue StandardError => e
-              puts "[DSL Completer] OP Error calling function '#{op_name}' with #{args.inspect}: #{e.message}"
-              nil
+              puts "[DSL Completer] OP Error in operation '#{op_name}': #{e.message}"
+              return nil
             end
           else
-            puts "[DSL Completer] OP Error: Unknown operation '#{op_name}'"
-            nil
+            # Function lookup and calling from environment
+            func_wrapper = @interpreter.get(op_name)
+            if func_wrapper && func_wrapper.value.respond_to?(:call)
+              begin
+                puts "[DEBUG op] Calling function '#{op_name}' from environment with args: #{converted_args.inspect}"
+                result = func_wrapper.value.call(*converted_args)
+                puts "[DSL Completer] OP (env): #{op_name}(#{converted_args.inspect}) => #{result}"
+                return result # Explicit return ensures value is passed back
+              rescue StandardError => e
+                puts "[DSL Completer] OP Error calling function '#{op_name}' with #{converted_args.inspect}: #{e.message}"
+                return nil
+              end
+            else
+              puts "[DSL Completer] OP Error: Unknown operation '#{op_name}'"
+              return nil
+            end
           end
         end
+
+        # If we get here, the expression didn't match our pattern
+        puts "[DSL Completer] OP Error: Invalid expression format '#{expression}'"
+        nil
       end
 
       # ...existing code...
@@ -1857,8 +1810,8 @@ class MindWeaveDSL
     @interpreter.env = @env
     @dsl = MindWeave::Completer::DSL.new(@interpreter)
     @debug = false
-    # Make environment globally accessible to support recursion
-    $current_dsl_env = @env
+    # Remove global variable access
+    # $current_dsl_env = @env - REMOVED
     puts '[MindWeaveDSL] DSL environment initialized.'
   end
 
@@ -1913,30 +1866,26 @@ if __FILE__ == $0
     # MindWeave DSL Comprehensive Test Suite
     # ===========================================
 
-    # Define the function using FUNC keyword, name, parameters, and body in braces.
-    FUNC fagtorial(x) {
-      # Use IF {condition} THEN {true_block} ELSE {false_block} for control flow.
-      IF { x == 0 } THEN {
-        # Use RETURN to specify the function's return value.
+    FUNC fact(n) {
+      IF { n == 0 } THEN {
         RETURN 1;
       } ELSE {
-        # Functions can be called recursively by using their name and arguments.
-        # Expressions like x * ... are evaluated.
-        RETURN x * fagtorial(x - 1);
-      };
-    }; # Semicolon after function definition is optional/ignored.
-
-    # Call the function using its name and arguments within an OP() expression.
-    # Assign the result to a variable using LET var := value;
-    LET result := OP(fagtorial(5));
-
-    # Assign the value of one variable to another.
-    LET x := result;
-
-    # Print the value of a variable.
-    PRINT x;
+        RETURN n * fact(n - 1);
+      }
+    }
+    LET x := 2;
+    LET y := 3;
+    LET result := fact(x);
+    PRINT "Factorial of {{x}} is {{result}}";
+    LET data := (TYPE::PipeNotation)::< load | process | save >;
+    PRINT "Data pipeline: {{data.inspect}}";
+    LET array := [1, 2, 3, 4, 5];
+    PRINT "Array: {{array.inspect}}";
+    LET str := "Hello, MindWeave!";
+    PRINT "String: {{str}}";
+    LET num := 42;
+    PRINT "Number: {{num}}";
   DSL
-
   output = MindWeave::Completer::Parser.execute_shorthand(program)
   puts "Program result: #{output}"
 end

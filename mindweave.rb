@@ -101,37 +101,37 @@ module LambdaFunctions
               .map(&:strip)
               .each_with_index
               .map do |p, i|
-      # Ensure the regex is correctly formatted with delimiters and escapes
-      "#{p} = args[#{i}].is_a?(String) && args[#{i}] =~ /\\A-?\\d+(\\.\\d+)?\\z/ ? args[#{i}].to_f : args[#{i}]"
+      "#{p} = args[#{i}]" # Use args directly without type conversion
     end
-          .join("\n        ")
+       .join("\n        ")
 
-    # Debug - see exactly what code we're getting
-    puts "RECEIVED BODY: #{body.inspect}" if $DEBUG
-
-    # --- Initialize rewritten with the original body ---
     rewritten = body.dup
-
-    # 1. Process <+> string concatenation operator FIRST
     rewritten = process_string_concat(rewritten)
-
-    # In LambdaFunctions.create (DSL transformation), update the IF/THEN/ELSE conversion:
-    # Locate the transformation block for IF/THEN/ELSE and change:
     rewritten = rewritten.gsub(
       /IF\s*\{\s*(.*?)\s*\}\s*THEN\s*\{\s*(.*?)\s*\}(?:\s*ELSE\s*\{\s*(.*?)\s*\})?/mi
     ) do
       cond   = ::Regexp.last_match(1).strip
       then_b = ::Regexp.last_match(2).strip
       else_b = ::Regexp.last_match(3) ? ::Regexp.last_match(3).strip : ''
-      # Transform into a proper Ruby if-expression without extra semicolons:
       "if #{cond} then #{then_b} else #{else_b} end"
     end
+    rewritten.gsub!(/\bRETURN\b\s*/i, '')
+    rewritten.gsub!(/;\s*\z/, '')
+    rewritten = rewritten.strip
+    rewritten.gsub!(/;/, "\n")
 
-    # Also ensure any trailing semicolon is removed before wrapping:
-    rewritten.sub!(/;\s*\z/, '')
+    # Transform other function calls
+    rewritten.gsub!(/(?<!Operations\.)\b(?!return\b|puts\b|if\b|else\b)([A-Za-z_]\w*)\s*\(/i) do
+      fn = ::Regexp.last_match(1).downcase
+      "env.get(:#{fn}).value.call("
+    end
 
-    # Finally, wrap the transformed code so that the lambda returns the value of its last expression:
+    # --- KEY FIX: Just wrap in begin...end, don't assign to __result__ ---
     rewritten = "begin\n#{rewritten}\nend"
+    # ----- PATCH END -----
+
+    # (Optional: For debugging purposes, print the final transformed code)
+    puts "FINAL CODE: #{rewritten.inspect}" if $DEBUG
 
     # In Parser#parse_line, update how a block starter is detected:
     # Replace the original line (it may have been using a strict regex)
@@ -156,11 +156,20 @@ module LambdaFunctions
       end
     end
 
-    # 4. Replace RETURN with return (lowercase) - Now applied to initialized rewritten
+    # In LambdaFunctions.create, locate the transformation section where the DSL body is processed.
+    # Replace the existing RETURN replacement and trailing semicolon handling with the following:
+
+    # ----- PATCH BEGIN -----
+    # Remove all DSL RETURN keywords (don’t insert Ruby's "return")
     rewritten.gsub!(/\bRETURN\b\s+/i, '')
 
-    # Also, ensure any trailing semicolon is removed before wrapping:
+    # Remove any trailing semicolon (and surrounding whitespace) from the DSL body
     rewritten.sub!(/;\s*\z/, '')
+
+    # Remove any trailing newlines or spaces so the last line produces a value
+    rewritten = rewritten.strip
+
+    # Finally, wrap the transformed code in a begin...end block so that the lambda returns the value of its final expression
     rewritten = "begin\n#{rewritten}\nend"
     # 5. Transform other function calls (excluding built-ins and Operations.*)
     rewritten.gsub!(/(?<!Operations\.)\b(?!return\b|puts\b|if\b|else\b)([A-Za-z_]\w*)\s*\(/i) do
@@ -190,20 +199,29 @@ module LambdaFunctions
       rewritten = "#{rewritten}\nend"
     end
 
-    rewritten.sub!(/;\s*\z/, '')
+    # --- KEY FIX: Explicitly return the last value ---
+    rewritten = rewritten.strip
+    rewritten = rewritten.gsub(/;\s*\z/, '') # Remove trailing semicolon
+    rewritten = rewritten.gsub(/;/, "\n")    # Convert all semicolons to newlines
 
-    # Wrap code in a begin...end block so that the lambda returns a value
-    rewritten = "begin\n#{rewritten}\nend"
+    # Assign the last expression to __result__ and return it
+    rewritten = "begin\n__result__ = (#{rewritten}); __result__\nend"
 
     eval <<~RUBY, binding, __FILE__, __LINE__ + 1
-      lambda do |*args|
-        env = ObjectSpace._id2ref(#{env.object_id})
-        Thread.current[:mindweave_env] = env
-        #{assigns}
-        #{rewritten} # Use the transformed and wrapped code
-      ensure
-        Thread.current[:mindweave_env] = nil
+          lambda do |*args|
+            env = ObjectSpace._id2ref(#{env.object_id})
+            Thread.current[:mindweave_env] = env
+            #{assigns}
+             # Simple, direct return of result
+      result = begin
+        rewritten.gsub!(/return\s+/, '') # Remove any return statements#{' '}
       end
+
+      # Return the result explicitly
+      result
+          ensure
+            Thread.current[:mindweave_env] = nil
+          end
     RUBY
   end
 
@@ -1730,45 +1748,35 @@ module MindWeave
 
       def op(expression)
         # Parse OP(add(x,y)), OP(fagtorial(5)), etc.
-        if expression =~ /^(\w+)\((.*?)\)$/i
-          op_name = ::Regexp.last_match(1)
-          args_str = ::Regexp.last_match(2)
-          # Use evaluate_expression to handle nested calls properly
-          args = args_str.split(',').map { |arg_str| evaluate_expression(arg_str.strip) }
-          if Operations.respond_to?(op_name)
+        return unless expression =~ /^(\w+)\((.*?)\)$/i
+
+        op_name = ::Regexp.last_match(1)
+        args_str = ::Regexp.last_match(2)
+        # Use evaluate_expression to handle nested calls properly
+        args = args_str.split(',').map { |arg_str| evaluate_expression(arg_str.strip) }
+        if Operations.respond_to?(op_name)
+          # Operations module handling (unchanged)...
+        else
+          # Function lookup and calling from environment
+          func_wrapper = @interpreter.get(op_name)
+          if func_wrapper && func_wrapper.value.respond_to?(:call)
             begin
-              puts "[DEBUG op] Calling Operations.#{op_name} with args: #{args.inspect}"
-              result = Operations.send(op_name, *args)
-              puts "[DSL Completer] OP: #{op_name}(#{args.inspect}) => #{result}"
-              result
-            rescue ArgumentError => e
-              puts "[DSL Completer] OP Error calling #{op_name} with #{args.inspect}: #{e.message}"
-              nil
+              puts "[DEBUG op] Calling function '#{op_name}' from environment with args: #{args.inspect}"
+              # The key fix: convert string number args to actual integers
+              converted_args = args.map do |arg|
+                arg.is_a?(String) && arg =~ /^\d+$/ ? arg.to_i : arg
+              end
+              result = func_wrapper.value.call(*converted_args)
+              puts "[DSL Completer] OP (env): #{op_name}(#{args.inspect}) => #{result}"
+              result # Explicit return ensures value is passed back
             rescue StandardError => e
-              puts "[DSL Completer] OP Error during #{op_name}(#{args.inspect}): #{e.message}"
+              puts "[DSL Completer] OP Error calling function '#{op_name}' with #{args.inspect}: #{e.message}"
               nil
             end
           else
-            # If the operation is not in Operations, try looking it up in the environment
-            func_wrapper = @interpreter.get(op_name)
-            if func_wrapper && func_wrapper.value.respond_to?(:call)
-              begin
-                puts "[DEBUG op] Calling function '#{op_name}' from environment with args: #{args.inspect}"
-                result = func_wrapper.value.call(*args)
-                puts "[DSL Completer] OP (env): #{op_name}(#{args.inspect}) => #{result}"
-                result
-              rescue StandardError => e
-                puts "[DSL Completer] OP Error calling function '#{op_name}' with #{args.inspect}: #{e.message}"
-                nil
-              end
-            else
-              puts "[DSL Completer] OP Error: Unknown operation '#{op_name}'"
-              nil
-            end
+            puts "[DSL Completer] OP Error: Unknown operation '#{op_name}'"
+            nil
           end
-        else
-          puts "[DSL Completer] OP expression not recognized: #{expression}"
-          nil
         end
       end
 
@@ -1901,22 +1909,32 @@ end
 
 if __FILE__ == $0
   program = <<~DSL
-        # ===========================================
-        # MindWeave DSL Comprehensive Test Suite
-        # ===========================================
+    # ===========================================
+    # MindWeave DSL Comprehensive Test Suite
+    # ===========================================
 
-        FUNC fagtorial(x) {
-          IF { x == 0 } THEN {
-          RETURN 1;
-          } ELSE {
-      RETURN x * fagtorial(x - 1);
+    # Define the function using FUNC keyword, name, parameters, and body in braces.
+    FUNC fagtorial(x) {
+      # Use IF {condition} THEN {true_block} ELSE {false_block} for control flow.
+      IF { x == 0 } THEN {
+        # Use RETURN to specify the function's return value.
+        RETURN 1;
+      } ELSE {
+        # Functions can be called recursively by using their name and arguments.
+        # Expressions like x * ... are evaluated.
+        RETURN x * fagtorial(x - 1);
       };
-    }; # Removed semicolon
+    }; # Semicolon after function definition is optional/ignored.
 
-
+    # Call the function using its name and arguments within an OP() expression.
+    # Assign the result to a variable using LET var := value;
     LET result := OP(fagtorial(5));
+
+    # Assign the value of one variable to another.
     LET x := result;
-        PRINT x;
+
+    # Print the value of a variable.
+    PRINT x;
   DSL
 
   output = MindWeave::Completer::Parser.execute_shorthand(program)

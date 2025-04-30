@@ -27,7 +27,7 @@ require 'time'
 
 def formatted_pst_time
   # Get the current time and convert it to Pacific Standard Time (PST)
-  pst_time = Time.now.getlocal('-08:00')
+  pst_time = Time.now.getlocal('-07:00')
 
   # Format the output as "Month, Day, Year - TimeInPST"
   pst_time.strftime('%B, %d, %Y - %I:%M %p PST')

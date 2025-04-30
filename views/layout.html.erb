@@ -109,6 +109,7 @@ div.galleryTable {
     </div>
   </a>
   <font size="16"><a href="<%= domain_name(@r) %>/blog">(📃)</a>,<a href="<%= domain_name(@r) %>/gallery">(🖼️)</a></font><br><br>
+  <font size="3"><%= SolarDance.sun_dance_message %></font><br>
   <font size="3"><%= "Gregorian: #{Calendar.new.gregorian}" %><font><br>
   <font size="3"><%= "Julian: #{Calendar.new.julian_primitive} -> #{Calendar.new.julian}" %></font><br>
   <%= "<font size=\"4\">#{MoonPhaseDetails.print_details_for_date(Date.today)}</font>" %>

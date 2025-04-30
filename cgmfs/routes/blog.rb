@@ -18,6 +18,49 @@ module Math
   end
 end
 
+class SunPhase
+  attr_reader :name, :start_hour, :emoji
+
+  def initialize(name, start_hour, emoji)
+    @name = name
+    @start_hour = start_hour
+    @emoji = emoji
+  end
+end
+
+class SolarDance
+  PHASES = [
+    SunPhase.new('Midnight Mystery', 0, '🌑'),
+    SunPhase.new('Dawn’s Whisper', 3, '🌅'),
+    SunPhase.new('First Light’s Murmur', 5, '🔅'),
+    SunPhase.new('Golden Awakening', 6, '☀️'),
+    SunPhase.new('Morning Glow', 8, '🌞'),
+    SunPhase.new('High Noon Radiance', 12, '🔥'),
+    SunPhase.new('Afternoon Brilliance', 15, '🌇'),
+    SunPhase.new('Golden Hour Serenade', 17, '🌆'),
+    SunPhase.new('Twilight Poetry', 18, '🌒'),
+    SunPhase.new('Dusky Secrets', 19, '🌓'),
+    SunPhase.new('Crimson Horizon', 20, '🌔'),
+    SunPhase.new('Moon’s Ascent', 21, '🌕'),
+    SunPhase.new('Nightfall’s Caress', 22, '✨'),
+    SunPhase.new('Deep Celestial Silence', 23, '🌌'),
+    SunPhase.new('Cosmic Slumber', 24, '🌠')
+  ]
+
+  def self.current_phase
+    pst_hour = Time.now.getlocal('-08:00').hour # Pacific Standard Time (PST)
+    PHASES.reverse.find { |phase| pst_hour >= phase.start_hour }
+  end
+
+  def self.sun_dance_message
+    phase = current_phase
+    "🌞 The Sun is currently in '#{phase.name}' phase! #{phase.emoji}"
+  end
+end
+
+# Execute SunDance
+# puts SolarDance.sun_dance_message
+
 # BEGIN: 6f7b8d9hjkl3
 
 # === Constants and Definitions ===

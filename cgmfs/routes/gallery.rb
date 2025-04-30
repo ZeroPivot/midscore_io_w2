@@ -19,6 +19,24 @@ class CGMFS
     r.redirect "https://#{r.host}" unless LOCAL
   end
 
+  require 'time'
+
+  # ========================================================
+  # Date Formatter - Pacific Standard Time (PST) 🌍⏳
+  # Prints date in "Month, Day, Year - TimeInPST" format
+  # ========================================================
+
+  def formatted_pst_time
+    # Get the current time and convert it to Pacific Standard Time (PST)
+    pst_time = Time.now.getlocal('-08:00')
+
+    # Format the output as "Month, Day, Year - TimeInPST"
+    pst_time.strftime('%B, %d, %Y - %I:%M %p PST')
+  end
+
+  # Print the formatted date
+  puts formatted_pst_time
+
   # ========================================================
   # SunDance.rb - A whimsical solar phase tracker!
   # Models 15 daily sun phases based on Pacific Standard Time (PST).

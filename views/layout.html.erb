@@ -9,7 +9,9 @@
     <title><%= @title %></title>
     <link rel="stylesheet" href="<%= domain_name(@r) %>/style.css" type="text/css" />    
     <link rel="shortcut icon" type="image/x-icon" href="<%= domain_name(@r) %>/favicon.ico">
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <!-- the embed cards don't embed images on bluesky; probably admin incompetance or a setting somewhere, but everything was tried at one time -->
+    <meta property="og:site_name" content="miaedscore.online" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="<%= @title %> - by <%= @user %>" />
     <meta property="og:image" content="https://miaedscore.online/card" />
@@ -25,13 +27,14 @@
     <meta name="twitter:description" content="<%=h @description || @title || @user %>" />
     <meta name="twitter:image" content="https://miaedscore.online/card" />
     <meta name="twitter:domain" content="miaedscore.online"/>
-
+    <meta property="bsky:card" content="summary_large_image">
+    <meta property="bsky:site" content="araety.org"> <!-- Replace with your Bluesky handle if available -->
+    <meta property="bsky:title" content="<%= @title %>">
+    <meta property="bsky:description" content="<%=h @description || @title || @user %>">
+    <meta property="bsky:image" content="https://miaedscore.online/card">
   </head>
   <body>
-<div class="gcse-search"></div>
   <style>
-   
-  
 
 body {
 	color: white;
@@ -40,7 +43,6 @@ body {
 	font-family: Arial, Helvetica, sans-serif;
 
 }
-
 
 .text
 {
@@ -59,7 +61,6 @@ body {
 	flex-basis: auto;
 }
 
-
 a:link {
 	color:rgb(39, 38, 38);
 
@@ -69,11 +70,9 @@ a:visited {
 	color:rgb(255, 255, 255);
 }
 
-
 a:active {
 	color:red;
 }
-
 
 div.galleryTable {
   width: 100%;
@@ -82,9 +81,7 @@ div.galleryTable {
 
 }
 
-
 .divTable.galleryTable .divTableCell, .divTable.galleryTable .divTableHead {
-
 
 }
 .divTable{ display: table; }
@@ -94,13 +91,8 @@ div.galleryTable {
 .divTableHeading { display: table-header-group;}
 .divTableFoot { display: table-footer-group;}
 .divTableBody { display: table-row-group;}
-
-
-
-
-
-    .day { border: 1px solid black; padding: 10px; display: inline-block; width: 40px; text-align: center; }
-    .week { clear: both; }
+.day { border: 1px solid black; padding: 10px; display: inline-block; width: 40px; text-align: center; }
+.week { clear: both; }
   </style>    
   <div>
   <center>

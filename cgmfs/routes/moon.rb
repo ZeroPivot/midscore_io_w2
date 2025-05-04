@@ -1,4 +1,4 @@
-class MoonPhaseDetails
+class MoonPhaseDetails2
   # === Constants and Definitions ===
 
   # Average length of a full lunar cycle (in days)
@@ -160,11 +160,11 @@ class MoonPhaseDetails
 end
 
 class CGMFS
-  hash_branch '/moon' do |r|
+  hash_branch 'moon' do |r|
     r.on do
       # family_logged_in?(r) # -- TEMP FAILSAFE (v9.0.0.1)
       r.get do
-        MoonPhaseDetails.print_text_details_for_date(Date.today)
+        "#{MoonPhaseDetails2.print_text_details_for_date(Date.today)}"
       end
     end
   end

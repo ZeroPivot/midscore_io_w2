@@ -86,7 +86,6 @@ ssl_bind '65.38.99.230', '8080', {
   cert: '/root/midscore_io/config/www.stimky.info_ssl_certificate.cer',
   verify_mode: 'none'
 }
-
 # ...existing code...
 
 # bind 'unix:///var/run/puma.sock'

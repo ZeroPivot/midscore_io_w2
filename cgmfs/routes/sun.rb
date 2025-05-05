@@ -34,7 +34,7 @@ class SolarDance2
 
   def self.sun_dance_message
     phase = current_phase
-    "🌞 The Sun is currently in \"#{phase.name}\" phase! #{phase.emoji}"
+    "The Sun is currently in \"#{phase.name}\" phase! #{phase.emoji}"
   end
 end
 
@@ -43,6 +43,7 @@ class CGMFS
     r.on do
       # family_logged_in?(r) # -- TEMP FAILSAFE (v9.0.0.1)
       r.get do
+        response['Content-Type'] = 'text/html; charset=utf-8'
         "#{SolarDance2.sun_dance_message}"
       end
     end

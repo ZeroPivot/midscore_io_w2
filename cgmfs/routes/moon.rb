@@ -6,59 +6,59 @@ class MoonPhaseDetails2
 
   # The 15 fabled moon rotations with emojis:
   MOON_ROTATIONS = [
-    'New Moon',            # 0
-    'Waxing Crescent',     # 1
-    'First Quarter',       # 2
-    'Waxing Gibbous', # 3
-    'Full Moon',           # 4
-    'Waning Gibbous',      # 5
-    'Last Quarter',        # 6
-    'Waning Crescent',     # 7
-    'Supermoon',           # 8
-    'Blue Moon',         # 9
-    'Blood Moon',        # 10
-    'Harvest Moon',      # 11
-    "Hunter's Moon",     # 12
-    'Wolf Moon',         # 13
-    'Pink Moon'          # 14
+    'New Moon 🌑',            # 0
+    'Waxing Crescent 🌒',     # 1
+    'First Quarter 🌓',       # 2
+    'Waxing Gibbous 🌔', # 3
+    'Full Moon 🌕',           # 4
+    'Waning Gibbous 🌖',      # 5
+    'Last Quarter 🌗',        # 6
+    'Waning Crescent 🌘',     # 7
+    'Supermoon 🌝',           # 8
+    'Blue Moon 🔵🌙',         # 9
+    'Blood Moon 🩸🌙',        # 10
+    'Harvest Moon 🍂🌕',      # 11
+    "Hunter's Moon 🌙🔭",     # 12
+    'Wolf Moon 🐺🌕',         # 13
+    'Pink Moon 🌸🌕'          # 14
   ]
 
   # Define 15 corresponding species with emojis.
   SPECIES = [
-    'Dogg', # New Moon
-    'Folf', # Waxing Crescent
-    'Aardwolf',                 # First Quarter
-    'Spotted Hyena',            # Waxing Gibbous
-    'Folf Hybrid',             # Full Moon
-    'Striped Hyena',            # Waning Gibbous
-    'Dogg Prime',              # Last Quarter
-    'WolfFox', # Waning Crescent
-    'Brown Hyena',              # Supermoon
-    'Dogg Celestial',          # Blue Moon
-    'Folf Eclipse',            # Blood Moon
-    'Aardwolf Luminous', # Harvest Moon
-    'Spotted Hyena Stellar', # Hunter's Moon
-    'Folf Nova', # Wolf Moon
-    'Brown Hyena Cosmic' # Pink Moon
+    'Dogg 🐶', # New Moon
+    'Folf 🦊🐺', # Waxing Crescent
+    'Aardwolf 🐾',                 # First Quarter
+    'Spotted Hyena 🐆',            # Waxing Gibbous
+    'Folf Hybrid 🦊✨',             # Full Moon
+    'Striped Hyena 🦓',            # Waning Gibbous
+    'Dogg Prime 🐕⭐',              # Last Quarter
+    'WolfFox 🐺🦊', # Waning Crescent
+    'Brown Hyena 🦴',              # Supermoon
+    'Dogg Celestial 🐕🌟',          # Blue Moon
+    'Folf Eclipse 🦊🌒',            # Blood Moon
+    'Aardwolf Luminous 🐾✨', # Harvest Moon
+    'Spotted Hyena Stellar 🐆⭐', # Hunter's Moon
+    'Folf Nova 🦊💥', # Wolf Moon
+    'Brown Hyena Cosmic 🦴🌌' # Pink Moon
   ]
 
   # Define 15 corresponding were-forms with emojis.
   WERE_FORMS = [
-    'WereDogg',                     # New Moon
-    'WereFolf',                     # Waxing Crescent
-    'WereAardwolf',                   # First Quarter
-    'WereSpottedHyena',               # Waxing Gibbous
-    'WereFolfHybrid',                # Full Moon
-    'WereStripedHyena',               # Waning Gibbous
-    'WereDoggPrime',                 # Last Quarter
-    'WereWolfFox', # Waning Crescent
-    'WereBrownHyena',                 # Supermoon
-    'WereDoggCelestial',             # Blue Moon
-    'WereFolfEclipse',               # Blood Moon
-    'WereAardwolfLuminous',          # Harvest Moon
-    'WereSpottedHyenaStellar',       # Hunter's Moon
-    'WereFolfNova', # Wolf Moon
-    'WereBrownHyenaCosmic', # Pink Moon
+    'WereDogg 🐶🌑',                     # New Moon
+    'WereFolf 🦊🌙',                     # Waxing Crescent
+    'WereAardwolf 🐾',                   # First Quarter
+    'WereSpottedHyena 🐆',               # Waxing Gibbous
+    'WereFolfHybrid 🦊✨',                # Full Moon
+    'WereStripedHyena 🦓',               # Waning Gibbous
+    'WereDoggPrime 🐕⭐',                 # Last Quarter
+    'WereWolfFox 🐺🦊', # Waning Crescent
+    'WereBrownHyena 🦴',                 # Supermoon
+    'WereDoggCelestial 🐕🌟',             # Blue Moon
+    'WereFolfEclipse 🦊🌒',               # Blood Moon
+    'WereAardwolfLuminous 🐾✨',          # Harvest Moon
+    'WereSpottedHyenaStellar 🐆⭐',       # Hunter's Moon
+    'WereFolfNova 🦊💥', # Wolf Moon
+    'WereBrownHyenaCosmic 🦴🌌' # Pink Moon
   ]
 
   # Each moon phase is assumed to share an equal slice of the lunar cycle.
@@ -164,6 +164,7 @@ class CGMFS
     r.on do
       # family_logged_in?(r) # -- TEMP FAILSAFE (v9.0.0.1)
       r.get do
+        response['Content-Type'] = 'text/html; charset=utf-8'
         "#{MoonPhaseDetails2.print_text_details_for_date(Date.today)}"
       end
     end

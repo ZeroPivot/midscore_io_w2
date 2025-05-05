@@ -34,7 +34,7 @@ class SolarDance2
 
   def self.sun_dance_message
     phase = current_phase
-    "🌞 The Sun is currently in '#{phase.name}' phase! #{phase.emoji}"
+    "🌞 The Sun is currently in \"#{phase.name}\" phase! #{phase.emoji}"
   end
 end
 

@@ -154,8 +154,7 @@ class MoonPhaseDetails2
     " Moon Phase: #{phase}\n
         Species: #{species}\n
         Were-Form: #{were_form}\n
-        Consciousness: #{consciousness}\n
-        Miade-Score/Infini-Vaeria Consciousness:\n #{1 - (consciousness_percentage / 100)}%\n (#{1 - (phase_index_raw / PHASE_COUNT - 1).round(2)}%)\n"
+        Consciousness: #{consciousness}\n"
   end
 end
 

@@ -926,8 +926,8 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
     });
 
     let addresses = vec!["65.38.99.230:443"];
-    let cert_path = "/root/midscore_io/config/www.stimky.info_ssl_certificate.cer";
-    let key_path = "/root/midscore_io/config/www.stimky.info_private_key.key";
+    let cert_path = "/etc/letsencrypt/live/stimky.info/fullchain.pem";
+    let key_path = "/etc/letsencrypt/live/stimky.info/privkey.pem";
 
     let mut tasks = vec![];
     for addr in addresses {

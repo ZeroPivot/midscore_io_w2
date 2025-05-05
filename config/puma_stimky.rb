@@ -82,8 +82,8 @@ threads 0, 16
 
 # Update with the actual paths to your key and certificate
 ssl_bind '65.38.99.230', '8080', {
-  key: '/root/midscore_io/config/www.stimky.info_private_key.key',
-  cert: '/root/midscore_io/config/www.stimky.info_ssl_certificate.cer',
+  key: '/etc/letsencrypt/live/stimky.info/privkey.pem',
+  cert: '/etc/letsencrypt/live/stimky.info/fullchain.pem',
   verify_mode: 'none'
 }
 # ...existing code...

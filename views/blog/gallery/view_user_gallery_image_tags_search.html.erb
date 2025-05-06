@@ -16,7 +16,7 @@
         }
     }
 </style>
-<center><form action="<%= "#{domain_name(@r)}/gallery_index/view/#{@user}/tags/search" %>" method="get">
+<center><form action="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/search" %>" method="get">
     <input type="text" id="search_tags" name="search_tags" placeholder="Search tags" required> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/tags/" %>">(🏷️,🏷️,...)</a>
     <input type="submit" value="Search">
 </form>
@@ -43,8 +43,8 @@
                 <p><strong>(🏷️)</strong> <%= parse_tags(user: @user, tag_string: image["tags"], r: @r) %></p>
                 <p><strong>(⌚)</strong> <%= image['date'] %></p>
                 <p><strong>(♾️)</strong> <%= image['views'] %></p>
-                <p><strong>(🖼️)</strong> <a href="<%= "#{domain_name(@r)}/gallery/#{@user}/#{image['file']}" %>">(⏬➡️💾)</a></p>
-                <p><strong>(🔗)</strong> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{image['id']}" %>"><img src="<%= "#{domain_name(@r)}/gallery/#{@user}/thumbnail_#{image['file']}" %>" alt="<%= @title %>"></a></p>
+                <p><strong>(🖼️)</strong> <a href="<%= "#{domain_name(@r)}/gallery_index/#{@user}/#{image['file']}" %>">(⏬➡️💾)</a></p>
+                <p><strong>(🔗)</strong> <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}/id/#{image['id']}" %>"><img src="<%= "#{domain_name(@r)}/gallery_index/#{@user}/thumbnail_#{image['file']}" %>" alt="<%= @title %>"></a></p>
                 <p><strong>(📌)</strong> <a href="<%= "#{domain_name(@r)}/gallery/edit/#{@user}/id/#{image['id']}" %>">(📝)</a></p>
             </div>
         <% end %>

@@ -818,7 +818,7 @@ class CGMFS
         else
           "No gallery post found with id #{@id}."
         end
-        r.redirect('/404') if @image.nil?
+        # r.redirect('/404') if @image.nil?
       end
     end
 

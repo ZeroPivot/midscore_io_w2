@@ -27,7 +27,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         notify::Config::default()
     )?;
 
+
+
+    let folder = std::env::args()
+        .skip_while(|arg| arg != "--folder")
+        .skip(1)
+        .next()
+        .unwrap_or("scripts".to_string());
+
+    std::fs::create_dir_all(&folder)?;
+
+    watcher.watch(std::path::Path::new(&folder), RecursiveMode::Recursive)?;
     watcher.watch(std::path::Path::new("scripts"), RecursiveMode::Recursive)?;
+    fs::write("scripts/pid.txt", std::process::id().to_string())?;
 
     let ruby = unsafe{ init() };
     println!("Watching for Ruby scripts in ./scripts...");
@@ -45,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         };
                         let txt_path = path.with_extension("txt");
                         fs::write(&txt_path, result.to_string())?;
-                        fs::remove_file(&path)?;
+                        //fs::remove_file(&path)?;
                         println!("Evaluated {:?} -> {:?}", path, txt_path);
                     }
                 }

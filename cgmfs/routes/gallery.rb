@@ -107,7 +107,9 @@ class CGMFS
       'Harvest Moon 🍂🌕',      # 11
       "Hunter's Moon 🌙🔭",     # 12
       'Wolf Moon 🐺🌕',         # 13
-      'Pink Moon 🌸🌕'          # 14
+      'Pink Moon 🌸🌕',
+      'Snow Moon 🌨️',          # 14
+      'Snow Moon Snow 🌨️❄️'    # 15
     ]
 
     # Define 15 corresponding species with emojis.
@@ -126,7 +128,9 @@ class CGMFS
       'Aardwolf Luminous 🐾✨', # Harvest Moon
       'Spotted Hyena Stellar 🐆⭐', # Hunter's Moon
       'Folf Nova 🦊💥', # Wolf Moon
-      'Brown Hyena Cosmic 🦴🌌' # Pink Moon
+      'Brown Hyena Cosmic 🦴🌌', # Pink Moon
+      'Snow Leopard 🌨️', # New Moon
+      'Snow Leopard Snow Snep 🌨️❄️' # Pink Moon
     ]
 
     # Define 15 corresponding were-forms with emojis.
@@ -145,7 +149,10 @@ class CGMFS
       'WereAardwolfLuminous 🐾✨',          # Harvest Moon
       'WereSpottedHyenaStellar 🐆⭐',       # Hunter's Moon
       'WereFolfNova 🦊💥', # Wolf Moon
-      'WereBrownHyenaCosmic 🦴🌌' # Pink Moon
+      'WereBrownHyenaCosmic 🦴🌌', # Pink Moon
+      'WereSnowLeopard 🐆❄️',
+      'WereSnowLeopardSnow 🐆❄️❄️' # Pink Moon
+
     ]
 
     # Each moon phase is assumed to share an equal slice of the lunar cycle.

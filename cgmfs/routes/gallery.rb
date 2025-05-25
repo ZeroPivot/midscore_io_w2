@@ -108,8 +108,10 @@ class CGMFS
       "Hunter's Moon 🌙🔭",     # 12
       'Wolf Moon 🐺🌕',         # 13
       'Pink Moon 🌸🌕',
-      'Snow Moon 🌨️',          # 14
-      'Snow Moon Snow 🌨️❄️'    # 15
+      'Snow Moon 🌨️', # 14
+      'Snow Moon Snow 🌨️❄️', # 15
+      'Avian Moon 🦅',          # 16
+      'Avian Moon Snow 🦅❄️'    # 17
     ]
 
     # Define 15 corresponding species with emojis.
@@ -130,7 +132,9 @@ class CGMFS
       'Folf Nova 🦊💥', # Wolf Moon
       'Brown Hyena Cosmic 🦴🌌', # Pink Moon
       'Snow Leopard 🌨️', # New Moon
-      'Snow Leopard Snow Snep 🌨️❄️' # Pink Moon
+      'Snow Leopard Snow Snep 🌨️❄️', # Pink Moon
+      'Avian 🦅', # New Moon
+      'Avian Snow 🦅❄️' # Pink Moon
     ]
 
     # Define 15 corresponding were-forms with emojis.
@@ -151,7 +155,9 @@ class CGMFS
       'WereFolfNova 🦊💥', # Wolf Moon
       'WereBrownHyenaCosmic 🦴🌌', # Pink Moon
       'WereSnowLeopard 🐆❄️',
-      'WereSnowLeopardSnow 🐆❄️❄️' # Pink Moon
+      'WereSnowLeopardSnow 🐆❄️❄️', # Pink Moon
+      'WereAvian 🦅', # New Moon
+      'WereAvianSnow 🦅❄️' # Pink Moon
 
     ]
 

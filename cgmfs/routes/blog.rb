@@ -86,7 +86,7 @@ end
 # Average length of a full lunar cycle (in days)
 MOON_CYCLE_DAYS = 29.53
 
-# The 15 fabled moon rotations with emojis:
+# The 17 fabled moon rotations with emojis:
 MOON_ROTATIONS = [
   'New Moon 🌑',            # 0
   'Waxing Crescent 🌒',     # 1
@@ -102,7 +102,11 @@ MOON_ROTATIONS = [
   'Harvest Moon 🍂🌕',      # 11
   "Hunter's Moon 🌙🔭",     # 12
   'Wolf Moon 🐺🌕',         # 13
-  'Pink Moon 🌸🌕'          # 14
+  'Pink Moon 🌸🌕',
+  'Snow Moon 🌨️', # 14
+  'Snow Moon Snow 🌨️❄️', # 15
+  'Avian Moon 🦅',          # 16
+  'Avian Moon Snow 🦅❄️'    # 17
 ]
 
 # Define 15 corresponding species with emojis.
@@ -121,7 +125,11 @@ SPECIES = [
   'Aardwolf Luminous 🐾✨', # Harvest Moon
   'Spotted Hyena Stellar 🐆⭐', # Hunter's Moon
   'Folf Nova 🦊💥', # Wolf Moon
-  'Brown Hyena Cosmic 🦴🌌' # Pink Moon
+  'Brown Hyena Cosmic 🦴🌌', # Pink Moon
+  'Snow Leopard 🌨️', # New Moon
+  'Snow Leopard Snow Snep 🌨️❄️', # Pink Moon
+  'Avian 🦅', # New Moon
+  'Avian Snow 🦅❄️' # Pink Moon
 ]
 
 # Define 15 corresponding were-forms with emojis.
@@ -140,7 +148,12 @@ WERE_FORMS = [
   'WereAardwolfLuminous 🐾✨',          # Harvest Moon
   'WereSpottedHyenaStellar 🐆⭐',       # Hunter's Moon
   'WereFolfNova 🦊💥', # Wolf Moon
-  'WereBrownHyenaCosmic 🦴🌌' # Pink Moon
+  'WereBrownHyenaCosmic 🦴🌌', # Pink Moon
+  'WereSnowLeopard 🐆❄️',
+  'WereSnowLeopardSnow 🐆❄️❄️', # Pink Moon
+  'WereAvian 🦅', # New Moon
+  'WereAvianSnow 🦅❄️' # Pink Moon
+
 ]
 
 # Each moon phase is assumed to share an equal slice of the lunar cycle.

@@ -222,6 +222,33 @@ WERE_FORMS = [
   'WereBrownHyenaCosmic 🦴🌌' # Pink Moon
 ]
 
+class Calendar
+  attr_reader :date
+
+  def initialize
+    @date = Date.today
+  end
+
+  def gregorian
+    @date.strftime('%m/%d/%Y')
+  end
+
+  def julian
+    jd = @date.jd
+    julian_date = Date.jd(jd, Date::JULIAN)
+    julian_date.strftime('%m/%d/%Y')
+  end
+
+  def julian_primitive
+    @date.jd
+  end
+
+  def formatted_pst_time
+    pst_time = Time.now.getlocal('-07:00')
+    pst_time.strftime('%B, %d, %Y - %I:%M:%S %p PST')
+  end
+end
+
 # Each moon phase is assumed to share an equal slice of the lunar cycle.
 PHASE_COUNT  = MOON_ROTATIONS.size # 15 total phases
 PHASE_LENGTH = MOON_CYCLE_DAYS / PHASE_COUNT # Days per phase

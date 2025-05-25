@@ -787,33 +787,32 @@ end
 
 
 class Calendar
-    attr_reader :date
+  attr_reader :date
 
-    def initialize
-      @date = Date.today
-    end
-
-    def gregorian
-      @date.strftime('%m/%d/%Y')
-    end
-
-    def julian
-      jd = @date.jd
-      julian_date = Date.jd(jd, Date::JULIAN)
-      julian_date.strftime('%m/%d/%Y')
-    end
-
-    def julian_primitive
-      @date.jd
-    end
+  def initialize
+    @date = Date.today
   end
 
-  def formatted_pst_time
-  # Get the current time and convert it to Pacific Standard Time (PST)
-  pst_time = Time.now.getlocal('-07:00')
+  def gregorian
+    @date.strftime('%m/%d/%Y')
+  end
 
-  # Format the output as "Month, Day, Year - TimeInPST"
-  pst_time.strftime('%B, %d, %Y - %I:%M %p PST')
+  def julian
+    jd = @date.jd
+    julian_date = Date.jd(jd, Date::JULIAN)
+    julian_date.strftime('%m/%d/%Y')
+  end
+
+  def julian_primitive
+    @date.jd
+  end
+end
+
+def formatted_pst_time
+  pst_time = Time.now.getlocal('-07:00')
+  pst_time.strftime('%B, %d, %Y - %I:%M:%S %p PST')
+end
+
 end
 
 

@@ -144,7 +144,7 @@ div.galleryTable {
 <br>
 ♾️<%= @page_views.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %> -- (c)Miaed-Score -- <%= $dog_blog_version %><br>
 <br />
-<center><%= formatted_pst_time %> - PST/SLT (DST)</center>
+<center><%= formatted_pst_time %></center>
 <br />
 
 
@@ -225,62 +225,75 @@ FileUtils.touch('./hitches.txt')
   <center><pre>  # Average length of a full lunar cycle (in days)
     MOON_CYCLE_DAYS = 29.53
 
-    # The 15 fabled moon rotations with emojis:
-    MOON_ROTATIONS = [
-      "New Moon 🌑",            # 0
-      "Waxing Crescent 🌒",     # 1
-      "First Quarter 🌓",       # 2
-      "Waxing Gibbous 🌔",      # 3
-      "Full Moon 🌕",           # 4
-      "Waning Gibbous 🌖",      # 5
-      "Last Quarter 🌗",        # 6
-      "Waning Crescent 🌘",     # 7
-      "Supermoon 🌝",           # 8
-      "Blue Moon 🔵🌙",         # 9
-      "Blood Moon 🩸🌙",        # 10
-      "Harvest Moon 🍂🌕",      # 11
-      "Hunter's Moon 🌙🔭",     # 12
-      "Wolf Moon 🐺🌕",         # 13
-      "Pink Moon 🌸🌕"          # 14
-    ]
+   # The 17 fabled moon rotations with emojis:
+MOON_ROTATIONS = [
+  'New Moon 🌑',            # 0
+  'Waxing Crescent 🌒',     # 1
+  'First Quarter 🌓',       # 2
+  'Waxing Gibbous 🌔', # 3
+  'Full Moon 🌕',           # 4
+  'Waning Gibbous 🌖',      # 5
+  'Last Quarter 🌗',        # 6
+  'Waning Crescent 🌘',     # 7
+  'Supermoon 🌝',           # 8
+  'Blue Moon 🔵🌙',         # 9
+  'Blood Moon 🩸🌙',        # 10
+  'Harvest Moon 🍂🌕',      # 11
+  "Hunter's Moon 🌙🔭",     # 12
+  'Wolf Moon 🐺🌕',         # 13
+  'Pink Moon 🌸🌕',
+  'Snow Moon 🌨️', # 14
+  'Snow Moon Snow 🌨️❄️', # 15
+  'Avian Moon 🦅',          # 16
+  'Avian Moon Snow 🦅❄️'    # 17
+]
 
-    # Define 15 corresponding species with emojis.
-    SPECIES = [
-      "Dogg 🐶",                     # New Moon
-      "Folf 🦊🐺",                   # Waxing Crescent
-      "Aardwolf 🐾",                 # First Quarter
-      "Spotted Hyena 🐆",            # Waxing Gibbous
-      "Folf Hybrid 🦊✨",             # Full Moon
-      "Striped Hyena 🦓",            # Waning Gibbous
-      "Dogg Prime 🐕⭐",              # Last Quarter
-      "WolfFox 🐺🦊",                # Waning Crescent
-      "Brown Hyena 🦴",              # Supermoon
-      "Dogg Celestial 🐕🌟",          # Blue Moon
-      "Folf Eclipse 🦊🌒",            # Blood Moon
-      "Aardwolf Luminous 🐾✨",        # Harvest Moon
-      "Spotted Hyena Stellar 🐆⭐",   # Hunter's Moon
-      "Folf Nova 🦊💥",              # Wolf Moon
-      "Brown Hyena Cosmic 🦴🌌"       # Pink Moon
-    ]
+# Define 15 corresponding species with emojis.
+SPECIES = [
+  'Dogg 🐶', # New Moon
+  'Folf 🦊🐺', # Waxing Crescent
+  'Aardwolf 🐾',                 # First Quarter
+  'Spotted Hyena 🐆',            # Waxing Gibbous
+  'Folf Hybrid 🦊✨',             # Full Moon
+  'Striped Hyena 🦓',            # Waning Gibbous
+  'Dogg Prime 🐕⭐',              # Last Quarter
+  'WolfFox 🐺🦊', # Waning Crescent
+  'Brown Hyena 🦴',              # Supermoon
+  'Dogg Celestial 🐕🌟',          # Blue Moon
+  'Folf Eclipse 🦊🌒',            # Blood Moon
+  'Aardwolf Luminous 🐾✨', # Harvest Moon
+  'Spotted Hyena Stellar 🐆⭐', # Hunter's Moon
+  'Folf Nova 🦊💥', # Wolf Moon
+  'Brown Hyena Cosmic 🦴🌌', # Pink Moon
+  'Snow Leopard 🌨️', # New Moon
+  'Snow Leopard Snow Snep 🌨️❄️', # Pink Moon
+  'Avian 🦅', # New Moon
+  'Avian Snow 🦅❄️' # Pink Moon
+]
 
-    # Define 15 corresponding were-forms with emojis.
-    WERE_FORMS = [
-      "WereDogg 🐶🌑",                     # New Moon
-      "WereFolf 🦊🌙",                     # Waxing Crescent
-      "WereAardwolf 🐾",                   # First Quarter
-      "WereSpottedHyena 🐆",               # Waxing Gibbous
-      "WereFolfHybrid 🦊✨",                # Full Moon
-      "WereStripedHyena 🦓",               # Waning Gibbous
-      "WereDoggPrime 🐕⭐",                 # Last Quarter
-      "WereWolfFox 🐺🦊",                  # Waning Crescent
-      "WereBrownHyena 🦴",                 # Supermoon
-      "WereDoggCelestial 🐕🌟",             # Blue Moon
-      "WereFolfEclipse 🦊🌒",               # Blood Moon
-      "WereAardwolfLuminous 🐾✨",          # Harvest Moon
-      "WereSpottedHyenaStellar 🐆⭐",       # Hunter's Moon
-      "WereFolfNova 🦊💥",                 # Wolf Moon
-      "WereBrownHyenaCosmic 🦴🌌"           # Pink Moon
-    ]
+# Define 15 corresponding were-forms with emojis.
+WERE_FORMS = [
+  'WereDogg 🐶🌑',                     # New Moon
+  'WereFolf 🦊🌙',                     # Waxing Crescent
+  'WereAardwolf 🐾',                   # First Quarter
+  'WereSpottedHyena 🐆',               # Waxing Gibbous
+  'WereFolfHybrid 🦊✨',                # Full Moon
+  'WereStripedHyena 🦓',               # Waning Gibbous
+  'WereDoggPrime 🐕⭐',                 # Last Quarter
+  'WereWolfFox 🐺🦊', # Waning Crescent
+  'WereBrownHyena 🦴',                 # Supermoon
+  'WereDoggCelestial 🐕🌟',             # Blue Moon
+  'WereFolfEclipse 🦊🌒',               # Blood Moon
+  'WereAardwolfLuminous 🐾✨',          # Harvest Moon
+  'WereSpottedHyenaStellar 🐆⭐',       # Hunter's Moon
+  'WereFolfNova 🦊💥', # Wolf Moon
+  'WereBrownHyenaCosmic 🦴🌌', # Pink Moon
+  'WereSnowLeopard 🐆❄️',
+  'WereSnowLeopardSnow 🐆❄️❄️', # Pink Moon
+  'WereAvian 🦅', # New Moon
+  'WereAvianSnow 🦅❄️' # Pink Moon
+
+]
 </pre>
 </center>
 

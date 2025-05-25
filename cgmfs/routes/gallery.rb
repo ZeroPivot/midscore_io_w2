@@ -91,7 +91,7 @@ class CGMFS
     # Average length of a full lunar cycle (in days)
     MOON_CYCLE_DAYS = 29.53
 
-    # The 15 fabled moon rotations with emojis:
+    # The 17 fabled moon rotations with emojis:
     MOON_ROTATIONS = [
       'New Moon 🌑',            # 0
       'Waxing Crescent 🌒',     # 1

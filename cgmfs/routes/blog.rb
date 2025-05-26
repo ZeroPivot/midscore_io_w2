@@ -45,21 +45,23 @@ end
 
 class SolarDance
   PHASES = [
-    SunPhase.new('Midnight Mystery', 0, '🌑'),
-    SunPhase.new('Dawn’s Whisper', 3, '🌅'),
-    SunPhase.new('First Light’s Murmur', 5, '🔅'),
-    SunPhase.new('Golden Awakening', 6, '☀️'),
-    SunPhase.new('Morning Glow', 8, '🌞'),
-    SunPhase.new('High Noon Radiance', 12, '🔥'),
-    SunPhase.new('Afternoon Brilliance', 15, '🌇'),
-    SunPhase.new('Golden Hour Serenade', 17, '🌆'),
-    SunPhase.new('Twilight Poetry', 18, '🌒'),
-    SunPhase.new('Dusky Secrets', 19, '🌓'),
-    SunPhase.new('Crimson Horizon', 20, '🌔'),
-    SunPhase.new('Moon’s Ascent', 21, '🌕'),
-    SunPhase.new('Nightfall’s Caress', 22, '✨'),
-    SunPhase.new('Deep Celestial Silence', 23, '🌌'),
-    SunPhase.new('Cosmic Slumber', 24, '🌠')
+    SunPhase2.new('Midnight Mystery', 0, '🌑'),
+    SunPhase2.new('Early Dawn', 1, '🌒'),
+    SunPhase2.new('Morning Whisper', 2, '🌄'),
+    SunPhase2.new('Dawn\'s Whisper', 3, '🌅'),
+    SunPhase2.new('First Light\'s Murmur', 5, '🔅'),
+    SunPhase2.new('Golden Awakening', 6, '☀️'),
+    SunPhase2.new('Morning Glow', 8, '🌞'),
+    SunPhase2.new('High Noon Radiance', 12, '🔥'),
+    SunPhase2.new('Afternoon Brilliance', 15, '🌇'),
+    SunPhase2.new('Golden Hour Serenade', 17, '🌆'),
+    SunPhase2.new('Twilight Poetry', 18, '🌒'),
+    SunPhase2.new('Dusky Secrets', 19, '🌓'),
+    SunPhase2.new('Crimson Horizon', 20, '🌔'),
+    SunPhase2.new('Moon\'s Ascent', 21, '🌕'),
+    SunPhase2.new('Nightfall\'s Caress', 22, '✨'),
+    SunPhase2.new('Deep Celestial Silence', 23, '🌌'),
+    SunPhase2.new('Cosmic Slumber', 24, '🌠')
   ]
 
   def self.current_phase
@@ -161,63 +163,6 @@ PHASE_LENGTH = MOON_CYCLE_DAYS / PHASE_COUNT # Days per phase
 
 # Average length of a full lunar cycle (in days)
 MOON_CYCLE_DAYS = 29.53
-
-# The 15 fabled moon rotations with emojis:
-MOON_ROTATIONS = [
-  'New Moon 🌑',            # 0
-  'Waxing Crescent 🌒',     # 1
-  'First Quarter 🌓',       # 2
-  'Waxing Gibbous 🌔', # 3
-  'Full Moon 🌕',           # 4
-  'Waning Gibbous 🌖',      # 5
-  'Last Quarter 🌗',        # 6
-  'Waning Crescent 🌘',     # 7
-  'Supermoon 🌝',           # 8
-  'Blue Moon 🔵🌙',         # 9
-  'Blood Moon 🩸🌙',        # 10
-  'Harvest Moon 🍂🌕',      # 11
-  "Hunter's Moon 🌙🔭",     # 12
-  'Wolf Moon 🐺🌕',         # 13
-  'Pink Moon 🌸🌕'          # 14
-]
-
-# Define 15 corresponding species with emojis.
-SPECIES = [
-  'Dogg 🐶', # New Moon
-  'Folf 🦊🐺', # Waxing Crescent
-  'Aardwolf 🐾',                 # First Quarter
-  'Spotted Hyena 🐆',            # Waxing Gibbous
-  'Folf Hybrid 🦊✨',             # Full Moon
-  'Striped Hyena 🦓',            # Waning Gibbous
-  'Dogg Prime 🐕⭐',              # Last Quarter
-  'WolfFox 🐺🦊', # Waning Crescent
-  'Brown Hyena 🦴',              # Supermoon
-  'Dogg Celestial 🐕🌟',          # Blue Moon
-  'Folf Eclipse 🦊🌒',            # Blood Moon
-  'Aardwolf Luminous 🐾✨', # Harvest Moon
-  'Spotted Hyena Stellar 🐆⭐', # Hunter's Moon
-  'Folf Nova 🦊💥', # Wolf Moon
-  'Brown Hyena Cosmic 🦴🌌' # Pink Moon
-]
-
-# Define 15 corresponding were-forms with emojis.
-WERE_FORMS = [
-  'WereDogg 🐶🌑',                     # New Moon
-  'WereFolf 🦊🌙',                     # Waxing Crescent
-  'WereAardwolf 🐾',                   # First Quarter
-  'WereSpottedHyena 🐆',               # Waxing Gibbous
-  'WereFolfHybrid 🦊✨',                # Full Moon
-  'WereStripedHyena 🦓',               # Waning Gibbous
-  'WereDoggPrime 🐕⭐',                 # Last Quarter
-  'WereWolfFox 🐺🦊', # Waning Crescent
-  'WereBrownHyena 🦴',                 # Supermoon
-  'WereDoggCelestial 🐕🌟',             # Blue Moon
-  'WereFolfEclipse 🦊🌒',               # Blood Moon
-  'WereAardwolfLuminous 🐾✨',          # Harvest Moon
-  'WereSpottedHyenaStellar 🐆⭐',       # Hunter's Moon
-  'WereFolfNova 🦊💥', # Wolf Moon
-  'WereBrownHyenaCosmic 🦴🌌' # Pink Moon
-]
 
 class Calendar
   attr_reader :date

@@ -50,25 +50,23 @@ class CGMFS
   end
 
   class SolarDance
-      PHASES = [
-        SunPhase2.new('Midnight Mystery', 0, '🌑'),
-        SunPhase2.new('Early Dawn', 1, '🌒')
-        SunPhase2.new('Morning Whisper', 2, '🌄'),
-        SunPhase2.new('Dawn\'s Whisper', 3, '🌅'),
-        SunPhase2.new('First Light\'s Murmur', 5, '🔅'),
-        SunPhase2.new('Golden Awakening', 6, '☀️'),
-        SunPhase2.new('Morning Glow', 8, '🌞'),
-        SunPhase2.new('High Noon Radiance', 12, '🔥'),
-        SunPhase2.new('Afternoon Brilliance', 15, '🌇'),
-        SunPhase2.new('Golden Hour Serenade', 17, '🌆'),
-        SunPhase2.new('Twilight Poetry', 18, '🌒'),
-        SunPhase2.new('Dusky Secrets', 19, '🌓'),
-        SunPhase2.new('Crimson Horizon', 20, '🌔'),
-        SunPhase2.new('Moon\'s Ascent', 21, '🌕'),
-        SunPhase2.new('Nightfall\'s Caress', 22, '✨'),
-        SunPhase2.new('Deep Celestial Silence', 23, '🌌'),
-        SunPhase2.new('Cosmic Slumber', 24, '🌠')
-      ]
+    PHASES = [
+      SunPhase.new('Midnight Mystery', 0, '🌑'),
+      SunPhase.new('Dawn’s Whisper', 3, '🌅'),
+      SunPhase.new('First Light’s Murmur', 5, '🔅'),
+      SunPhase.new('Golden Awakening', 6, '☀️'),
+      SunPhase.new('Morning Glow', 8, '🌞'),
+      SunPhase.new('High Noon Radiance', 12, '🔥'),
+      SunPhase.new('Afternoon Brilliance', 15, '🌇'),
+      SunPhase.new('Golden Hour Serenade', 17, '🌆'),
+      SunPhase.new('Twilight Poetry', 18, '🌒'),
+      SunPhase.new('Dusky Secrets', 19, '🌓'),
+      SunPhase.new('Crimson Horizon', 20, '🌔'),
+      SunPhase.new('Moon’s Ascent', 21, '🌕'),
+      SunPhase.new('Nightfall’s Caress', 22, '✨'),
+      SunPhase.new('Deep Celestial Silence', 23, '🌌'),
+      SunPhase.new('Cosmic Slumber', 24, '🌠')
+    ]
 
     def self.current_phase
       pst_hour = Time.now.getlocal('-08:00').hour # Pacific Standard Time (PST)

@@ -569,8 +569,37 @@ async fn main() -> tide::Result<()>
     let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
     let filename = format!("./scripts/script_{ts}.rb");
     let contents = r######"
-    
-    require 'date'
+       require 'date'
+
+    # This Ruby code is designed to be evaluated by the Magnus Ruby interpreter.
+      class AECalendar
+    attr_reader :start_date, :year_length, :month_length
+
+    def initialize(start_date = DateTime.new(2025, 6, 4, 0, 0, 0), month_length = 14, months_in_year = 12)
+      @start_date = start_date
+      @month_length = month_length
+      @year_length = month_length * months_in_year
+    end
+
+    def ae_date(gregorian_date)
+      days_since_start = (gregorian_date - @start_date).to_i
+      ae_year = 1 + (days_since_start / @year_length)
+      ae_month = 1 + ((days_since_start % @year_length) / @month_length)
+      ae_day = 1 + ((days_since_start % @year_length) % @month_length)
+      day_of_week = gregorian_date.strftime('%A') # Get the day name
+
+      "AE #{ae_year}, Month #{ae_month}, Day #{ae_day} (#{day_of_week})"
+    end
+  end
+
+  # Example usage
+  ae_calendar = AECalendar.new
+  gregorian_example = DateTime.new(2025, 7, 1)
+
+
+
+
+ 
     class MoonPhaseDetails2
       # === Constants and Definitions ===
 
@@ -833,6 +862,65 @@ async fn main() -> tide::Result<()>
 
     
     let result_path = format!("./scripts/moon_{}.txt", ts);
+
+    // Block until the result file is available or until timeout
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(120);
+    while !std::path::Path::new(&result_path).exists() {
+      if start.elapsed() > timeout {
+        return Ok("Timed out waiting for result file".into());
+      }
+      std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+
+    // Remove script file after evaluation.
+  
+    let _ = std::fs::remove_file(&result_path);
+    let _ = std::fs::remove_file(&filename);
+
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(output);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
+
+  app.at("/ae").get(|mut req: tide::Request<AppState>| async move {
+    
+    let script_dir = "./scripts";
+    //td::fs::create_dir_all(script_dir).ok();
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    //res.set_body("HTML content for /moon route");
+    //res.set_content_type("text/html; charset=utf-8");
+    //return Ok(res);
+    // Grab Ruby code from request body.
+    let ruby_source = r######"
+
+     # Example usage
+  ae_calendar = AECalendar.new
+  "AE Calendar: #{ae_calendar.ae_date(DateTime.now)}"
+
+    "######;
+    if ruby_source.trim().is_empty() {
+        let mut resp = tide::Response::new(tide::StatusCode::Ok);
+        resp.set_body("No Ruby code supplied");
+        return Ok(resp);
+    }
+
+    // Create unique .rb filename.
+    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+    let filename = format!("{}/ae_{}.rb", script_dir,ts);
+    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+
+
+
+    let result_path = format!("./scripts/ae_{}.txt", ts);
 
     // Block until the result file is available or until timeout
     let start = std::time::Instant::now();
@@ -1252,59 +1340,7 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
         }
     });
 */
-    // New "ae" route that displays an iframe similar to /rustby.
-    // It takes a query parameter "route" corresponding to the path on port 8080.
-    // It displays a text link for the standard port 8080 route and embeds the /rustby iframe.
-    app.at("/ae").get(|req: Request<AppState>| async move {
-        let query: HashMap<String, String> = req.query().unwrap_or_default();
-        let route = query.get("route").cloned().unwrap_or_else(|| "/".to_string());
-        let standard_route = format!("https://miaedscore.online{}", route);
-        let rustby_route = format!("https://miaedscore.online/rustby?vlog={}", route);
-        let html = format!(r#"<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AE Route</title>
-  <style>
-    body {{
-      margin: 0;
-      padding: 0;
-      font-family: sans-serif;
-    }}
-    .header {{
-      padding: 10px;
-      background-color: #f0f0f0;
-      text-align: center;
-    }}
-    .content {{
-      height: calc(100vh - 50px);
-    }}
-    iframe {{
-      width: 100%;
-      height: 100%;
-      border: none;
-    }}
-  </style>
-</head>
 
-<body>
-  <div class="header">
-    <p>Standard route: <a href="{standard_route}">{standard_route}</a></p>
-  </div>
-  <div class="content">
-    <iframe src="{rustby_route}"></iframe>
-  </div>
-</body>
-</html>"#,
-            standard_route = standard_route,
-            rustby_route = rustby_route
-        );
-        let mut res = tide::Response::new(tide::StatusCode::Ok);
-        res.set_body(html);
-        res.set_content_type("text/html");
-        Ok(res)
-    });
 
     // A simple POST endpoint
     app.at("/echo").post(|mut req: Request<AppState>| async move {

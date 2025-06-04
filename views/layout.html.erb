@@ -106,6 +106,8 @@ div.galleryTable {
   <font size="3"><%= SolarDance.sun_dance_message %></font><br>
   <font size="3"><%= "Gregorian: #{Calendar.new.gregorian}" %><font><br>
   <font size="3"><%= "Julian: #{Calendar.new.julian_primitive} -> #{Calendar.new.julian}" %></font><br>
+  <% @ae_calendar = AECalendar.new %>
+  <font size="3"><%= "AE Calendar: #{@ae_calendar.ae_date(DateTime.now)}" %></font><br>
   <%= "<font size=\"4\">#{MoonPhaseDetails.print_details_for_date(Date.today)}</font>" %>
   <b>120</b>🕰️<%= convert_to_120_second_time_pst  %> PST
   <hr>

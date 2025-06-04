@@ -329,6 +329,34 @@ end
 # puts MoonPhaseDetails.print_details_for_date(today)
 # puts MoonPhaseDetails.render_full_schedule_html
 
+class AECalendar
+  attr_reader :start_date, :year_length, :month_length
+
+  def initialize(start_date = DateTime.new(2025, 6, 4, 0, 0, 0), month_length = 14, months_in_year = 12)
+    @start_date = start_date
+    @month_length = month_length
+    @year_length = month_length * months_in_year
+  end
+
+  def ae_date(gregorian_date)
+    days_since_start = (gregorian_date - @start_date).to_i
+    ae_year = 1 + (days_since_start / @year_length)
+    ae_month = 1 + ((days_since_start % @year_length) / @month_length)
+    ae_day = 1 + ((days_since_start % @year_length) % @month_length)
+    day_of_week = gregorian_date.strftime('%A') # Get the day name
+
+    "AE #{ae_year}, Month #{ae_month}, Day #{ae_day} (#{day_of_week})"
+  end
+end
+
+# Example usage
+ae_calendar = AECalendar.new
+gregorian_example = DateTime.new(2025, 7, 1)
+
+puts "Gregorian Date: #{gregorian_example.strftime('%Y-%m-%d (%A)')}"
+puts "AE Calendar Date: #{ae_calendar.ae_date(gregorian_example)}"
+
+
 # The CGMFS class represents a module for handling various functionalities related to a blog.
 class CGMFS
   def get_mdy(date)

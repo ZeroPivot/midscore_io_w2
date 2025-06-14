@@ -7,6 +7,9 @@ use magnus::{eval,
 };
 use std::io::{self, BufRead};
 
+use chrono::Utc;
+
+
 // v1.0.0.0
 
 /// Evaluates Ruby code and always returns a String.
@@ -101,7 +104,7 @@ impl tide::Middleware<AppState> for LogRoute {
 use std::thread::JoinHandle;
 use std::sync::mpsc;
 use std::sync::mpsc::{channel, Sender};
-use std::sync::Arc;
+// use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 use std::sync::mpsc::Receiver;
@@ -137,7 +140,7 @@ async fn main() -> tide::Result<()>
         eprintln!("Failed to create script directory: {}", e);
         continue;
         }
-         let filename = format!("{}/script_{}.rb", script_dir, Utc::now().timestamp_nanos());
+        let filename = format!("{}/script_{}.rb", script_dir, Utc::now().timestamp_nanos_opt().unwrap_or(0));
         // Replace the Ruby code below as needed. It must return a string value.
        let ruby_code = r#"nil        
        'RustbySpace'
@@ -202,13 +205,6 @@ async fn main() -> tide::Result<()>
 //  Ok(())
 
 
-    //////
-    /// 
-    /// 
-    /// 
-    /// 
-    /// 
-  
   
   /*
     ///
@@ -256,6 +252,7 @@ async fn main() -> tide::Result<()>
     use tide::{Request, Response, StatusCode};
 
     use url::Url;
+use std::fs::OpenOptions;
     //let rustby_eval_title = rustby_eval_title.clone();
 
 
@@ -357,6 +354,8 @@ async fn main() -> tide::Result<()>
       }
     }
 
+
+  
     // Serve each directory. Tide will serve new files as they appear.
     app.at("/css").serve_dir("./css/")?;
     app.at("/js").serve_dir("./js/")?;
@@ -890,6 +889,26 @@ async fn main() -> tide::Result<()>
   });
 
 
+  app.at("/sl_logger").post(|mut req: tide::Request<AppState>| async move {
+    // Catch all POST variables into a hashmap and print them
+    let body = req.body_string().await.unwrap_or_default();
+    println!("Received POST body: {}", body);
+
+    let file_name: String = "sl_logger.txt".to_string();
+
+      std::fs::write(&file_name, &body).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+      let output = "Log entry received and written to file successfully.";
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(output);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
+
   app.at("/ae").get(|mut req: tide::Request<AppState>| async move {
     
     let script_dir = "./scripts";
@@ -1140,8 +1159,7 @@ async fn main() -> tide::Result<()>
       Ok(res)
     });
     
-    use async_std::path::Path;
-use chrono::Utc;
+
  // assuming the helper is in the module
 
 app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {

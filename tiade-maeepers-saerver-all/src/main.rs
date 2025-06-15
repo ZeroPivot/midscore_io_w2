@@ -569,6 +569,7 @@ use std::fs::OpenOptions;
     let filename = format!("./scripts/script_{ts}.rb");
     let contents = r######"
        require 'date'
+       require 'fileutils'
 
     # This Ruby code is designed to be evaluated by the Magnus Ruby interpreter.
       class AECalendar
@@ -894,9 +895,55 @@ use std::fs::OpenOptions;
     let body = req.body_string().await.unwrap_or_default();
     println!("Received POST body: {}", body);
 
-    let file_name: String = "sl_logger.txt".to_string();
+    let script_dir = "./scripts";
+    let file_name: String = "second_life_chat_log.txt".to_string();
 
-      std::fs::write(&file_name, &body).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+    let ruby_source = format!(r######"     
+    body = {}
+    puts Dir.pwd
+    FileUtils.touch("/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt")
+    puts "logging chat message to file"
+     File.open('/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt', 'a+') do |file|
+       file.write("#{{body}}\n")
+     end
+    puts "Chat message logged to file successfully"
+    
+    "message logged to file successfully"
+    "######, body);
+
+
+    if ruby_source.trim().is_empty() {
+        let mut resp = tide::Response::new(tide::StatusCode::Ok);
+        resp.set_body("No Ruby code supplied");
+        return Ok(resp);
+    }
+
+    // Create unique .rb filename.
+    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+    let filename = format!("{}/sl_log_{}.rb", script_dir,ts);
+    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+
+
+
+    let result_path = format!("./scripts/sl_log_{}.txt", ts);
+
+    // Block until the result file is available or until timeout
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(120);
+    while !std::path::Path::new(&result_path).exists() {
+      if start.elapsed() > timeout {
+        return Ok("Timed out waiting for result file".into());
+      }
+      std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+
+    // Remove script file after evaluation.
+  
+    let _ = std::fs::remove_file(&result_path);
+    let _ = std::fs::remove_file(&filename);
 
       let output = "Log entry received and written to file successfully.";
 

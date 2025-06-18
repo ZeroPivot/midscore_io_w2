@@ -564,9 +564,9 @@ use std::fs::OpenOptions;
 
 
   {
-    std::fs::create_dir_all("./scripts").ok();
+    std::fs::create_dir_all("/root/midscore_io/rustby/rustby-vm/target/release/scripts").ok();
     let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
-    let filename = format!("./scripts/script_{ts}.rb");
+    let filename = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/script_{ts}.rb");
     let contents = r######"
        require 'date'
        require 'fileutils'
@@ -835,7 +835,7 @@ use std::fs::OpenOptions;
 
   app.at("/time").get(|mut req: tide::Request<AppState>| async move {
     
-    let script_dir = "./scripts";
+    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     //td::fs::create_dir_all(script_dir).ok();
     let mut res = tide::Response::new(tide::StatusCode::Ok);
     //res.set_body("HTML content for /moon route");
@@ -861,7 +861,7 @@ use std::fs::OpenOptions;
 
 
     
-    let result_path = format!("./scripts/moon_{}.txt", ts);
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/moon_{}.txt", ts);
 
     // Block until the result file is available or until timeout
     let start = std::time::Instant::now();
@@ -895,7 +895,7 @@ use std::fs::OpenOptions;
     let body = req.body_string().await.unwrap_or_default();
     println!("Received POST body: {}", body);
 
-    let script_dir = "./scripts";
+    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     let file_name: String = "second_life_chat_log.txt".to_string();
 
     let ruby_source = format!(r######"     
@@ -926,7 +926,7 @@ use std::fs::OpenOptions;
 
 
 
-    let result_path = format!("./scripts/sl_log_{}.txt", ts);
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/sl_log_{}.txt", ts);
 
     // Block until the result file is available or until timeout
     let start = std::time::Instant::now();
@@ -958,7 +958,7 @@ use std::fs::OpenOptions;
 
   app.at("/ae").get(|mut req: tide::Request<AppState>| async move {
     
-    let script_dir = "./scripts";
+    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     //td::fs::create_dir_all(script_dir).ok();
     let mut res = tide::Response::new(tide::StatusCode::Ok);
     //res.set_body("HTML content for /moon route");
@@ -986,7 +986,7 @@ use std::fs::OpenOptions;
 
 
 
-    let result_path = format!("./scripts/ae_{}.txt", ts);
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/ae_{}.txt", ts);
 
     // Block until the result file is available or until timeout
     let start = std::time::Instant::now();
@@ -1019,7 +1019,7 @@ use std::fs::OpenOptions;
 
   app.at("/moon").get(|mut req: tide::Request<AppState>| async move {
     
-    let script_dir = "./scripts";
+    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     //td::fs::create_dir_all(script_dir).ok();
     let mut res = tide::Response::new(tide::StatusCode::Ok);
     //res.set_body("HTML content for /moon route");
@@ -1045,7 +1045,7 @@ use std::fs::OpenOptions;
 
 
     
-    let result_path = format!("./scripts/moon_{}.txt", ts);
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/moon_{}.txt", ts);
 
     // Block until the result file is available or until timeout
     let start = std::time::Instant::now();
@@ -1077,7 +1077,7 @@ use std::fs::OpenOptions;
   //get neutri alg
 app.at("/rneutrialg").get(|mut req: tide::Request<AppState>| async move {
 
-    let script_dir = "./scripts";
+    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     //td::fs::create_dir_all(script_dir).ok();
     let mut res = tide::Response::new(tide::StatusCode::Ok);
     //res.set_body("HTML content for /moon route");
@@ -1103,7 +1103,7 @@ app.at("/rneutrialg").get(|mut req: tide::Request<AppState>| async move {
   //neutri setter
 app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
 
-    let script_dir = "./scripts";
+    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     //td::fs::create_dir_all(script_dir).ok();
     let mut res = tide::Response::new(tide::StatusCode::Ok);
     //res.set_body("HTML content for /moon route");
@@ -1124,7 +1124,7 @@ app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
   });
 
     app.at("/sun").get(|mut req: tide::Request<AppState>| async move {
-    let script_dir = "./scripts";
+    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     //td::fs::create_dir_all(script_dir).ok();
     let mut res = tide::Response::new(tide::StatusCode::Ok);
     //res.set_body("HTML content for /moon route");
@@ -1147,7 +1147,7 @@ app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
     let filename = format!("{}/sun_{}.rb", script_dir,ts);
     std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
 
-    let result_path = format!("./scripts/sun_{}.txt", ts);
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/sun_{}.txt", ts);
 
     // Block until the result file is available or until timeout
     let start = std::time::Instant::now();

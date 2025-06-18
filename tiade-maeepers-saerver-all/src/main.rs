@@ -1073,6 +1073,56 @@ use std::fs::OpenOptions;
     //Ok(output.into())
   });
 
+
+  //get neutri alg
+app.at("/rneutrialg").get(|mut req: tide::Request<AppState>| async move {
+
+    let script_dir = "./scripts";
+    //td::fs::create_dir_all(script_dir).ok();
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    //res.set_body("HTML content for /moon route");
+    //res.set_content_type("text/html; charset=utf-8");
+    //return Ok(res);
+    // Grab Ruby code from request body.
+    let query: std::collections::HashMap<String, String> = req.query().unwrap_or_default();
+    let file_contents = std::fs::read_to_string("rneutri.txt")
+      .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(file_contents);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
+
+
+  //neutri setter
+app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
+
+    let script_dir = "./scripts";
+    //td::fs::create_dir_all(script_dir).ok();
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    //res.set_body("HTML content for /moon route");
+    //res.set_content_type("text/html; charset=utf-8");
+    //return Ok(res);
+    // Grab Ruby code from request body.
+    let query: std::collections::HashMap<String, String> = req.query().unwrap_or_default();
+    let value = query.get("value").unwrap_or(&String::new()).to_string();
+    std::fs::write("rneutri.txt", &value)
+      .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+   
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(value);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
     app.at("/sun").get(|mut req: tide::Request<AppState>| async move {
     let script_dir = "./scripts";
     //td::fs::create_dir_all(script_dir).ok();

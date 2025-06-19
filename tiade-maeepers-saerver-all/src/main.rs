@@ -890,6 +890,68 @@ use std::fs::OpenOptions;
   });
 
 
+
+    app.at("/_ethereal_life_sl_logger_get_").get(|mut req: tide::Request<AppState>| async move {
+      // Catch all POST variables into a hashmap and print them
+      let body = req.body_string().await.unwrap_or_default();
+      println!("Received POST body: {}", body);
+
+      let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+      let file_name: String = "second_life_chat_log.txt".to_string();
+
+      let ruby_source = format!(r######"
+    previous_contents = File.read('/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt')
+    
+    "#{{previous_contents}}"
+  
+    "######
+ 
+    );
+
+
+    if ruby_source.trim().is_empty() {
+        let mut resp = tide::Response::new(tide::StatusCode::Ok);
+        resp.set_body("No Ruby code supplied");
+        return Ok(resp);
+    }
+
+    // Create unique .rb filename.
+    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+    let filename = format!("{}/sl_log_get_{}.rb", script_dir,ts);
+    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+
+
+
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/sl_log_get_{}.txt", ts);
+
+    // Block until the result file is available or until timeout
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(120);
+    while !std::path::Path::new(&result_path).exists() {
+      if start.elapsed() > timeout {
+        return Ok("Timed out waiting for result file".into());
+      }
+      std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+
+    // Remove script file after evaluation.
+  
+    let _ = std::fs::remove_file(&result_path);
+    let _ = std::fs::remove_file(&filename);
+
+      //let output = "Log entry received and written to file successfully.";
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(output);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
   app.at("/sl_logger").post(|mut req: tide::Request<AppState>| async move {
     // Catch all POST variables into a hashmap and print them
     let body = req.body_string().await.unwrap_or_default();

@@ -28,6 +28,7 @@ require 'openssl'
 require 'base64'
 require 'fileutils'
 require 'digest'
+require 'bigdecimal/util'
 # require 'oj'
 require_relative 'logger'
 
@@ -71,7 +72,6 @@ $lockdown = false # lockdown mode (no public access to blog or gallery posts, et
 DO_TELEGRAM_LOGGING = false # telegram logging (should get deprecated one day, and everything replaced with AJAX and server backend stuffs)
 
 class CGMFS < Roda
-  
   PATHS_INCLUDE_CSRF = { '/api/screens/upload' => true, '/u/shorten' => true, '/api/file/upload' => true,
                          '/api/text/upload' => true }
   PUBLIC_URL_PATH = :static
@@ -100,8 +100,6 @@ class CGMFS < Roda
   DB_SIZE = 20 # Caveat: The DB_SIZE is th # Caveat: The DB_SIZE is the total # of partitions, but you subtract it by one since the first partition is 0, in code.
   PARTITION_ADDITION_AMOUNT = 2
 
-
-
   # @@urls.load_last_entry_from_file!
   # @@urls.load_max_partition_archive_from_file!
   # @@urls.load_partition_archive_id_from_file!
@@ -115,14 +113,10 @@ class CGMFS < Roda
   version_file.close
   $dog_blog_version = "(v#️⃣#{version}):[ 🏗️#{timestamp} ]" # used in layout.html.erb
 
-  
-
   @@line_db = LineDB.new
-
 
   # global database variable for future usages and for all databases currently used on this CGMFS system.
   $db = @@line_db
-
 
   @@line_db["urls_redir"].pad.new_table!(database_name: "urls_database", database_table: "urls_table")
   @@line_db["blog"].pad.new_table!(database_name: "blog_database", database_table: "blog_table")
@@ -188,10 +182,6 @@ class CGMFS < Roda
   # @line_db[line].pad.new_table!(database_name: "blog_database", database_table: "blog_table")
   # end
 
-
-
- 
-
   not_found do
     "error: 404"
   end
@@ -201,8 +191,7 @@ class CGMFS < Roda
   puts "loaded routes."
   route do |r|
     # log("request path: #{r.path} ; request host: #{r.host}")
-   
-   
+
     puts "hash routes: #{r.hash_routes}"
     r.public
     r.assets # for public assets

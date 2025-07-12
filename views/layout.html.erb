@@ -126,9 +126,8 @@ div.galleryTable {
   <hr>
   <font face="consolas">
   <% stop_rendering_time = Time.now.to_f %>
-  <b></b> <%= ((stop_rendering_time - @start_rendering_time.to_f)).round(5) %>s [<%= ((stop_rendering_time - @start_rendering_time.to_f)*1000).round(5) %>ms]<br><br>
+  <b></b> 📐 <%= ((stop_rendering_time - @start_rendering_time.to_f)).round(5) %>s [<%= ((stop_rendering_time - @start_rendering_time.to_f)*1000).round(5) %>ms]<br><br>
 
-  📐<%= average %>s
 <% if !@page_views %>
   <% File.open("/home/midscore_io/views/page_views.txt", "r+") do |file| %>
     <% @page_views = file.read.to_i %>

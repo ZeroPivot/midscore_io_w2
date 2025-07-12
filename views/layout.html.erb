@@ -128,13 +128,6 @@ div.galleryTable {
   <% stop_rendering_time = Time.now.to_f %>
   <b></b> <%= ((stop_rendering_time - @start_rendering_time.to_f)).round(5) %>s [<%= ((stop_rendering_time - @start_rendering_time.to_f)*1000).round(5) %>ms]<br><br>
 
-  <%
-  render_time = (stop_rendering_time - @start_rendering_time.to_f).to_d
-  File.open("render_times.txt", "a") {|f| f.puts render_time }
-  times = File.read("render_times.txt").split.map(&:to_d)
-  average = (times.inject(:+) / times.size).round(5)
-  %>
-
   📐<%= average %>s
 <% if !@page_views %>
   <% File.open("/home/midscore_io/views/page_views.txt", "r+") do |file| %>

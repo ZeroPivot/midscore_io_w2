@@ -1371,6 +1371,7 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
           color: #333;
         }
       </style>
+      <meta name="msvalidate.01" content="AAA4058A3DABDECA9018AD89DD143C68" />
     </head>
     <body>
       <h1>Landing page for the Infini-Vaerias</h1>

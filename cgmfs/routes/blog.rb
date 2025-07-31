@@ -95,7 +95,7 @@ end
 # Average length of a full lunar cycle (in days)
 MOON_CYCLE_DAYS = 29.53
 
-# The 17 fabled moon rotations with emojis:
+# The 23 fabled moon rotations with emojis:
 MOON_ROTATIONS = [
   'New Moon 🌑',            # 0
   'Waxing Crescent 🌒',     # 1
@@ -114,11 +114,12 @@ MOON_ROTATIONS = [
   'Pink Moon 🌸🌕',
   'Snow Moon 🌨️', # 14
   'Snow Moon Snow 🌨️❄️', # 15
-  'Avian Moon 🦅',          # 16
-  'Avian Moon Snow 🦅❄️'    # 17
+  'Avian Moon 🦅', # 16
+  'Avian Moon Snow 🦅❄️',    # 17
+  'Skunk Moon 🦨',           # 18
+  'Skunk Moon Snow 🦨❄️' # 19
 ]
-
-# Define 15 corresponding species with emojis.
+# Define 23 corresponding species with emojis.
 SPECIES = [
   'Dogg 🐶', # New Moon
   'Folf 🦊🐺', # Waxing Crescent
@@ -138,10 +139,12 @@ SPECIES = [
   'Snow Leopard 🌨️', # New Moon
   'Snow Leopard Snow Snep 🌨️❄️', # Pink Moon
   'Avian 🦅', # New Moon
-  'Avian Snow 🦅❄️' # Pink Moon
+  'Avian Snow 🦅❄️', # Pink Moon
+  'Skunk 🦨', # New Moon
+  'Skunk Snow 🦨❄️' # New Moon
 ]
 
-# Define 15 corresponding were-forms with emojis.
+# Define 23 corresponding were-forms with emojis.
 WERE_FORMS = [
   'WereDogg 🐶🌑',                     # New Moon
   'WereFolf 🦊🌙',                     # Waxing Crescent
@@ -161,7 +164,9 @@ WERE_FORMS = [
   'WereSnowLeopard 🐆❄️',
   'WereSnowLeopardSnow 🐆❄️❄️', # Pink Moon
   'WereAvian 🦅', # New Moon
-  'WereAvianSnow 🦅❄️' # Pink Moon
+  'WereAvianSnow 🦅❄️', # Pink Moon
+  'WereSkunk 🦨', # New Moon
+  'WereSkunkSnow 🦨❄️' # New Moon
 
 ]
 
@@ -173,7 +178,6 @@ PHASE_LENGTH = MOON_CYCLE_DAYS / PHASE_COUNT # Days per phase
 
 # Average length of a full lunar cycle (in days)
 MOON_CYCLE_DAYS = 29.53
-
 
 class Calendar
   attr_reader :date
@@ -355,7 +359,6 @@ gregorian_example = DateTime.new(2025, 7, 1)
 
 puts "Gregorian Date: #{gregorian_example.strftime('%Y-%m-%d (%A)')}"
 puts "AE Calendar Date: #{ae_calendar.ae_date(gregorian_example)}"
-
 
 # The CGMFS class represents a module for handling various functionalities related to a blog.
 class CGMFS

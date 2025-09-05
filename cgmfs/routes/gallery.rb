@@ -832,7 +832,8 @@ class CGMFS
         @image = @gallery.get(@id)
         @attachments = @image['attachments']
         @title = "View Gallery Post ID #{@id} by #{@user}"
-
+        @file = @image['file']
+        @r = r
         @owo = @image['owo_count']
 
         if @image

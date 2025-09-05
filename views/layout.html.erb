@@ -3,9 +3,9 @@
 
 
 <% if @file %>
-  <% @thumbnail_file = "thumbnail_#{@file}" %>
+  <% @thumbnail_file = "#{domain_name(@r)}/thumbnail_#{@file}" %>
   <% else %>
-  <% @thumbnail_file = "https://miaedscore.online/card" %>
+  <% @thumbnail_file = "#{domain_name(@r)}/card" %>
 <% end %>
 
 

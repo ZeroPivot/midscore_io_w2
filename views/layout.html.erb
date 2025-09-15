@@ -14,7 +14,7 @@
 <head>
     <meta charset="utf-8" />
     <title><%= @title %></title>
-    <link rel="stylesheet" href="<%= domain_name(@r) %>/style.css" type="text/css" />    
+    <link rel="stylesheet" href="<%= domain_name(@r) %>/style.css" type="text/css" />
     <link rel="shortcut icon" type="image/x-icon" href="<%= domain_name(@r) %>/favicon.ico">
     <!-- the embed cards don't embed images on bluesky; probably admin incompetance or a setting somewhere, but everything was tried at one time -->
     <meta property="og:site_name" content="miaedscore.online" />
@@ -26,7 +26,7 @@
     <meta property="og:description" content="Post By <%= @description || @title || @user %>" />
     <meta name="description" content="Post By <%= @description || @title || @user %>" />
     <meta name="keywords" content="stimky.info, info, stinky info, stimky info, onlyfurs, only furs, onlyfans, porn, pr0n, pornography, nsfw, sfw, gay, homosexual, faggot, faggotry, stinky faggotry, stimky faggotry, stinky stimky champions, champions, gods of stink, gods of musk, gods of stimk, stinky gods, stinky wolf gods, stinky dogg gods, stinky yeen gods, miaedscore.online, miaedscore, miaed-score, vore, vorny, musk, musky, stinky, stimky, acetone, stinky acetone, stinky stimky champions, codename sniffa, sniffa, demiurge, simulation, simulator, sim, second life, stinky, stimky, stinky.zip, stimky.zip onemoondogg, pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, wolf, one moon planet, onemoonplane, blog,  gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art, zoophile hunters, pedophile hunters, bigot hunters, trans hunters, trans exposers, bigot exposers, pedophile exposers, democrat, republican, cenrist, democrat lol, sexy, signup, mega-game.net, meta game, meta, metaworld, furfaggotry, blogger, blog, gnosis, gnostic, gnocticism, ai, artificlal intelligence, service, blogger, gallery, furry gallery, furry bloggers, furry blogger, gay, homosexual, queer, twin flames, rhuxwolf, aylowolf, rhuxfolf, aylofolf, metagame, game, gaming, games, video games, software, hardware" />
-    <meta name="author" content="Miaede-Score">  
+    <meta name="author" content="Miaede-Score">
     <meta name="twitter:card" content="summary_large_image" /> <!-- changed 2021-04-15 -->
     <meta name="twitter:site" content="Miaedscore.online" />
     <meta name="twitter:title" content="<%= @title %>" />
@@ -102,7 +102,7 @@ div.galleryTable {
 .divTableBody { display: table-row-group;}
 .day { border: 1px solid black; padding: 10px; display: inline-block; width: 40px; text-align: center; }
 .week { clear: both; }
-  </style>    
+  </style>
   <div>
   <center>
   <br>
@@ -181,12 +181,12 @@ FileUtils.touch('./hitches.txt')
       #@hitch_cookie = @hitch_cookie.gsub(/[^a-zA-Z0-9]/, '') # Sanitize the hitch cookie to allow only alphanumeric characters
       Thread.new do
       File.open('./hitches.txt', 'a') { |f| f.puts("#{request.ip} - #{Time.now.to_s} - #{@hitch_cookie}\n") }
-      end 
+      end
 
 
       %>
 
-      
+
 
 <% File.open('main_request_log.txt', 'a') do |f| %>
 
@@ -228,7 +228,7 @@ FileUtils.touch('./hitches.txt')
     <% end %>
 
 
-   
+
 
 <br><br>
 <br />
@@ -236,69 +236,74 @@ FileUtils.touch('./hitches.txt')
 <br />
   <center><pre>    # The 23 fabled moon rotations with emojis:
         MOON_ROTATIONS = [
-          'New Moon 🌑',            # 0
-          'Waxing Crescent 🌒',     # 1
-          'First Quarter 🌓',       # 2
-          'Waxing Gibbous 🌔', # 3
-          'Full Moon 🌕',           # 4
-          'Waning Gibbous 🌖',      # 5
-          'Last Quarter 🌗',        # 6
-          'Waning Crescent 🌘',     # 7
-          'Supermoon 🌝',           # 8
-          'Blue Moon 🔵🌙',         # 9
-          'Blood Moon 🩸🌙',        # 10
-          'Harvest Moon 🍂🌕',      # 11
-          "Hunter's Moon 🌙🔭",     # 12
-          'Wolf Moon 🐺🌕',         # 13
-          'Pink Moon 🌸🌕',
-          'Snow Moon 🌨️',          # 14
-          'Snow Moon Snow 🌨️❄️',    # 15
-          'Avian Moon 🦅',          # 16
-          'Avian Moon Snow 🦅❄️',    # 17
-          'Skunk Moon 🦨',           # 18
-          'Skunk Moon Snow 🦨❄️',    # 19
+          'New Moon 🌑',            # 1
+          'Waxing Crescent 🌒',     # 2
+          'First Quarter 🌓',       # 3
+          'Waxing Gibbous 🌔',      # 4
+          'Full Moon 🌕',           # 5
+          'Waning Gibbous 🌖',      # 6
+          'Last Quarter 🌗',        # 7
+          'Waning Crescent 🌘',     # 8
+          'Supermoon 🌝',           # 9
+          'Blue Moon 🔵🌙',         # 10
+          'Blood Moon 🩸🌙',        # 11
+          'Harvest Moon 🍂🌕',      # 12
+          "Hunter's Moon 🌙🔭",     # 13
+          'Wolf Moon 🐺🌕',         # 14
+          'Pink Moon 🌸🌕',      # 15
+          'Snow Moon 🌨️',          # 16
+          'Snow Moon Snow 🌨️❄️',    # 17
+          'Avian Moon 🦅',          # 18
+          'Avian Moon Snow 🦅❄️',    # 19
+          'Skunk Moon 🦨',           # 20
+          'Skunk Moon Snow 🦨❄️',    # 21
+          'Cosmic Moon 🌌🌕',       # 22
+          'Celestial Moon 🌟🌕',    # 23
         ]
 
         # Define 23 corresponding species with emojis.
         SPECIES = [
           'Dogg 🐶', # New Moon
           'Folf 🦊🐺', # Waxing Crescent
-          'Aardwolf 🐾',                 # First Quarter
-          'Spotted Hyena 🐆',            # Waxing Gibbous
-          'Folf Hybrid 🦊✨',             # Full Moon
-          'Striped Hyena 🦓',            # Waning Gibbous
-          'Dogg Prime 🐕⭐',              # Last Quarter
+          'Aardwolf 🐾',
+          'Spotted Hyena 🐆',
+          'Folf Hybrid 🦊✨',
+          'Striped Hyena 🦓',
+          'Dogg Prime 🐕⭐',
           'WolfFox 🐺🦊', # Waning Crescent
-          'Brown Hyena 🦴',              # Supermoon
-          'Dogg Celestial 🐕🌟',          # Blue Moon
-          'Folf Eclipse 🦊🌒',            # Blood Moon
-          'Aardwolf Luminous 🐾✨', # Harvest Moon
-          'Spotted Hyena Stellar 🐆⭐', # Hunter's Moon
-          'Folf Nova 🦊💥', # Wolf Moon
-          'Brown Hyena Cosmic 🦴🌌', # Pink Moon
+          'Brown Hyena 🦴',
+          'Dogg Celestial 🐕🌟',
+          'Folf Eclipse 🦊🌒',
+          'Aardwolf Luminous 🐾✨',
+          'Spotted Hyena Stellar 🐆⭐',
+          'Folf Nova 🦊💥',
+          'Brown Hyena Cosmic 🦴🌌',
           'Snow Leopard 🌨️', # New Moon
-          'Snow Leopard Snow Snep 🌨️❄️', # Pink Moon
-          'Avian 🦅', # New Moon
-          'Avian Snow 🦅❄️', # Pink Moon
-          'Skunk 🦨', # New Moon
-          'Skunk Snow 🦨❄️', # New Moon
+          'Snow Leopard Snow Snep 🌨️❄️',
+          'Avian 🦅',
+          'Avian Snow 🦅❄️',
+          'Skunk 🦨',
+          'Skunk Snow 🦨❄️',
+          'Infini-Vaeria Graevity-Infini 🌌🐕',
+          'Graevity-Infini Infini-Vaeria 🌟🐕'
+
         ]
 
         # Define 23 corresponding were-forms with emojis.
         WERE_FORMS = [
-          'WereDogg 🐶🌑',                     # New Moon
-          'WereFolf 🦊🌙',                     # Waxing Crescent
-          'WereAardwolf 🐾',                   # First Quarter
-          'WereSpottedHyena 🐆',               # Waxing Gibbous
-          'WereFolfHybrid 🦊✨',                # Full Moon
-          'WereStripedHyena 🦓',               # Waning Gibbous
-          'WereDoggPrime 🐕⭐',                 # Last Quarter
+          'WereDogg 🐶🌑',
+          'WereFolf 🦊🌙',
+          'WereAardwolf 🐾',
+          'WereSpottedHyena 🐆',
+          'WereFolfHybrid 🦊✨',
+          'WereStripedHyena 🦓',
+          'WereDoggPrime 🐕⭐',
           'WereWolfFox 🐺🦊', # Waning Crescent
-          'WereBrownHyena 🦴',                 # Supermoon
-          'WereDoggCelestial 🐕🌟',             # Blue Moon
-          'WereFolfEclipse 🦊🌒',               # Blood Moon
-          'WereAardwolfLuminous 🐾✨',          # Harvest Moon
-          'WereSpottedHyenaStellar 🐆⭐',       # Hunter's Moon
+          'WereBrownHyena 🦴',
+          'WereDoggCelestial 🐕🌟',
+          'WereFolfEclipse 🦊🌒',
+          'WereAardwolfLuminous 🐾✨',
+          'WereSpottedHyenaStellar 🐆⭐',
           'WereFolfNova 🦊💥', # Wolf Moon
           'WereBrownHyenaCosmic 🦴🌌', # Pink Moon
           'WereSnowLeopard 🐆❄️',
@@ -307,6 +312,9 @@ FileUtils.touch('./hitches.txt')
           'WereAvianSnow 🦅❄️', # Pink Moon
           'WereSkunk 🦨', # New Moon
           'WereSkunkSnow 🦨❄️' # New Moon
+          'WereInfiniVaeriaGraevity 🐕🌌',
+          'WereGraevityInfiniInfiniVaeria 🌟🐕'
+
 
         ]
 </pre>

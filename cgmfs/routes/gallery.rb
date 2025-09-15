@@ -88,80 +88,88 @@ class CGMFS
     # Average length of a full lunar cycle (in days)
     MOON_CYCLE_DAYS = 29.53
 
-    # The 23 fabled moon rotations with emojis:
-    MOON_ROTATIONS = [
-      'New Moon 🌑',            # 0
-      'Waxing Crescent 🌒',     # 1
-      'First Quarter 🌓',       # 2
-      'Waxing Gibbous 🌔', # 3
-      'Full Moon 🌕',           # 4
-      'Waning Gibbous 🌖',      # 5
-      'Last Quarter 🌗',        # 6
-      'Waning Crescent 🌘',     # 7
-      'Supermoon 🌝',           # 8
-      'Blue Moon 🔵🌙',         # 9
-      'Blood Moon 🩸🌙',        # 10
-      'Harvest Moon 🍂🌕',      # 11
-      "Hunter's Moon 🌙🔭",     # 12
-      'Wolf Moon 🐺🌕',         # 13
-      'Pink Moon 🌸🌕',
-      'Snow Moon 🌨️', # 14
-      'Snow Moon Snow 🌨️❄️', # 15
-      'Avian Moon 🦅', # 16
-      'Avian Moon Snow 🦅❄️',    # 17
-      'Skunk Moon 🦨',           # 18
-      'Skunk Moon Snow 🦨❄️' # 19
-    ]
-    # Define 23 corresponding species with emojis.
-    SPECIES = [
-      'Dogg 🐶', # New Moon
-      'Folf 🦊🐺', # Waxing Crescent
-      'Aardwolf 🐾',                 # First Quarter
-      'Spotted Hyena 🐆',            # Waxing Gibbous
-      'Folf Hybrid 🦊✨',             # Full Moon
-      'Striped Hyena 🦓',            # Waning Gibbous
-      'Dogg Prime 🐕⭐',              # Last Quarter
-      'WolfFox 🐺🦊', # Waning Crescent
-      'Brown Hyena 🦴',              # Supermoon
-      'Dogg Celestial 🐕🌟',          # Blue Moon
-      'Folf Eclipse 🦊🌒',            # Blood Moon
-      'Aardwolf Luminous 🐾✨', # Harvest Moon
-      'Spotted Hyena Stellar 🐆⭐', # Hunter's Moon
-      'Folf Nova 🦊💥', # Wolf Moon
-      'Brown Hyena Cosmic 🦴🌌', # Pink Moon
-      'Snow Leopard 🌨️', # New Moon
-      'Snow Leopard Snow Snep 🌨️❄️', # Pink Moon
-      'Avian 🦅', # New Moon
-      'Avian Snow 🦅❄️', # Pink Moon
-      'Skunk 🦨', # New Moon
-      'Skunk Snow 🦨❄️' # New Moon
-    ]
+        MOON_ROTATIONS = [
+          'New Moon 🌑',            # 1
+          'Waxing Crescent 🌒',     # 2
+          'First Quarter 🌓',       # 3
+          'Waxing Gibbous 🌔',      # 4
+          'Full Moon 🌕',           # 5
+          'Waning Gibbous 🌖',      # 6
+          'Last Quarter 🌗',        # 7
+          'Waning Crescent 🌘',     # 8
+          'Supermoon 🌝',           # 9
+          'Blue Moon 🔵🌙',         # 10
+          'Blood Moon 🩸🌙',        # 11
+          'Harvest Moon 🍂🌕',      # 12
+          "Hunter's Moon 🌙🔭",     # 13
+          'Wolf Moon 🐺🌕',         # 14
+          'Pink Moon 🌸🌕',      # 15
+          'Snow Moon 🌨️',          # 16
+          'Snow Moon Snow 🌨️❄️',    # 17
+          'Avian Moon 🦅',          # 18
+          'Avian Moon Snow 🦅❄️',    # 19
+          'Skunk Moon 🦨',           # 20
+          'Skunk Moon Snow 🦨❄️',    # 21
+          'Cosmic Moon 🌌🌕',       # 22
+          'Celestial Moon 🌟🌕',    # 23
+        ]
 
-    # Define 23 corresponding were-forms with emojis.
-    WERE_FORMS = [
-      'WereDogg 🐶🌑',                     # New Moon
-      'WereFolf 🦊🌙',                     # Waxing Crescent
-      'WereAardwolf 🐾',                   # First Quarter
-      'WereSpottedHyena 🐆',               # Waxing Gibbous
-      'WereFolfHybrid 🦊✨',                # Full Moon
-      'WereStripedHyena 🦓',               # Waning Gibbous
-      'WereDoggPrime 🐕⭐',                 # Last Quarter
-      'WereWolfFox 🐺🦊', # Waning Crescent
-      'WereBrownHyena 🦴',                 # Supermoon
-      'WereDoggCelestial 🐕🌟',             # Blue Moon
-      'WereFolfEclipse 🦊🌒',               # Blood Moon
-      'WereAardwolfLuminous 🐾✨',          # Harvest Moon
-      'WereSpottedHyenaStellar 🐆⭐',       # Hunter's Moon
-      'WereFolfNova 🦊💥', # Wolf Moon
-      'WereBrownHyenaCosmic 🦴🌌', # Pink Moon
-      'WereSnowLeopard 🐆❄️',
-      'WereSnowLeopardSnow 🐆❄️❄️', # Pink Moon
-      'WereAvian 🦅', # New Moon
-      'WereAvianSnow 🦅❄️', # Pink Moon
-      'WereSkunk 🦨', # New Moon
-      'WereSkunkSnow 🦨❄️' # New Moon
+        # Define 23 corresponding species with emojis.
+        SPECIES = [
+          'Dogg 🐶', # New Moon
+          'Folf 🦊🐺', # Waxing Crescent
+          'Aardwolf 🐾',
+          'Spotted Hyena 🐆',
+          'Folf Hybrid 🦊✨',
+          'Striped Hyena 🦓',
+          'Dogg Prime 🐕⭐',
+          'WolfFox 🐺🦊', # Waning Crescent
+          'Brown Hyena 🦴',
+          'Dogg Celestial 🐕🌟',
+          'Folf Eclipse 🦊🌒',
+          'Aardwolf Luminous 🐾✨',
+          'Spotted Hyena Stellar 🐆⭐',
+          'Folf Nova 🦊💥',
+          'Brown Hyena Cosmic 🦴🌌',
+          'Snow Leopard 🌨️', # New Moon
+          'Snow Leopard Snow Snep 🌨️❄️',
+          'Avian 🦅',
+          'Avian Snow 🦅❄️',
+          'Skunk 🦨',
+          'Skunk Snow 🦨❄️',
+          'Infini-Vaeria Graevity-Infini 🌌🐕',
+          'Graevity-Infini Infini-Vaeria 🌟🐕'
 
-    ]
+        ]
+
+        # Define 23 corresponding were-forms with emojis.
+        WERE_FORMS = [
+          'WereDogg 🐶🌑',
+          'WereFolf 🦊🌙',
+          'WereAardwolf 🐾',
+          'WereSpottedHyena 🐆',
+          'WereFolfHybrid 🦊✨',
+          'WereStripedHyena 🦓',
+          'WereDoggPrime 🐕⭐',
+          'WereWolfFox 🐺🦊', # Waning Crescent
+          'WereBrownHyena 🦴',
+          'WereDoggCelestial 🐕🌟',
+          'WereFolfEclipse 🦊🌒',
+          'WereAardwolfLuminous 🐾✨',
+          'WereSpottedHyenaStellar 🐆⭐',
+          'WereFolfNova 🦊💥', # Wolf Moon
+          'WereBrownHyenaCosmic 🦴🌌', # Pink Moon
+          'WereSnowLeopard 🐆❄️',
+          'WereSnowLeopardSnow 🐆❄️❄️', # Pink Moon
+          'WereAvian 🦅', # New Moon
+          'WereAvianSnow 🦅❄️', # Pink Moon
+          'WereSkunk 🦨', # New Moon
+          'WereSkunkSnow 🦨❄️', # New Moon
+          'WereInfiniVaeriaGraevity 🐕🌌',
+          'WereGraevityInfiniInfiniVaeria 🌟🐕'
+
+
+        ]    # Total number of moon phases in the rotation.
 
     # Each moon phase is assumed to share an equal slice of the lunar cycle.
     PHASE_COUNT  = MOON_ROTATIONS.size # 15 total phases

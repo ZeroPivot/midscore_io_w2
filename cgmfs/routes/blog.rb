@@ -96,58 +96,58 @@ end
 MOON_CYCLE_DAYS = 29.53
 
 # The 23 fabled moon rotations with emojis:
- MOON_ROTATIONS = [
-          'New Moon 🌑',            # 1
-          'Waxing Crescent 🌒',     # 2
-          'First Quarter 🌓',       # 3
-          'Waxing Gibbous 🌔',      # 4
-          'Full Moon 🌕',           # 5
-          'Waning Gibbous 🌖',      # 6
-          'Last Quarter 🌗',        # 7
-          'Waning Crescent 🌘',     # 8
-          'Supermoon 🌝',           # 9
-          'Blue Moon 🔵🌙',         # 10
-          'Blood Moon 🩸🌙',        # 11
-          'Harvest Moon 🍂🌕',      # 12
-          "Hunter's Moon 🌙🔭",     # 13
-          'Wolf Moon 🐺🌕',         # 14
-          'Pink Moon 🌸🌕',      # 15
-          'Snow Moon 🌨️',          # 16
-          'Snow Moon Snow 🌨️❄️',    # 17
-          'Avian Moon 🦅',          # 18
-          'Avian Moon Snow 🦅❄️',    # 19
-          'Skunk Moon 🦨',           # 20
-          'Skunk Moon Snow 🦨❄️',    # 21
-          'Cosmic Moon 🌌🌕',       # 22
-          'Celestial Moon 🌟🌕',    # 23
-        ]
+MOON_ROTATIONS = [
+  'New Moon 🌑', # 1
+  'Waxing Crescent 🌒',     # 2
+  'First Quarter 🌓',       # 3
+  'Waxing Gibbous 🌔',      # 4
+  'Full Moon 🌕',           # 5
+  'Waning Gibbous 🌖',      # 6
+  'Last Quarter 🌗',        # 7
+  'Waning Crescent 🌘',     # 8
+  'Supermoon 🌝',           # 9
+  'Blue Moon 🔵🌙',         # 10
+  'Blood Moon 🩸🌙',        # 11
+  'Harvest Moon 🍂🌕',      # 12
+  "Hunter's Moon 🌙🔭",     # 13
+  'Wolf Moon 🐺🌕',         # 14
+  'Pink Moon 🌸🌕', # 15
+  'Snow Moon 🌨️', # 16
+  'Snow Moon Snow 🌨️❄️', # 17
+  'Avian Moon 🦅', # 18
+  'Avian Moon Snow 🦅❄️',    # 19
+  'Skunk Moon 🦨',           # 20
+  'Skunk Moon Snow 🦨❄️',    # 21
+  'Cosmic Moon 🌌🌕', # 22
+  'Celestial Moon 🌟🌕' # 23
+]
 # Define 23 corresponding species with emojis.
-  SPECIES = [
-          'Dogg 🐶', # New Moon
-          'Folf 🦊🐺', # Waxing Crescent
-          'Aardwolf 🐾',
-          'Spotted Hyena 🐆',
-          'Folf Hybrid 🦊✨',
-          'Striped Hyena 🦓',
-          'Dogg Prime 🐕⭐',
-          'WolfFox 🐺🦊', # Waning Crescent
-          'Brown Hyena 🦴',
-          'Dogg Celestial 🐕🌟',
-          'Folf Eclipse 🦊🌒',
-          'Aardwolf Luminous 🐾✨',
-          'Spotted Hyena Stellar 🐆⭐',
-          'Folf Nova 🦊💥',
-          'Brown Hyena Cosmic 🦴🌌',
-          'Snow Leopard 🌨️', # New Moon
-          'Snow Leopard Snow Snep 🌨️❄️',
-          'Avian 🦅',
-          'Avian Snow 🦅❄️',
-          'Skunk 🦨',
-          'Skunk Snow 🦨❄️',
-          'Infini-Vaeria Graevity-Infini 🌌🐕',
-          'Graevity-Infini Infini-Vaeria 🌟🐕'
+SPECIES = [
+  'Dogg 🐶', # New Moon
+  'Folf 🦊🐺', # Waxing Crescent
+  'Aardwolf 🐾',
+  'Spotted Hyena 🐆',
+  'Folf Hybrid 🦊✨',
+  'Striped Hyena 🦓',
+  'Dogg Prime 🐕⭐',
+  'WolfFox 🐺🦊', # Waning Crescent
+  'Brown Hyena 🦴',
+  'Dogg Celestial 🐕🌟',
+  'Folf Eclipse 🦊🌒',
+  'Aardwolf Luminous 🐾✨',
+  'Spotted Hyena Stellar 🐆⭐',
+  'Folf Nova 🦊💥',
+  'Brown Hyena Cosmic 🦴🌌',
+  'Snow Leopard 🌨️', # New Moon
+  'Snow Leopard Snow Snep 🌨️❄️',
+  'Avian 🦅',
+  'Avian Snow 🦅❄️',
+  'Skunk 🦨',
+  'Skunk Snow 🦨❄️',
+  'Infini-Vaeria Graevity-Infini 🌌🐕',
+  'Graevity-Infini Infini-Vaeria 🌟🐕'
 
-        ]
+]
 
 # Define 23 corresponding were-forms with emojis.
 WERE_FORMS = [

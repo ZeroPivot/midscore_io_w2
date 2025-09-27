@@ -26,8 +26,6 @@ use std::time::Duration;
 
 extern crate md5;
 
-use md5::{Digest, Md5};
-
 // include proc macro crate
 // include proc macro crate
 
@@ -38,8 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ruby_id = "3489075345bsedfnmhjkdaslfkaljsdhflkjahgfd899345893475893475dfgjkhdHSDJFHSDIKUEJK-3489075345bsedfnmhjkdaslfkaljsdhflkjahgfd899345893475893475dfgjkhdHSDJFHSDIKUEJK-3489075345bsedfnmhjkdaslfkaljsdhflkjahgfd899345893475893475dfgjkhdHSDJFHSDIKUEJK-3489075345bsedfnmhjkdaslfkaljsdhflkjahgfd899345893475893475dfgjkhdHSDJFHSDIKUEJK";
 
     // Load the Ruby bytecode as binary data
-    let main_file_bytes: Vec<u8> =
-        include_bytes!("THE-META_GAME-Magi-Tek_Tek-Magi-Engiane/main.rustby").to_vec();
+    let main_file_bytes: Vec<u8> = include_bytes!("main.rustby").to_vec();
     // Write the bytecode to a file in the current directory
 
     //get timestamp
@@ -50,20 +47,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let main_file_path: std::path::PathBuf = Path::new(&current_dir).join(timestamp.to_string());
     std::fs::write(&main_file_path, main_file_bytes)?;
-
-    // calculate md5 hash
-    let digest = {
-        let mut file = File::open(&main_file_path)?;
-        let mut hasher = Md5::new();
-        std::io::copy(&mut file, &mut hasher)?;
-        hasher.finalize()
-    };
-
-    // write md5 to file
-    let md5_file_path: std::path::PathBuf = Path::new(&current_dir).join("md5");
-    // write md5 to file
-    let md5_file_path: std::path::PathBuf = Path::new(&current_dir).join("md5");
-    std::fs::write(&md5_file_path, format!("{:x}", digest))?;
 
     let local_time_compiled: i64 = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -111,7 +94,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         puts "VM Taking A Break..."
 
-        sleep(0.5)
+        #sleep(0.5)
 
         'loaded_and_evaluated'
         "#########,
@@ -136,7 +119,39 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let result: Result<RString, Error> = ruby.eval(
         r#########"
-            FreeImageList = []
+          r#"
+
+          argv = ARGV.dup
+          image = nil
+          output = nil
+          until argv.empty?
+            a = argv.shift
+            case a
+            when '--image','-i'
+              image = argv.shift
+            when '--image_location_output','--image-location-output','-o'
+              output = argv.shift
+              when '--image-name','--image_name','-n'
+              original_to_new_filename = argv.shift
+            else
+              image ||= a
+              output ||= argv.shift if output.nil?
+            end
+          end
+          raise 'usage' unless image && output
+
+           Thread.new do
+            create_image_thumbnail!(image_path: output, thumbnail_size: 350, thumbnail_path: "public/gallery_index/#{@user}/thumbnail_#{original_to_new_filename}")
+          end
+          Thread.new do
+            resize_image!(image_path: output, size: 1920, resized_image_path: "public/gallery_index/#{@user}/resized_#{original_to_new_filename}")
+          end
+
+
+     #   image_reziser --image image.png --image-name new_name.png --image_location_output output.png
+
+          [image, output]
+        "#;
 
         'loaded_and_evaluated'
         "#########,

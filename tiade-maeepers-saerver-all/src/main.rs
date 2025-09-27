@@ -109,14 +109,14 @@ use std::sync::Mutex;
 use std::thread;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::sync_channel;
-    
+
 
 
 #[derive(Clone)]
 struct AppState;
 
 #[async_std::main]
-async fn main() -> tide::Result<()> 
+async fn main() -> tide::Result<()>
 {
   // Spawn a background thread to listen for CLI input.
  std::thread::spawn(|| {
@@ -142,7 +142,7 @@ async fn main() -> tide::Result<()>
         }
         let filename = format!("{}/script_{}.rb", script_dir, Utc::now().timestamp_nanos_opt().unwrap_or(0));
         // Replace the Ruby code below as needed. It must return a string value.
-       let ruby_code = r#"nil        
+       let ruby_code = r#"nil
        'RustbySpace'
       "#;
        if let Err(e) = std::fs::write(&filename, ruby_code) {
@@ -159,10 +159,10 @@ async fn main() -> tide::Result<()>
         } else {
             println!("Command sent to Ruby evaluator via pipe: {}", pipe_path);
        }
-     
+
         // Wait briefly for the external process to evaluate the script and write the result.
         std::thread::sleep(std::time::Duration::from_millis(100));
-        
+
         // Read the evaluation result from an output file.
         let result_path = "/tmp/ruby_output.txt";
         let script_result = match std::fs::read_to_string(result_path) {
@@ -172,12 +172,12 @@ async fn main() -> tide::Result<()>
                   Err(magnus::Error::new(magnus::exception::runtime_error(), format!("Error reading Ruby output: {}", e)))
                     },
                 };
-        
+
         // Remove the script file after evaluation.
         if let Err(e) = std::fs::remove_file(&filename) {
         eprintln!("Failed to remove script file: {}", e);
         }
-        
+
         match script_result {
         Ok(output) => println!("Ruby output: {}", output),
         Err(e) => eprintln!("Error running Ruby code: {}", e),
@@ -200,18 +200,18 @@ async fn main() -> tide::Result<()>
     }
   });
 
-  
+
   // ... rest of the main function (server setup, routes, etc.)
 //  Ok(())
 
 
-  
+
   /*
     ///
      // Example: Spawn 3 independent Ruby interpreter threads.
      let mut handles: Vec<JoinHandle<Result<(), Error>>> = Vec::new();
-      
- 
+
+
      // Optionally, wait for the threads to complete.
      for handle in handles {
          match handle.join() {
@@ -223,7 +223,7 @@ async fn main() -> tide::Result<()>
  */
      // Continue with the rest of your server setup…
      //Ok(())
-     // 
+     //
 
     // Main HTTPS server - handling all defined routes
     let mut app = tide::with_state(AppState {});
@@ -246,7 +246,7 @@ async fn main() -> tide::Result<()>
     let _ruby = init_ruby_vm().await;
 
     use std::sync::Arc;
-   
+
 
     use std::collections::HashMap;
     use tide::{Request, Response, StatusCode};
@@ -355,7 +355,7 @@ use std::fs::OpenOptions;
     }
 
 
-  
+
     // Serve each directory. Tide will serve new files as they appear.
     app.at("/css").serve_dir("./css/")?;
     app.at("/js").serve_dir("./js/")?;
@@ -373,9 +373,9 @@ use std::fs::OpenOptions;
       let form_data: PraexyForm = req.body_form().await.unwrap_or(PraexyForm { content: String::new() });
       Ok(format!("Received content:\n{}", form_data.content))
     });
-  
-  
-  /* 
+
+
+  /*
     app.at("/rustby").get(|req: tide::Request<AppState>| {
         let rustby_eval_title = rustby_eval_title.clone();
         async move {
@@ -517,7 +517,7 @@ use std::fs::OpenOptions;
       let rest = req.param("rest").unwrap_or("");
       // Build the target URL for the 8080 server.
       let target_url = format!("https://miaedscore.online:8080/{}", rest);
-      
+
       // Build an HTML page with an iframe loading the target URL.
       // A JavaScript snippet removes any query parameters from the browser URL.
       let html_content = format!(r#"<!DOCTYPE html>
@@ -551,7 +551,7 @@ use std::fs::OpenOptions;
     <iframe src="{0}" title="Bridge - Embedded 8080 Server"></iframe>
   </body>
   </html>"#, target_url);
-  
+
       // Return the HTML response.
       let mut res = tide::Response::new(tide::StatusCode::Ok);
       res.set_body(html_content);
@@ -599,7 +599,7 @@ use std::fs::OpenOptions;
 
 
 
- 
+
     class MoonPhaseDetails2
       # === Constants and Definitions ===
 
@@ -829,9 +829,9 @@ use std::fs::OpenOptions;
 
 
 
-    
-    
-    
+
+
+
     "######;
     std::fs::write(&filename, contents)?;
     println!("Created script file: {}", filename);
@@ -840,7 +840,7 @@ use std::fs::OpenOptions;
 
 
   app.at("/time").get(|mut req: tide::Request<AppState>| async move {
-    
+
     let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     //td::fs::create_dir_all(script_dir).ok();
     let mut res = tide::Response::new(tide::StatusCode::Ok);
@@ -866,7 +866,7 @@ use std::fs::OpenOptions;
 
 
 
-    
+
     let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/moon_{}.txt", ts);
 
     // Block until the result file is available or until timeout
@@ -882,7 +882,7 @@ use std::fs::OpenOptions;
 
 
     // Remove script file after evaluation.
-  
+
     let _ = std::fs::remove_file(&result_path);
     let _ = std::fs::remove_file(&filename);
 
@@ -907,11 +907,11 @@ use std::fs::OpenOptions;
 
       let ruby_source = format!(r######"
     previous_contents = File.read('/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt')
-    
+
     "#{{previous_contents}}"
-  
+
     "######
- 
+
     );
 
 
@@ -944,7 +944,7 @@ use std::fs::OpenOptions;
 
 
     // Remove script file after evaluation.
-  
+
     let _ = std::fs::remove_file(&result_path);
     let _ = std::fs::remove_file(&filename);
 
@@ -966,7 +966,7 @@ use std::fs::OpenOptions;
     let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     let file_name: String = "second_life_chat_log.txt".to_string();
 
-    let ruby_source = format!(r######"     
+    let ruby_source = format!(r######"
     body = {}
     puts Dir.pwd
     FileUtils.touch("/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt")
@@ -975,7 +975,7 @@ use std::fs::OpenOptions;
        file.write("#{{body}}\n")
      end
     puts "Chat message logged to file successfully"
-    
+
     "message logged to file successfully"
     "######, body);
 
@@ -1009,7 +1009,7 @@ use std::fs::OpenOptions;
 
 
     // Remove script file after evaluation.
-  
+
     let _ = std::fs::remove_file(&result_path);
     let _ = std::fs::remove_file(&filename);
 
@@ -1025,7 +1025,7 @@ use std::fs::OpenOptions;
 
 
   app.at("/ae").get(|mut req: tide::Request<AppState>| async move {
-    
+
     let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     //td::fs::create_dir_all(script_dir).ok();
     let mut res = tide::Response::new(tide::StatusCode::Ok);
@@ -1069,7 +1069,7 @@ use std::fs::OpenOptions;
 
 
     // Remove script file after evaluation.
-  
+
     let _ = std::fs::remove_file(&result_path);
     let _ = std::fs::remove_file(&filename);
 
@@ -1086,7 +1086,7 @@ use std::fs::OpenOptions;
 
 
   app.at("/moon").get(|mut req: tide::Request<AppState>| async move {
-    
+
     let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     //td::fs::create_dir_all(script_dir).ok();
     let mut res = tide::Response::new(tide::StatusCode::Ok);
@@ -1112,7 +1112,7 @@ use std::fs::OpenOptions;
 
 
 
-    
+
     let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/moon_{}.txt", ts);
 
     // Block until the result file is available or until timeout
@@ -1128,7 +1128,7 @@ use std::fs::OpenOptions;
 
 
     // Remove script file after evaluation.
-  
+
     let _ = std::fs::remove_file(&result_path);
     let _ = std::fs::remove_file(&filename);
 
@@ -1182,7 +1182,7 @@ app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
     let value = query.get("value").unwrap_or(&String::new()).to_string();
     std::fs::write("rneutri.txt", &value)
       .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
-   
+
      // Return the HTML response.
     let mut res = tide::Response::new(tide::StatusCode::Ok);
     res.set_body(value);
@@ -1230,7 +1230,7 @@ app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
 
 
     // Remove script file after evaluation.
-  
+
     let _ = std::fs::remove_file(&result_path);
     let _ = std::fs::remove_file(&filename);
 
@@ -1248,7 +1248,7 @@ app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
     let rest = req.param("rest").unwrap_or("");
     // Build the target URL for the 8080 server.
     let target_url = format!("https://miaedscore.online/{}", rest);
-    
+
     // Build an HTML page with an iframe loading the target URL.
     // A JavaScript snippet removes any query parameters from the browser URL.
     let html_content = format!(r#"<!DOCTYPE html>
@@ -1261,7 +1261,7 @@ app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
   /* Include style.css from the CSS folder */
   @import url('/css/style.css');
 
-  
+
 
   /* Additional styling specific to this page */
     html, body {{
@@ -1296,7 +1296,7 @@ app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
     Ok(res)
 });
     app.at("/parse_plink").get(|req: tide::Request<AppState>| async move {
-      
+
       // Expect a query parameter "text" that includes a full URL (e.g., "https://miaedscore.online:8080/some/path?query=val")
       let query: HashMap<String, String> = req.query().unwrap_or_default();
       let input_text = query.get("text").map(|s| s.as_str()).unwrap_or("");
@@ -1323,7 +1323,7 @@ app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
       res.insert_header("Location", redirect_url);
       Ok(res)
     });
-    
+
 
  // assuming the helper is in the module
 
@@ -1336,7 +1336,7 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
         res.set_body("Missing filename query parameter".to_string());
         return Ok(res);
     }
-    
+
     // Check for a file extension.
     let path = Path::new(&file_name);
     let ext = path.extension().and_then(|os_str| os_str.to_str());
@@ -1353,12 +1353,12 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
 
     // Read the image bytes from the request body.
       let data = req.body_bytes().await?;
-  
+
       let mut res = tide::Response::new(tide::StatusCode::Ok);
       res.set_body("Image resized (placeholder)".to_string());
       Ok(res)
   });
-  
+
   app.at("/").get(|_| async {
     let html = r######"<!DOCTYPE html>
     <html lang="en">
@@ -1371,7 +1371,7 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
           margin: 0;
           padding: 0;
           font-family: sans-serif;
-          background-color: #f0f0f0;        
+          background-color: #f0f0f0;
         }
         h1 {
           color: #333;
@@ -1396,12 +1396,12 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
       For now it will include links to most of my works, social media, e-mail, etc. Home of the stimky Infini-Vaeria beings. #muskium #illustration #art.
       <br />
       This Page :: <a href="https://stimky.info">Stimky.info</a><br />
-      BlueSky :: ART ==> <a href="https://bsky.app/profile/stimky.info">Stimky.info</a><br />      
+      BlueSky :: ART ==> <a href="https://bsky.app/profile/stimky.info">Stimky.info</a><br />
       Blog/Gallery :: MAIN ==> <a href="https://miaedscore.online">Miaedscore</a><br />
       <br />
-      <h4>Instant Messaging/Gaming</h4>     
+      <h4>Instant Messaging/Gaming</h4>
       DISCORD :: TheFieldTester<br />
-      STEAM :: https://steamcommunity.com/id/midscore/ 
+      STEAM :: https://steamcommunity.com/id/midscore/
       <br /><br /><br />
       <hr>
       External Google Blog: <a href="https://infini-vaeria.blogspot.com">Infini-Vaeria</a>
@@ -1556,7 +1556,7 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
         Ok("File deleted")
     });
 
-    let addresses = vec!["65.38.99.230:443"];
+    let addresses = vec!["74.208.171.8:8080"];
     let cert_path = "/etc/letsencrypt/live/stimky.info/fullchain.pem";
     let key_path = "/etc/letsencrypt/live/stimky.info/privkey.pem";
 

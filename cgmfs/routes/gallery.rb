@@ -560,11 +560,13 @@ class CGMFS
           File.rename(file_path, new_file_path)
           @sum_identifier = image_bytes_to_num_id_spec_fullpath(filename: new_file_path)
 
-          Thread.new do
+
+
+      Thread.new do
             create_image_thumbnail!(image_path: new_file_path, thumbnail_size: 350, thumbnail_path: "public/gallery_index/#{@user}/thumbnail_#{original_to_new_filename}")
           end
           Thread.new do
-            resize_image!(image_path: new_file_path, size: 1920, resized_image_path: "public/gallery_index/#{@user}/resized_#{original_to_new_filename}")
+           resize_image!(image_path: new_file_path, size: 1920, resized_image_path: "public/gallery_index/#{@user}/resized_#{original_to_new_filename}")
           end
         else
           uploadable = false
@@ -663,6 +665,11 @@ class CGMFS
           uploadable = true
           FileUtils.mkdir_p("public/gallery_index/#{@user}")
           File.open("public/gallery_index/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
+
+
+
+
+
           Thread.new do
             create_image_thumbnail!(image_path: "public/gallery_index/#{@user}/#{original_to_new_filename}", thumbnail_size: 350, thumbnail_path: "public/gallery_index/#{@user}/thumbnail_#{original_to_new_filename}")
           end

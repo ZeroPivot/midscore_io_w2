@@ -6,6 +6,10 @@
         {
             "name": "partitioned_array",
             "path": "lib/partitioned_array"
+        },
+        {
+            "name": "partitioned_array",
+            "path": "sl_relay/src/THE-META_GAME-Magi-Tek_Tek-Magi-Engiane/lib/partitioned_array"
         }
     ]
 }

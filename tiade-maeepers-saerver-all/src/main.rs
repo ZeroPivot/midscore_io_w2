@@ -1,14 +1,13 @@
-use tide_rustls::TlsListener;
-use tide::utils::After;
 use magnus::embed::init;
-use magnus::{eval,
+use magnus::{
     Error, RArray, RClass, RFile, RFloat, RHash, RModule, RObject, RRegexp, RString, RStruct, Ruby,
-    Value, function, method, prelude::*, rb_assert, typed_data, value::Lazy, value::Opaque,
+    Value, eval, function, method, prelude::*, rb_assert, typed_data, value::Lazy, value::Opaque,
 };
 use std::io::{self, BufRead};
+use tide::utils::After;
+use tide_rustls::TlsListener;
 
 use chrono::Utc;
-
 
 // v1.0.0.0
 
@@ -22,44 +21,38 @@ pub fn call_rustby_eval(code: &str) -> Result<String, Error> {
 /// This function initializes a Ruby VM, evaluates the code, and prints the output.
 /// If evaluation fails, it prints the error.
 fn execute_ruby_code(ruby_code: &str) {
-  match eval::<magnus::Value>(ruby_code) {
-    Ok(val) => println!("Ruby result: {:?}", val),
-    Err(e) => eprintln!("Ruby error: {}", e),
-  }
+    match eval::<magnus::Value>(ruby_code) {
+        Ok(val) => println!("Ruby result: {:?}", val),
+        Err(e) => eprintln!("Ruby error: {}", e),
+    }
 }
 
 async fn init_ruby_vm() {
-  Ruby::init(|_ruby| Ok(())).unwrap();
+    Ruby::init(|_ruby| Ok(())).unwrap();
 }
 
 // Helper: Create a JSON response.
 pub fn json_response<T: serde::Serialize>(data: T) -> tide::Response {
-  tide::Response::builder(tide::StatusCode::Ok)
-      .body(serde_json::to_string(&data).unwrap())
-      .content_type(tide::http::mime::JSON)
-      .build()
+    tide::Response::builder(tide::StatusCode::Ok)
+        .body(serde_json::to_string(&data).unwrap())
+        .content_type(tide::http::mime::JSON)
+        .build()
 }
 
 // Helper: Redirect to a given URL.
 pub fn redirect(url: &str) -> tide::Response {
-  let mut res = tide::Response::new(tide::StatusCode::Found);
-  res.insert_header("Location", url);
-  res
+    let mut res = tide::Response::new(tide::StatusCode::Found);
+    res.insert_header("Location", url);
+    res
 }
 
 use anyhow::Result;
-use image::{DynamicImage};
+use image::DynamicImage;
 use std::io::Cursor;
-
-
-
 
 // filepath: /path/to/helpers.rs
 
 use serde::Serialize;
-
-
-
 
 // filepath: /path/to/blog.rs
 
@@ -80,19 +73,20 @@ pub fn create_blog_post(title: &str, content: &str) -> Result<()> {
 // Similar functions can be created for updating or deleting posts.
 // filepath: /path/to/blog.rs
 
-
-use std::path::Path;
 use std::fs::File;
-use std::io::Read;
 use std::io::BufReader;
 use std::io::BufWriter;
-
-
+use std::io::Read;
+use std::path::Path;
 
 struct LogRoute;
 #[tide::utils::async_trait]
 impl tide::Middleware<AppState> for LogRoute {
-    async fn handle(&self, req: tide::Request<AppState>, next: tide::Next<'_, AppState>) -> tide::Result {
+    async fn handle(
+        &self,
+        req: tide::Request<AppState>,
+        next: tide::Next<'_, AppState>,
+    ) -> tide::Result {
         println!("Incoming route: {}", req.url().path());
         let res = next.run(req).await;
         println!("Response status: {}", res.status());
@@ -100,130 +94,131 @@ impl tide::Middleware<AppState> for LogRoute {
     }
 }
 
-
-use std::thread::JoinHandle;
 use std::sync::mpsc;
-use std::sync::mpsc::{channel, Sender};
+use std::sync::mpsc::{Sender, channel};
+use std::thread::JoinHandle;
 // use std::sync::Arc;
 use std::sync::Mutex;
-use std::thread;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::sync_channel;
-
-
+use std::thread;
 
 #[derive(Clone)]
 struct AppState;
 
 #[async_std::main]
-async fn main() -> tide::Result<()>
-{
-  // Spawn a background thread to listen for CLI input.
- std::thread::spawn(|| {
-    let stdin = io::stdin();
-    for line in stdin.lock().lines() {
-      if let Ok(input) = line {
-       match input.trim() {
-        "exit" => {
-         println!("Exiting server abruptly.");
-        std::process::exit(0);
-      }
+async fn main() -> tide::Result<()> {
+    // Spawn a background thread to listen for CLI input.
+    std::thread::spawn(|| {
+        let stdin = io::stdin();
+        for line in stdin.lock().lines() {
+            if let Ok(input) = line {
+                match input.trim() {
+                    "exit" => {
+                        println!("Exiting server abruptly.");
+                        std::process::exit(0);
+                    }
 
-      // When the "rustby" command is input, write the Ruby code to a .rb file
-      // in a shared directory ("./rustby_scripts"). Then, immediately load (evaluate)
-      // the file using Magnus. The file is deleted after evaluation. The Ruby code in
-      // the file is expected to return a string.
-      "rustby" => {
-        println!("Running Ruby code via named pipe sharing system...");
-       let script_dir = "./rustby_scripts";
-        if let Err(e) = std::fs::create_dir_all(script_dir) {
-        eprintln!("Failed to create script directory: {}", e);
-        continue;
-        }
-        let filename = format!("{}/script_{}.rb", script_dir, Utc::now().timestamp_nanos_opt().unwrap_or(0));
-        // Replace the Ruby code below as needed. It must return a string value.
-       let ruby_code = r#"nil
+                    // When the "rustby" command is input, write the Ruby code to a .rb file
+                    // in a shared directory ("./rustby_scripts"). Then, immediately load (evaluate)
+                    // the file using Magnus. The file is deleted after evaluation. The Ruby code in
+                    // the file is expected to return a string.
+                    "rustby" => {
+                        println!("Running Ruby code via named pipe sharing system...");
+                        let script_dir = "./rustby_scripts";
+                        if let Err(e) = std::fs::create_dir_all(script_dir) {
+                            eprintln!("Failed to create script directory: {}", e);
+                            continue;
+                        }
+                        let filename = format!(
+                            "{}/script_{}.rb",
+                            script_dir,
+                            Utc::now().timestamp_nanos_opt().unwrap_or(0)
+                        );
+                        // Replace the Ruby code below as needed. It must return a string value.
+                        let ruby_code = r#"nil
        'RustbySpace'
       "#;
-       if let Err(e) = std::fs::write(&filename, ruby_code) {
-       eprintln!("Error writing script file: {}", e);
-        continue;
-       }
-        println!("Script file written: {}", filename);
+                        if let Err(e) = std::fs::write(&filename, ruby_code) {
+                            eprintln!("Error writing script file: {}", e);
+                            continue;
+                        }
+                        println!("Script file written: {}", filename);
 
-        // Instead of calling the Ruby evaluator directly (which cannot be done in a thread),
-        // write the Ruby load command to a named pipe for external processing.
-        let pipe_path = "/tmp/ruby_pipe";
-        if let Err(e) = std::fs::write(pipe_path, format!("load '{}'\n", filename)) {
-            eprintln!("Error writing to named pipe: {}", e);
-        } else {
-            println!("Command sent to Ruby evaluator via pipe: {}", pipe_path);
-       }
+                        // Instead of calling the Ruby evaluator directly (which cannot be done in a thread),
+                        // write the Ruby load command to a named pipe for external processing.
+                        let pipe_path = "/tmp/ruby_pipe";
+                        if let Err(e) = std::fs::write(pipe_path, format!("load '{}'\n", filename))
+                        {
+                            eprintln!("Error writing to named pipe: {}", e);
+                        } else {
+                            println!("Command sent to Ruby evaluator via pipe: {}", pipe_path);
+                        }
 
-        // Wait briefly for the external process to evaluate the script and write the result.
-        std::thread::sleep(std::time::Duration::from_millis(100));
+                        // Wait briefly for the external process to evaluate the script and write the result.
+                        std::thread::sleep(std::time::Duration::from_millis(100));
 
-        // Read the evaluation result from an output file.
-        let result_path = "/tmp/ruby_output.txt";
-        let script_result = match std::fs::read_to_string(result_path) {
-                    Ok(output) => Ok(output),
-                    Err(e) => {
-                  eprintln!("Error reading Ruby output: {}", e);
-                  Err(magnus::Error::new(magnus::exception::runtime_error(), format!("Error reading Ruby output: {}", e)))
-                    },
-                };
+                        // Read the evaluation result from an output file.
+                        let result_path = "/tmp/ruby_output.txt";
+                        let script_result = match std::fs::read_to_string(result_path) {
+                            Ok(output) => Ok(output),
+                            Err(e) => {
+                                eprintln!("Error reading Ruby output: {}", e);
+                                Err(magnus::Error::new(
+                                    magnus::exception::runtime_error(),
+                                    format!("Error reading Ruby output: {}", e),
+                                ))
+                            }
+                        };
 
-        // Remove the script file after evaluation.
-        if let Err(e) = std::fs::remove_file(&filename) {
-        eprintln!("Failed to remove script file: {}", e);
+                        // Remove the script file after evaluation.
+                        if let Err(e) = std::fs::remove_file(&filename) {
+                            eprintln!("Failed to remove script file: {}", e);
+                        }
+
+                        match script_result {
+                            Ok(output) => println!("Ruby output: {}", output),
+                            Err(e) => eprintln!("Error running Ruby code: {}", e),
+                        }
+                    }
+
+                    "restart" => {
+                        println!("Restarting all servers...");
+                        std::process::Command::new("sh")
+                            .arg("-c")
+                            .arg("killall -HUP tiade-maeepers-saerver-all") // Replace with your server binary name
+                            .spawn()
+                            .expect("Failed to restart servers");
+                    }
+                    _ => {
+                        println!("Unknown command: {}", input.trim());
+                    }
+                }
+            }
         }
+    });
 
-        match script_result {
-        Ok(output) => println!("Ruby output: {}", output),
-        Err(e) => eprintln!("Error running Ruby code: {}", e),
+    // ... rest of the main function (server setup, routes, etc.)
+    //  Ok(())
+
+    /*
+       ///
+        // Example: Spawn 3 independent Ruby interpreter threads.
+        let mut handles: Vec<JoinHandle<Result<(), Error>>> = Vec::new();
+
+
+        // Optionally, wait for the threads to complete.
+        for handle in handles {
+            match handle.join() {
+                Ok(Ok(())) => println!("Ruby instance finished successfully."),
+                Ok(Err(err)) => eprintln!("Ruby eval error: {}", err),
+                Err(_) => eprintln!("A thread panicked."),
+            }
         }
-      }
-
-      "restart" => {
-        println!("Restarting all servers...");
-        std::process::Command::new("sh")
-        .arg("-c")
-        .arg("killall -HUP tiade-maeepers-saerver-all") // Replace with your server binary name
-        .spawn()
-        .expect("Failed to restart servers");
-      }
-      _ => {
-        println!("Unknown command: {}", input.trim());
-      }
-      }
-    }
-    }
-  });
-
-
-  // ... rest of the main function (server setup, routes, etc.)
-//  Ok(())
-
-
-
-  /*
-    ///
-     // Example: Spawn 3 independent Ruby interpreter threads.
-     let mut handles: Vec<JoinHandle<Result<(), Error>>> = Vec::new();
-
-
-     // Optionally, wait for the threads to complete.
-     for handle in handles {
-         match handle.join() {
-             Ok(Ok(())) => println!("Ruby instance finished successfully."),
-             Ok(Err(err)) => eprintln!("Ruby eval error: {}", err),
-             Err(_) => eprintln!("A thread panicked."),
-         }
-     }
- */
-     // Continue with the rest of your server setup…
-     //Ok(())
-     //
+    */
+    // Continue with the rest of your server setup…
+    //Ok(())
+    //
 
     // Main HTTPS server - handling all defined routes
     let mut app = tide::with_state(AppState {});
@@ -232,7 +227,11 @@ async fn main() -> tide::Result<()>
     struct LogRoute;
     #[tide::utils::async_trait]
     impl tide::Middleware<AppState> for LogRoute {
-        async fn handle(&self, req: tide::Request<AppState>, next: tide::Next<'_, AppState>) -> tide::Result {
+        async fn handle(
+            &self,
+            req: tide::Request<AppState>,
+            next: tide::Next<'_, AppState>,
+        ) -> tide::Result {
             let route = req.url().path().to_string();
             let res = next.run(req).await;
             println!("Route '{}' handled with status: {}", route, res.status());
@@ -247,114 +246,110 @@ async fn main() -> tide::Result<()>
 
     use std::sync::Arc;
 
-
     use std::collections::HashMap;
     use tide::{Request, Response, StatusCode};
 
+    use std::fs::OpenOptions;
     use url::Url;
-use std::fs::OpenOptions;
     //let rustby_eval_title = rustby_eval_title.clone();
-
 
     // Utility function to list files in a directory with a specific extension.
     fn list_files_with_ext(dir: &str, ext: &str) -> std::io::Result<Vec<String>> {
-      let mut files = Vec::new();
-      for entry in std::fs::read_dir(dir)? {
-        let entry = entry?;
-        let path = entry.path();
-        if path.extension().and_then(|e| e.to_str()) == Some(ext) {
-          if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-            files.push(name.to_string());
-          }
+        let mut files = Vec::new();
+        for entry in std::fs::read_dir(dir)? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) == Some(ext) {
+                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                    files.push(name.to_string());
+                }
+            }
         }
-      }
-      Ok(files)
+        Ok(files)
     }
 
     // For CSS
     let css_files = list_files_with_ext("./css", "css")?;
     let css_list_index = css_files.join(", ");
     let css_html_index = format!(
-      "<html><head>{}</head><body></body></html>",
-      css_files
-        .iter()
-        .map(|f| format!("<link rel=\"stylesheet\" href=\"/css/{}\" />", f))
-        .collect::<Vec<_>>()
-        .join("\n")
+        "<html><head>{}</head><body></body></html>",
+        css_files
+            .iter()
+            .map(|f| format!("<link rel=\"stylesheet\" href=\"/css/{}\" />", f))
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 
     // For JS
     let js_files = list_files_with_ext("./js", "js")?;
     let js_list_index = js_files.join(", ");
     let js_html_index = format!(
-      "<html><head>{}</head><body></body></html>",
-      js_files
-        .iter()
-        .map(|f| format!("<script src=\"/js/{}\"></script>", f))
-        .collect::<Vec<_>>()
-        .join("\n")
+        "<html><head>{}</head><body></body></html>",
+        js_files
+            .iter()
+            .map(|f| format!("<script src=\"/js/{}\"></script>", f))
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 
     // For IMG (no specific extension check here, adjust as needed)
     let img_files: Vec<String> = std::fs::read_dir("./img")?
-      .filter_map(|entry| {
-        let p = entry.ok()?.path();
-        p.file_name().and_then(|n| n.to_str()).map(String::from)
-      })
-      .collect();
+        .filter_map(|entry| {
+            let p = entry.ok()?.path();
+            p.file_name().and_then(|n| n.to_str()).map(String::from)
+        })
+        .collect();
     let img_list_index = img_files.join(", ");
     let img_html_index = format!(
-      "<html><body>{}</body></html>",
-      img_files
-        .iter()
-        .map(|f| format!("<img src=\"/img/{}\" alt=\"{}\" />", f, f))
-        .collect::<Vec<_>>()
-        .join("\n")
+        "<html><body>{}</body></html>",
+        img_files
+            .iter()
+            .map(|f| format!("<img src=\"/img/{}\" alt=\"{}\" />", f, f))
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 
     // For FONTS
     let fonts_files: Vec<String> = std::fs::read_dir("./fonts")?
-      .filter_map(|entry| {
-        let p = entry.ok()?.path();
-        p.file_name().and_then(|n| n.to_str()).map(String::from)
-      })
-      .collect();
+        .filter_map(|entry| {
+            let p = entry.ok()?.path();
+            p.file_name().and_then(|n| n.to_str()).map(String::from)
+        })
+        .collect();
     let fonts_list_index = fonts_files.join(", ");
     let fonts_html_index = format!(
-      "<html><body><ul>{}</ul></body></html>",
-      fonts_files
-        .iter()
-        .map(|f| format!("<li>{}</li>", f))
-        .collect::<Vec<_>>()
-        .join("")
+        "<html><body><ul>{}</ul></body></html>",
+        fonts_files
+            .iter()
+            .map(|f| format!("<li>{}</li>", f))
+            .collect::<Vec<_>>()
+            .join("")
     );
 
     // For PUBLIC
     let public_files: Vec<String> = std::fs::read_dir("./public")?
-      .filter_map(|entry| {
-        let p = entry.ok()?.path();
-        p.file_name().and_then(|n| n.to_str()).map(String::from)
-      })
-      .collect();
+        .filter_map(|entry| {
+            let p = entry.ok()?.path();
+            p.file_name().and_then(|n| n.to_str()).map(String::from)
+        })
+        .collect();
     let public_list_index = public_files.join(", ");
     let public_html_index = format!(
-      "<html><body><ul>{}</ul></body></html>",
-      public_files
-        .iter()
-        .map(|f| format!("<li>{}</li>", f))
-        .collect::<Vec<_>>()
-        .join("")
+        "<html><body><ul>{}</ul></body></html>",
+        public_files
+            .iter()
+            .map(|f| format!("<li>{}</li>", f))
+            .collect::<Vec<_>>()
+            .join("")
     );
 
     // Check all directories before serving; if any are missing, raise an error.
     for dir in &["./css", "./js", "./img", "./fonts", "./public"] {
-      if std::fs::metadata(dir).is_err() {
-        eprintln!("Error: directory {} not found", dir);
-        panic!("Directory not found");
-      }
+        if std::fs::metadata(dir).is_err() {
+            eprintln!("Error: directory {} not found", dir);
+            panic!("Directory not found");
+        }
     }
-
-
 
     // Serve each directory. Tide will serve new files as they appear.
     app.at("/css").serve_dir("./css/")?;
@@ -365,30 +360,31 @@ use std::fs::OpenOptions;
 
     #[derive(serde::Deserialize)]
     struct PraexyForm {
-      content: String,
+        content: String,
     }
 
+    app.at("/praexy-saerver")
+        .post(|mut req: tide::Request<AppState>| async move {
+            let form_data: PraexyForm = req.body_form().await.unwrap_or(PraexyForm {
+                content: String::new(),
+            });
+            Ok(format!("Received content:\n{}", form_data.content))
+        });
 
-    app.at("/praexy-saerver").post(|mut req: tide::Request<AppState>| async move {
-      let form_data: PraexyForm = req.body_form().await.unwrap_or(PraexyForm { content: String::new() });
-      Ok(format!("Received content:\n{}", form_data.content))
-    });
+    /*
+      app.at("/rustby").get(|req: tide::Request<AppState>| {
+          let rustby_eval_title = rustby_eval_title.clone();
+          async move {
+              let query: HashMap<String, String> = req.query().unwrap_or_default();
+              let vlog = query
+                  .get("vlog")
+                  .cloned()
+                  .unwrap_or_else(|| "".to_string());
 
+              let title = rustby_eval_title.to_string();
+              let base_iframe_url = format!("https://miaedscore.online:8080/{}", vlog);
 
-  /*
-    app.at("/rustby").get(|req: tide::Request<AppState>| {
-        let rustby_eval_title = rustby_eval_title.clone();
-        async move {
-            let query: HashMap<String, String> = req.query().unwrap_or_default();
-            let vlog = query
-                .get("vlog")
-                .cloned()
-                .unwrap_or_else(|| "".to_string());
-
-            let title = rustby_eval_title.to_string();
-            let base_iframe_url = format!("https://miaedscore.online:8080/{}", vlog);
-
-            let html_content = format!(r######"<!DOCTYPE html>
+              let html_content = format!(r######"<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -478,49 +474,50 @@ use std::fs::OpenOptions;
 </body>
 </html>"######);
 
-            let mut res = tide::Response::new(tide::StatusCode::Ok);
-            res.set_body(html_content);
-            res.set_content_type("text/html");
-            Ok(res)
-        }
-    });
-  */
+              let mut res = tide::Response::new(tide::StatusCode::Ok);
+              res.set_body(html_content);
+              res.set_content_type("text/html");
+              Ok(res)
+          }
+      });
+    */
 
-  // Route to handle the "/bridge/*rest" path
-  // This will serve an HTML page with an iframe loading the target URL.
-  // The iframe will load the URL "https://miaedscore.online:8080/*rest"
-  // The JavaScript snippet in the HTML will remove any query parameters from the browser URL.
-  // The HTML page will be served with the content type "text/html".
-  // The HTML page will be styled to take up the full width and height of the browser window.
-  // The iframe will be styled to take up the full width and height of the browser window.
-  // The HTML page will have a light gray background color.
-  // The iframe will have no border.
-  // The HTML page will have a title "Bridge Iframe".
-  // The HTML page will have a meta tag for viewport settings.
-  // The HTML page will have a meta tag for character set settings.
-  // The HTML page will have a meta tag for theme color settings.
-  // The HTML page will have a meta tag for robots settings.
-  // The HTML page will have a meta tag for apple mobile web app settings.
-  // The HTML page will have a meta tag for application name settings.
-  // The HTML page will have a meta tag for format detection settings.
-  // The HTML page will have a meta tag for ms application tile color settings.
-  // The HTML page will have a meta tag for ms application tile image settings.
-  // The HTML page will have a meta tag for google bot settings.
-  // The HTML page will have a meta tag for google settings.
-  // The HTML page will have a meta tag for favicon settings.
-  // The HTML page will have a meta tag for author settings.
-  // The HTML page will have a meta tag for description settings.
+    // Route to handle the "/bridge/*rest" path
+    // This will serve an HTML page with an iframe loading the target URL.
+    // The iframe will load the URL "https://miaedscore.online:8080/*rest"
+    // The JavaScript snippet in the HTML will remove any query parameters from the browser URL.
+    // The HTML page will be served with the content type "text/html".
+    // The HTML page will be styled to take up the full width and height of the browser window.
+    // The iframe will be styled to take up the full width and height of the browser window.
+    // The HTML page will have a light gray background color.
+    // The iframe will have no border.
+    // The HTML page will have a title "Bridge Iframe".
+    // The HTML page will have a meta tag for viewport settings.
+    // The HTML page will have a meta tag for character set settings.
+    // The HTML page will have a meta tag for theme color settings.
+    // The HTML page will have a meta tag for robots settings.
+    // The HTML page will have a meta tag for apple mobile web app settings.
+    // The HTML page will have a meta tag for application name settings.
+    // The HTML page will have a meta tag for format detection settings.
+    // The HTML page will have a meta tag for ms application tile color settings.
+    // The HTML page will have a meta tag for ms application tile image settings.
+    // The HTML page will have a meta tag for google bot settings.
+    // The HTML page will have a meta tag for google settings.
+    // The HTML page will have a meta tag for favicon settings.
+    // The HTML page will have a meta tag for author settings.
+    // The HTML page will have a meta tag for description settings.
 
+    app.at("/bridge/*rest")
+        .get(|req: tide::Request<AppState>| async move {
+            // Extract the wildcard part from the URL.
+            let rest = req.param("rest").unwrap_or("");
+            // Build the target URL for the 8080 server.
+            let target_url = format!("https://miaedscore.online:8080/{}", rest);
 
-    app.at("/bridge/*rest").get(|req: tide::Request<AppState>| async move {
-      // Extract the wildcard part from the URL.
-      let rest = req.param("rest").unwrap_or("");
-      // Build the target URL for the 8080 server.
-      let target_url = format!("https://miaedscore.online:8080/{}", rest);
-
-      // Build an HTML page with an iframe loading the target URL.
-      // A JavaScript snippet removes any query parameters from the browser URL.
-      let html_content = format!(r#"<!DOCTYPE html>
+            // Build an HTML page with an iframe loading the target URL.
+            // A JavaScript snippet removes any query parameters from the browser URL.
+            let html_content = format!(
+                r#"<!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="UTF-8">
@@ -550,24 +547,23 @@ use std::fs::OpenOptions;
   <body>
     <iframe src="{0}" title="Bridge - Embedded 8080 Server"></iframe>
   </body>
-  </html>"#, target_url);
+  </html>"#,
+                target_url
+            );
 
-      // Return the HTML response.
-      let mut res = tide::Response::new(tide::StatusCode::Ok);
-      res.set_body(html_content);
-      res.set_content_type("text/html");
-      Ok(res)
-  });
+            // Return the HTML response.
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body(html_content);
+            res.set_content_type("text/html");
+            Ok(res)
+        });
 
-
-
-
-
-  {
-    std::fs::create_dir_all("/root/midscore_io/rustby/rustby-vm/target/release/scripts").ok();
-    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
-    let filename = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/script_{ts}.rb");
-    let contents = r######"
+    {
+        std::fs::create_dir_all("/root/midscore_io/rustby/rustby-vm/target/release/scripts").ok();
+        let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+        let filename =
+            format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/script_{ts}.rb");
+        let contents = r######"
        require 'date'
        require 'fileutils'
 
@@ -603,88 +599,100 @@ use std::fs::OpenOptions;
     class MoonPhaseDetails2
       # === Constants and Definitions ===
 
-      # Average length of a full lunar cycle (in days)
-      MOON_CYCLE_DAYS = 29.53
+        # Average length of a full lunar cycle (in days)
+    MOON_CYCLE_DAYS = 29.53
 
-       # The 23 fabled moon rotations with emojis:
-        MOON_ROTATIONS = [
-          'New Moon 🌑',            # 0
-          'Waxing Crescent 🌒',     # 1
-          'First Quarter 🌓',       # 2
-          'Waxing Gibbous 🌔', # 3
-          'Full Moon 🌕',           # 4
-          'Waning Gibbous 🌖',      # 5
-          'Last Quarter 🌗',        # 6
-          'Waning Crescent 🌘',     # 7
-          'Supermoon 🌝',           # 8
-          'Blue Moon 🔵🌙',         # 9
-          'Blood Moon 🩸🌙',        # 10
-          'Harvest Moon 🍂🌕',      # 11
-          "Hunter's Moon 🌙🔭",     # 12
-          'Wolf Moon 🐺🌕',         # 13
-          'Pink Moon 🌸🌕',
-          'Snow Moon 🌨️',          # 14
-          'Snow Moon Snow 🌨️❄️',    # 15
-          'Avian Moon 🦅',          # 16
-          'Avian Moon Snow 🦅❄️',    # 17
-          'Skunk Moon 🦨',           # 18
-          'Skunk Moon Snow 🦨❄️',    # 19
-        ]
+    # The 25 fabled moon rotations with emojis:
+    MOON_ROTATIONS = [
+      'New Moon 🌑', # 1
+      'Waxing Crescent 🌒',     # 2
+      'First Quarter 🌓',       # 3
+      'Waxing Gibbous 🌔',      # 4
+      'Full Moon 🌕',           # 5
+      'Waning Gibbous 🌖',      # 6
+      'Last Quarter 🌗',        # 7
+      'Waning Crescent 🌘',     # 8
+      'Supermoon 🌝',           # 9
+      'Blue Moon 🔵🌙',         # 10
+      'Blood Moon 🩸🌙',        # 11
+      'Harvest Moon 🍂🌕',      # 12
+      "Hunter's Moon 🌙🔭",     # 13
+      'Wolf Moon 🐺🌕',         # 14
+      'Pink Moon 🌸🌕', # 15
+      'Snow Moon 🌨️', # 16
+      'Snow Moon Snow 🌨️❄️', # 17
+      'Avian Moon 🦅', # 18
+      'Avian Moon Snow 🦅❄️',    # 19
+      'Skunk Moon 🦨',           # 20
+      'Skunk Moon Snow 🦨❄️',    # 21
+      'Cosmic Moon 🌌🌕', # 22
+      'Celestial Moon 🌟🌕', # 23
+      'Otter Moon 🐕🌌', # 24
+      'Muskium Otter Muskium Stinky Stimky Otter Moon 🦨🌌' # 25
 
-        # Define 23 corresponding species with emojis.
-        SPECIES = [
-          'Dogg 🐶', # New Moon
-          'Folf 🦊🐺', # Waxing Crescent
-          'Aardwolf 🐾',                 # First Quarter
-          'Spotted Hyena 🐆',            # Waxing Gibbous
-          'Folf Hybrid 🦊✨',             # Full Moon
-          'Striped Hyena 🦓',            # Waning Gibbous
-          'Dogg Prime 🐕⭐',              # Last Quarter
-          'WolfFox 🐺🦊', # Waning Crescent
-          'Brown Hyena 🦴',              # Supermoon
-          'Dogg Celestial 🐕🌟',          # Blue Moon
-          'Folf Eclipse 🦊🌒',            # Blood Moon
-          'Aardwolf Luminous 🐾✨', # Harvest Moon
-          'Spotted Hyena Stellar 🐆⭐', # Hunter's Moon
-          'Folf Nova 🦊💥', # Wolf Moon
-          'Brown Hyena Cosmic 🦴🌌', # Pink Moon
-          'Snow Leopard 🌨️', # New Moon
-          'Snow Leopard Snow Snep 🌨️❄️', # Pink Moon
-          'Avian 🦅', # New Moon
-          'Avian Snow 🦅❄️', # Pink Moon
-          'Skunk 🦨', # New Moon
-          'Skunk Snow 🦨❄️', # New Moon
-        ]
+    ]
+    # Define 25 corresponding species with emojis.
+    SPECIES = [
+      'Dogg 🐶', # New Moon
+      'Folf 🦊🐺', # Waxing Crescent
+      'Aardwolf 🐾',
+      'Spotted Hyena 🐆',
+      'Folf Hybrid 🦊✨',
+      'Striped Hyena 🦓',
+      'Dogg Prime 🐕⭐',
+      'WolfFox 🐺🦊', # Waning Crescent
+      'Brown Hyena 🦴',
+      'Dogg Celestial 🐕🌟',
+      'Folf Eclipse 🦊🌒',
+      'Aardwolf Luminous 🐾✨',
+      'Spotted Hyena Stellar 🐆⭐',
+      'Folf Nova 🦊💥',
+      'Brown Hyena Cosmic 🦴🌌',
+      'Snow Leopard 🌨️', # New Moon
+      'Snow Leopard Snow Snep 🌨️❄️',
+      'Avian 🦅',
+      'Avian Snow 🦅❄️',
+      'Skunk 🦨',
+      'Skunk Snow 🦨❄️',
+      'Infini-Vaeria Graevity-Infini 🌌🐕',
+      'Graevity-Infini Infini-Vaeria 🌟🐕',
+      'Otter 🦦',
+      'Muskium Otter Stinky Stimky 🦦🦨'
 
-        # Define 23 corresponding were-forms with emojis.
-        WERE_FORMS = [
-          'WereDogg 🐶🌑',                     # New Moon
-          'WereFolf 🦊🌙',                     # Waxing Crescent
-          'WereAardwolf 🐾',                   # First Quarter
-          'WereSpottedHyena 🐆',               # Waxing Gibbous
-          'WereFolfHybrid 🦊✨',                # Full Moon
-          'WereStripedHyena 🦓',               # Waning Gibbous
-          'WereDoggPrime 🐕⭐',                 # Last Quarter
-          'WereWolfFox 🐺🦊', # Waning Crescent
-          'WereBrownHyena 🦴',                 # Supermoon
-          'WereDoggCelestial 🐕🌟',             # Blue Moon
-          'WereFolfEclipse 🦊🌒',               # Blood Moon
-          'WereAardwolfLuminous 🐾✨',          # Harvest Moon
-          'WereSpottedHyenaStellar 🐆⭐',       # Hunter's Moon
-          'WereFolfNova 🦊💥', # Wolf Moon
-          'WereBrownHyenaCosmic 🦴🌌', # Pink Moon
-          'WereSnowLeopard 🐆❄️',
-          'WereSnowLeopardSnow 🐆❄️❄️', # Pink Moon
-          'WereAvian 🦅', # New Moon
-          'WereAvianSnow 🦅❄️', # Pink Moon
-          'WereSkunk 🦨', # New Moon
-          'WereSkunkSnow 🦨❄️' # New Moon
+    ]
 
-        ]
-      # Each moon phase is assumed to share an equal slice of the lunar cycle.
-      PHASE_COUNT  = MOON_ROTATIONS.size # 15 total phases
-      PHASE_LENGTH = MOON_CYCLE_DAYS / PHASE_COUNT # Days per phase
+    # Define 25 corresponding were-forms with emojis.
+    WERE_FORMS = [
+      'WereDogg 🐶🌑',
+      'WereFolf 🦊🌙',
+      'WereAardwolf 🐾',
+      'WereSpottedHyena 🐆',
+      'WereFolfHybrid 🦊✨',
+      'WereStripedHyena 🦓',
+      'WereDoggPrime 🐕⭐',
+      'WereWolfFox 🐺🦊', # Waning Crescent
+      'WereBrownHyena 🦴',
+      'WereDoggCelestial 🐕🌟',
+      'WereFolfEclipse 🦊🌒',
+      'WereAardwolfLuminous 🐾✨',
+      'WereSpottedHyenaStellar 🐆⭐',
+      'WereFolfNova 🦊💥', # Wolf Moon
+      'WereBrownHyenaCosmic 🦴🌌', # Pink Moon
+      'WereSnowLeopard 🐆❄️',
+      'WereSnowLeopardSnow 🐆❄️❄️', # Pink Moon
+      'WereAvian 🦅', # New Moon
+      'WereAvianSnow 🦅❄️', # Pink Moon
+      'WereSkunk 🦨', # New Moon
+      'WereSkunkSnow 🦨❄️', # New Moon
+      'WereInfiniVaeriaGraevity 🐕🌌',
+      'WereGraevityInfiniInfiniVaeria 🌟🐕',
+      'WereOtter 🦦',
+      'WereMuskiumOtterStinkyStimky 🦦🦨'
+    ]
 
+    # Each moon phase is assumed to share an equal slice of the lunar cycle.
+    PHASE_COUNT  = MOON_ROTATIONS.size # 15 total phases
+    PHASE_LENGTH = MOON_CYCLE_DAYS / PHASE_COUNT # Days per phase
       # === Core Function ===
 
       def self.current_moon_details(date)
@@ -833,13 +841,11 @@ use std::fs::OpenOptions;
 
 
     "######;
-    std::fs::write(&filename, contents)?;
-    println!("Created script file: {}", filename);
-  }
+        std::fs::write(&filename, contents)?;
+        println!("Created script file: {}", filename);
+    }
 
-
-
-  app.at("/time").get(|mut req: tide::Request<AppState>| async move {
+    app.at("/time").get(|mut req: tide::Request<AppState>| async move {
 
     let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
     //td::fs::create_dir_all(script_dir).ok();
@@ -894,8 +900,6 @@ use std::fs::OpenOptions;
     Ok(res)
     //Ok(output.into())
   });
-
-
 
     app.at("/_ethereal_life_sl_logger_get_").get(|mut req: tide::Request<AppState>| async move {
       // Catch all POST variables into a hashmap and print them
@@ -958,7 +962,7 @@ use std::fs::OpenOptions;
     //Ok(output.into())
   });
 
-  app.at("/sl_logger").post(|mut req: tide::Request<AppState>| async move {
+    app.at("/sl_logger").post(|mut req: tide::Request<AppState>| async move {
     // Catch all POST variables into a hashmap and print them
     let body = req.body_string().await.unwrap_or_default();
     println!("Received POST body: {}", body);
@@ -1023,235 +1027,232 @@ use std::fs::OpenOptions;
     //Ok(output.into())
   });
 
-
-  app.at("/ae").get(|mut req: tide::Request<AppState>| async move {
-
-    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
-    //td::fs::create_dir_all(script_dir).ok();
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    //res.set_body("HTML content for /moon route");
-    //res.set_content_type("text/html; charset=utf-8");
-    //return Ok(res);
-    // Grab Ruby code from request body.
-    let ruby_source = r######"
+    app.at("/ae")
+        .get(|mut req: tide::Request<AppState>| async move {
+            let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+            //td::fs::create_dir_all(script_dir).ok();
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            //res.set_body("HTML content for /moon route");
+            //res.set_content_type("text/html; charset=utf-8");
+            //return Ok(res);
+            // Grab Ruby code from request body.
+            let ruby_source = r######"
 
      # Example usage
   ae_calendar = AECalendar.new
   "AE Calendar: #{ae_calendar.ae_date(DateTime.now)}"
 
     "######;
-    if ruby_source.trim().is_empty() {
-        let mut resp = tide::Response::new(tide::StatusCode::Ok);
-        resp.set_body("No Ruby code supplied");
-        return Ok(resp);
-    }
+            if ruby_source.trim().is_empty() {
+                let mut resp = tide::Response::new(tide::StatusCode::Ok);
+                resp.set_body("No Ruby code supplied");
+                return Ok(resp);
+            }
 
-    // Create unique .rb filename.
-    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
-    let filename = format!("{}/ae_{}.rb", script_dir,ts);
-    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+            // Create unique .rb filename.
+            let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+            let filename = format!("{}/ae_{}.rb", script_dir, ts);
+            std::fs::write(&filename, &ruby_source)
+                .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
 
+            let result_path = format!(
+                "/root/midscore_io/rustby/rustby-vm/target/release/scripts/ae_{}.txt",
+                ts
+            );
 
+            // Block until the result file is available or until timeout
+            let start = std::time::Instant::now();
+            let timeout = std::time::Duration::from_secs(120);
+            while !std::path::Path::new(&result_path).exists() {
+                if start.elapsed() > timeout {
+                    return Ok("Timed out waiting for result file".into());
+                }
+                std::thread::sleep(std::time::Duration::from_millis(1));
+            }
+            let output =
+                std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
 
+            // Remove script file after evaluation.
 
-    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/ae_{}.txt", ts);
+            let _ = std::fs::remove_file(&result_path);
+            let _ = std::fs::remove_file(&filename);
 
-    // Block until the result file is available or until timeout
-    let start = std::time::Instant::now();
-    let timeout = std::time::Duration::from_secs(120);
-    while !std::path::Path::new(&result_path).exists() {
-      if start.elapsed() > timeout {
-        return Ok("Timed out waiting for result file".into());
-      }
-      std::thread::sleep(std::time::Duration::from_millis(1));
-    }
-    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+            // Return the HTML response.
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body(output);
+            res.insert_header("Content-Type", "text/plain; charset=utf-8");
+            Ok(res)
+            //Ok(output.into())
+        });
 
-
-    // Remove script file after evaluation.
-
-    let _ = std::fs::remove_file(&result_path);
-    let _ = std::fs::remove_file(&filename);
-
-
-     // Return the HTML response.
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    res.set_body(output);
-    res.insert_header("Content-Type", "text/plain; charset=utf-8");
-    Ok(res)
-    //Ok(output.into())
-  });
-
-
-
-
-  app.at("/moon").get(|mut req: tide::Request<AppState>| async move {
-
-    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
-    //td::fs::create_dir_all(script_dir).ok();
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    //res.set_body("HTML content for /moon route");
-    //res.set_content_type("text/html; charset=utf-8");
-    //return Ok(res);
-    // Grab Ruby code from request body.
-    let ruby_source = r######"
+    app.at("/moon")
+        .get(|mut req: tide::Request<AppState>| async move {
+            let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+            //td::fs::create_dir_all(script_dir).ok();
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            //res.set_body("HTML content for /moon route");
+            //res.set_content_type("text/html; charset=utf-8");
+            //return Ok(res);
+            // Grab Ruby code from request body.
+            let ruby_source = r######"
 
     "#{MoonPhaseDetails2.print_text_details_for_date(Date.today)}"
 
     "######;
-    if ruby_source.trim().is_empty() {
-        let mut resp = tide::Response::new(tide::StatusCode::Ok);
-        resp.set_body("No Ruby code supplied");
-        return Ok(resp);
-    }
+            if ruby_source.trim().is_empty() {
+                let mut resp = tide::Response::new(tide::StatusCode::Ok);
+                resp.set_body("No Ruby code supplied");
+                return Ok(resp);
+            }
 
-    // Create unique .rb filename.
-    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
-    let filename = format!("{}/moon_{}.rb", script_dir,ts);
-    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+            // Create unique .rb filename.
+            let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+            let filename = format!("{}/moon_{}.rb", script_dir, ts);
+            std::fs::write(&filename, &ruby_source)
+                .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
 
+            let result_path = format!(
+                "/root/midscore_io/rustby/rustby-vm/target/release/scripts/moon_{}.txt",
+                ts
+            );
 
+            // Block until the result file is available or until timeout
+            let start = std::time::Instant::now();
+            let timeout = std::time::Duration::from_secs(120);
+            while !std::path::Path::new(&result_path).exists() {
+                if start.elapsed() > timeout {
+                    return Ok("Timed out waiting for result file".into());
+                }
+                std::thread::sleep(std::time::Duration::from_millis(1));
+            }
+            let output =
+                std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
 
+            // Remove script file after evaluation.
 
-    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/moon_{}.txt", ts);
+            let _ = std::fs::remove_file(&result_path);
+            let _ = std::fs::remove_file(&filename);
 
-    // Block until the result file is available or until timeout
-    let start = std::time::Instant::now();
-    let timeout = std::time::Duration::from_secs(120);
-    while !std::path::Path::new(&result_path).exists() {
-      if start.elapsed() > timeout {
-        return Ok("Timed out waiting for result file".into());
-      }
-      std::thread::sleep(std::time::Duration::from_millis(1));
-    }
-    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+            // Return the HTML response.
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body(output);
+            res.insert_header("Content-Type", "text/plain; charset=utf-8");
+            Ok(res)
+            //Ok(output.into())
+        });
 
+    //get neutri alg
+    app.at("/rneutrialg")
+        .get(|mut req: tide::Request<AppState>| async move {
+            let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+            //td::fs::create_dir_all(script_dir).ok();
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            //res.set_body("HTML content for /moon route");
+            //res.set_content_type("text/html; charset=utf-8");
+            //return Ok(res);
+            // Grab Ruby code from request body.
+            let query: std::collections::HashMap<String, String> = req.query().unwrap_or_default();
+            let file_contents = std::fs::read_to_string("rneutri.txt")
+                .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
 
-    // Remove script file after evaluation.
+            // Return the HTML response.
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body(file_contents);
+            res.insert_header("Content-Type", "text/plain; charset=utf-8");
+            Ok(res)
+            //Ok(output.into())
+        });
 
-    let _ = std::fs::remove_file(&result_path);
-    let _ = std::fs::remove_file(&filename);
+    //neutri setter
+    app.at("/rneutri")
+        .get(|mut req: tide::Request<AppState>| async move {
+            let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+            //td::fs::create_dir_all(script_dir).ok();
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            //res.set_body("HTML content for /moon route");
+            //res.set_content_type("text/html; charset=utf-8");
+            //return Ok(res);
+            // Grab Ruby code from request body.
+            let query: std::collections::HashMap<String, String> = req.query().unwrap_or_default();
+            let value = query.get("value").unwrap_or(&String::new()).to_string();
+            std::fs::write("rneutri.txt", &value)
+                .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
 
+            // Return the HTML response.
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body(value);
+            res.insert_header("Content-Type", "text/plain; charset=utf-8");
+            Ok(res)
+            //Ok(output.into())
+        });
 
-     // Return the HTML response.
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    res.set_body(output);
-    res.insert_header("Content-Type", "text/plain; charset=utf-8");
-    Ok(res)
-    //Ok(output.into())
-  });
-
-
-  //get neutri alg
-app.at("/rneutrialg").get(|mut req: tide::Request<AppState>| async move {
-
-    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
-    //td::fs::create_dir_all(script_dir).ok();
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    //res.set_body("HTML content for /moon route");
-    //res.set_content_type("text/html; charset=utf-8");
-    //return Ok(res);
-    // Grab Ruby code from request body.
-    let query: std::collections::HashMap<String, String> = req.query().unwrap_or_default();
-    let file_contents = std::fs::read_to_string("rneutri.txt")
-      .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
-
-
-
-     // Return the HTML response.
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    res.set_body(file_contents);
-    res.insert_header("Content-Type", "text/plain; charset=utf-8");
-    Ok(res)
-    //Ok(output.into())
-  });
-
-
-
-  //neutri setter
-app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
-
-    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
-    //td::fs::create_dir_all(script_dir).ok();
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    //res.set_body("HTML content for /moon route");
-    //res.set_content_type("text/html; charset=utf-8");
-    //return Ok(res);
-    // Grab Ruby code from request body.
-    let query: std::collections::HashMap<String, String> = req.query().unwrap_or_default();
-    let value = query.get("value").unwrap_or(&String::new()).to_string();
-    std::fs::write("rneutri.txt", &value)
-      .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
-
-     // Return the HTML response.
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    res.set_body(value);
-    res.insert_header("Content-Type", "text/plain; charset=utf-8");
-    Ok(res)
-    //Ok(output.into())
-  });
-
-    app.at("/sun").get(|mut req: tide::Request<AppState>| async move {
-    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
-    //td::fs::create_dir_all(script_dir).ok();
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    //res.set_body("HTML content for /moon route");
-    res.set_content_type("text/html; charset=utf-8");
-    //return Ok(res);
-    // Grab Ruby code from request body.
-    let ruby_source = r######"
+    app.at("/sun")
+        .get(|mut req: tide::Request<AppState>| async move {
+            let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+            //td::fs::create_dir_all(script_dir).ok();
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            //res.set_body("HTML content for /moon route");
+            res.set_content_type("text/html; charset=utf-8");
+            //return Ok(res);
+            // Grab Ruby code from request body.
+            let ruby_source = r######"
 
     "#{SolarDance2.sun_dance_message}"
 
     "######;
-    if ruby_source.trim().is_empty() {
-        let mut resp = tide::Response::new(tide::StatusCode::Ok);
-        resp.set_body("No Ruby code supplied");
-        return Ok(resp);
-    }
+            if ruby_source.trim().is_empty() {
+                let mut resp = tide::Response::new(tide::StatusCode::Ok);
+                resp.set_body("No Ruby code supplied");
+                return Ok(resp);
+            }
 
-    // Create unique .rb filename.
-    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
-    let filename = format!("{}/sun_{}.rb", script_dir,ts);
-    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+            // Create unique .rb filename.
+            let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+            let filename = format!("{}/sun_{}.rb", script_dir, ts);
+            std::fs::write(&filename, &ruby_source)
+                .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
 
-    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/sun_{}.txt", ts);
+            let result_path = format!(
+                "/root/midscore_io/rustby/rustby-vm/target/release/scripts/sun_{}.txt",
+                ts
+            );
 
-    // Block until the result file is available or until timeout
-    let start = std::time::Instant::now();
-    let timeout = std::time::Duration::from_secs(120);
-    while !std::path::Path::new(&result_path).exists() {
-      if start.elapsed() > timeout {
-        return Ok("Timed out waiting for result file".into());
-      }
-      std::thread::sleep(std::time::Duration::from_millis(1));
-    }
-    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+            // Block until the result file is available or until timeout
+            let start = std::time::Instant::now();
+            let timeout = std::time::Duration::from_secs(120);
+            while !std::path::Path::new(&result_path).exists() {
+                if start.elapsed() > timeout {
+                    return Ok("Timed out waiting for result file".into());
+                }
+                std::thread::sleep(std::time::Duration::from_millis(1));
+            }
+            let output =
+                std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
 
+            // Remove script file after evaluation.
 
-    // Remove script file after evaluation.
+            let _ = std::fs::remove_file(&result_path);
+            let _ = std::fs::remove_file(&filename);
 
-    let _ = std::fs::remove_file(&result_path);
-    let _ = std::fs::remove_file(&filename);
+            // Return the HTML response.
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body(output);
+            res.insert_header("Content-Type", "text/plain; charset=utf-8");
+            Ok(res)
+            //Ok(output.into())
+        });
 
+    app.at("/tiade-maepers/*rest")
+        .get(|req: tide::Request<AppState>| async move {
+            // Extract the wildcard part from the URL.
+            let rest = req.param("rest").unwrap_or("");
+            // Build the target URL for the 8080 server.
+            let target_url = format!("https://miaedscore.online/{}", rest);
 
-     // Return the HTML response.
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    res.set_body(output);
-    res.insert_header("Content-Type", "text/plain; charset=utf-8");
-    Ok(res)
-    //Ok(output.into())
-  });
-
-  app.at("/tiade-maepers/*rest").get(|req: tide::Request<AppState>| async move {
-    // Extract the wildcard part from the URL.
-    let rest = req.param("rest").unwrap_or("");
-    // Build the target URL for the 8080 server.
-    let target_url = format!("https://miaedscore.online/{}", rest);
-
-    // Build an HTML page with an iframe loading the target URL.
-    // A JavaScript snippet removes any query parameters from the browser URL.
-    let html_content = format!(r#"<!DOCTYPE html>
+            // Build an HTML page with an iframe loading the target URL.
+            // A JavaScript snippet removes any query parameters from the browser URL.
+            let html_content = format!(
+                r#"<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1287,79 +1288,87 @@ app.at("/rneutri").get(|mut req: tide::Request<AppState>| async move {
 <body>
   <iframe src="{0}" title="Stimky.info -> miadscore.online [B]log/Gallery"></iframe>
 </body>
-</html>"#, target_url);
+</html>"#,
+                target_url
+            );
 
-    // Return the HTML response.
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    res.set_body(html_content);
-    res.set_content_type("text/html");
-    Ok(res)
-});
-    app.at("/parse_plink").get(|req: tide::Request<AppState>| async move {
+            // Return the HTML response.
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body(html_content);
+            res.set_content_type("text/html");
+            Ok(res)
+        });
+    app.at("/parse_plink")
+        .get(|req: tide::Request<AppState>| async move {
+            // Expect a query parameter "text" that includes a full URL (e.g., "https://miaedscore.online:8080/some/path?query=val")
+            let query: HashMap<String, String> = req.query().unwrap_or_default();
+            let input_text = query.get("text").map(|s| s.as_str()).unwrap_or("");
+            if input_text.is_empty() {
+                return Ok(tide::Response::new(StatusCode::BadRequest));
+            }
 
-      // Expect a query parameter "text" that includes a full URL (e.g., "https://miaedscore.online:8080/some/path?query=val")
-      let query: HashMap<String, String> = req.query().unwrap_or_default();
-      let input_text = query.get("text").map(|s| s.as_str()).unwrap_or("");
-      if input_text.is_empty() {
-        return Ok(tide::Response::new(StatusCode::BadRequest));
-      }
+            // Parse the provided URL string.
+            let parsed_url = match Url::parse(input_text) {
+                Ok(url) => url,
+                Err(_) => return Ok(tide::Response::new(StatusCode::BadRequest)),
+            };
 
-      // Parse the provided URL string.
-      let parsed_url = match Url::parse(input_text) {
-        Ok(url) => url,
-        Err(_) => return Ok(tide::Response::new(StatusCode::BadRequest)),
-      };
+            // Extract the path and query parts to form the rustby GET parameter.
+            let mut vlog = parsed_url.path().to_string();
+            if let Some(q) = parsed_url.query() {
+                vlog.push('?');
+                vlog.push_str(q);
+            }
 
-      // Extract the path and query parts to form the rustby GET parameter.
-      let mut vlog = parsed_url.path().to_string();
-      if let Some(q) = parsed_url.query() {
-        vlog.push('?');
-        vlog.push_str(q);
-      }
+            // Construct the redirection URL to /rustby with the extracted "vlog" parameter.
+            let redirect_url = format!("/rustby?vlog={}", vlog);
+            let mut res = tide::Response::new(StatusCode::Found);
+            res.insert_header("Location", redirect_url);
+            Ok(res)
+        });
 
-      // Construct the redirection URL to /rustby with the extracted "vlog" parameter.
-      let redirect_url = format!("/rustby?vlog={}", vlog);
-      let mut res = tide::Response::new(StatusCode::Found);
-      res.insert_header("Location", redirect_url);
-      Ok(res)
-    });
+    // assuming the helper is in the module
 
+    app.at("/img/resize")
+        .post(|mut req: tide::Request<AppState>| async move {
+            // Extract query parameters.
+            let query: HashMap<String, String> = req.query().unwrap_or_default();
+            let file_name = query.get("filename").cloned().unwrap_or_default();
+            if file_name.is_empty() {
+                let mut res = tide::Response::new(StatusCode::BadRequest);
+                res.set_body("Missing filename query parameter".to_string());
+                return Ok(res);
+            }
 
- // assuming the helper is in the module
+            // Check for a file extension.
+            let path = Path::new(&file_name);
+            let ext = path.extension().and_then(|os_str| os_str.to_str());
+            if ext.is_none() {
+                let mut res = tide::Response::new(StatusCode::BadRequest);
+                res.set_body("File extension missing".to_string());
+                return Ok(res);
+            }
+            let ext = ext.unwrap();
 
-app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
-    // Extract query parameters.
-    let query: HashMap<String, String> = req.query().unwrap_or_default();
-    let file_name = query.get("filename").cloned().unwrap_or_default();
-    if file_name.is_empty() {
-        let mut res = tide::Response::new(StatusCode::BadRequest);
-        res.set_body("Missing filename query parameter".to_string());
-        return Ok(res);
-    }
+            // Optional: get desired width and height (default to 800x600).
+            let width: u32 = query
+                .get("width")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(800);
+            let height: u32 = query
+                .get("height")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(600);
 
-    // Check for a file extension.
-    let path = Path::new(&file_name);
-    let ext = path.extension().and_then(|os_str| os_str.to_str());
-    if ext.is_none() {
-        let mut res = tide::Response::new(StatusCode::BadRequest);
-        res.set_body("File extension missing".to_string());
-        return Ok(res);
-    }
-    let ext = ext.unwrap();
+            // Read the image bytes from the request body.
+            let data = req.body_bytes().await?;
 
-    // Optional: get desired width and height (default to 800x600).
-    let width: u32 = query.get("width").and_then(|s| s.parse().ok()).unwrap_or(800);
-    let height: u32 = query.get("height").and_then(|s| s.parse().ok()).unwrap_or(600);
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body("Image resized (placeholder)".to_string());
+            Ok(res)
+        });
 
-    // Read the image bytes from the request body.
-      let data = req.body_bytes().await?;
-
-      let mut res = tide::Response::new(tide::StatusCode::Ok);
-      res.set_body("Image resized (placeholder)".to_string());
-      Ok(res)
-  });
-
-  app.at("/").get(|_| async {
+    app.at("/").get(|_| async {
     let html = r######"<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -1413,20 +1422,20 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
     res.set_content_type("text/html");
     Ok(res)
 });
-/*
-    app.at("/paema").get(move |req: Request<AppState>| {
-        let rustby_eval_title = rustby_eval_title.clone();
-        async move {
-            let query: HashMap<String, String> = req.query().unwrap_or_default();
-            let vlog = query
-                .get("vlog")
-                .cloned()
-                .unwrap_or_else(|| "".to_string());
+    /*
+        app.at("/paema").get(move |req: Request<AppState>| {
+            let rustby_eval_title = rustby_eval_title.clone();
+            async move {
+                let query: HashMap<String, String> = req.query().unwrap_or_default();
+                let vlog = query
+                    .get("vlog")
+                    .cloned()
+                    .unwrap_or_else(|| "".to_string());
 
-            let title = rustby_eval_title.to_string();
-            let base_iframe_url = format!("https://miaedscore.online:8080/{}", vlog);
+                let title = rustby_eval_title.to_string();
+                let base_iframe_url = format!("https://miaedscore.online:8080/{}", vlog);
 
-            let html_content = format!(r######"<!DOCTYPE html>
+                let html_content = format!(r######"<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1517,38 +1526,39 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
 </body>
 </html>"######);
 
-            let mut res = tide::Response::new(tide::StatusCode::Ok);
-            res.set_body(html_content);
-            res.set_content_type("text/html");
-            Ok(res)
-        }
-    });
-*/
-
+                let mut res = tide::Response::new(tide::StatusCode::Ok);
+                res.set_body(html_content);
+                res.set_content_type("text/html");
+                Ok(res)
+            }
+        });
+    */
 
     // A simple POST endpoint
-    app.at("/echo").post(|mut req: Request<AppState>| async move {
-        let body = req.body_string().await.unwrap_or_default();
-        Ok(format!("You sent: {}", body))
-    });
+    app.at("/echo")
+        .post(|mut req: Request<AppState>| async move {
+            let body = req.body_string().await.unwrap_or_default();
+            Ok(format!("You sent: {}", body))
+        });
 
     // Route to restart all spawned servers
     app.at("/restart-servers").post(|_| async move {
-      println!("Restarting all servers...");
-      std::process::Command::new("sh")
-        .arg("-c")
-        .arg("killall -HUP tiade-maeepers-saerver-all") // Replace with your server binary name
-        .spawn()
-        .expect("Failed to restart servers");
-      Ok("Servers are restarting")
+        println!("Restarting all servers...");
+        std::process::Command::new("sh")
+            .arg("-c")
+            .arg("killall -HUP tiade-maeepers-saerver-all") // Replace with your server binary name
+            .spawn()
+            .expect("Failed to restart servers");
+        Ok("Servers are restarting")
     });
 
     // Add a file
-    app.at("/file/add").post(|mut req: Request<AppState>| async move {
-        let contents = req.body_bytes().await.unwrap_or_default();
-        std::fs::write("/tmp/new_file.txt", &contents)?;
-        Ok("File added")
-    });
+    app.at("/file/add")
+        .post(|mut req: Request<AppState>| async move {
+            let contents = req.body_bytes().await.unwrap_or_default();
+            std::fs::write("/tmp/new_file.txt", &contents)?;
+            Ok("File added")
+        });
 
     // Delete a file
     app.at("/file/delete").delete(|_| async {
@@ -1556,30 +1566,28 @@ app.at("/img/resize").post(|mut req: tide::Request<AppState>| async move {
         Ok("File deleted")
     });
 
-    let addresses = vec!["74.208.171.8:8080"];
+    // Listen on all interfaces over standard HTTPS (TLS) port.
+    let addresses = vec!["0.0.0.0:443"];
     let cert_path = "/etc/letsencrypt/live/stimky.info/fullchain.pem";
     let key_path = "/etc/letsencrypt/live/stimky.info/privkey.pem";
 
     let mut tasks = vec![];
     for addr in addresses {
-      let app_clone = app.clone();
-      let c = cert_path.to_string();
-      let k = key_path.to_string();
-      println!("Spawning server on address: {}", addr); // Debug message
-      tasks.push(async_std::task::spawn(async move {
-        let listener = TlsListener::build()
-          .addrs(addr)
-          .cert(c)
-          .key(k);
-        println!("Server is starting on address: {}", addr); // Debug message
-        app_clone.listen(listener).await
-      }));
+        let app_clone = app.clone();
+        let c = cert_path.to_string();
+        let k = key_path.to_string();
+        println!("Spawning server on address: {}", addr); // Debug message
+        tasks.push(async_std::task::spawn(async move {
+            let listener = TlsListener::build().addrs(addr).cert(c).key(k);
+            println!("Server is starting on address: {}", addr); // Debug message
+            app_clone.listen(listener).await
+        }));
     }
 
     for t in tasks {
-      if let Err(e) = t.await {
-        eprintln!("Error while running server: {}", e); // Debug message
-      }
+        if let Err(e) = t.await {
+            eprintln!("Error while running server: {}", e); // Debug message
+        }
     }
     println!("All servers have been spawned successfully."); // Debug message
     Ok(())

@@ -118,7 +118,10 @@ div.galleryTable {
   <% @ae_calendar = AECalendar.new %>
   <font size="3"><%= "AE Calendar: #{@ae_calendar.ae_date(DateTime.now)}" %></font><br>
   <%= "<font size=\"4\">#{MoonPhaseDetails.print_details_for_date(Date.today)}</font>" %>
-  <b>120</b>🕰️<%= convert_to_120_second_time_pst  %> PST
+  <br />
+  <br />
+  <%= "<font size=\"4\">#{ForecastByLongitude.new.fetch_forecast(39.068684, -122.781375)}</font>" %>
+  <br /><b>120</b>🕰️<%= convert_to_120_second_time_pst  %> PST<br />
   <hr>
  <br>
   <% if session['user'] %>

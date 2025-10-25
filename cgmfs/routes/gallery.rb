@@ -8,6 +8,7 @@ require 'redcarpet'
 require 'json'
 require 'oj'
 require 'date'
+require 'net/http'
 
 class CGMFS
   def user_failcheck(username, r)
@@ -38,6 +39,41 @@ class CGMFS
   # SunDance.rb - A whimsical solar phase tracker!
   # Models 15 daily sun phases based on Pacific Standard Time (PST).
   # ========================================================
+  class ForecastByLongitude
+    GRIDPOINT_FORECAST_URL = 'https://api.weather.gov/gridpoints/EKA/93,22/forecast'.freeze
+
+    def initialize
+    end
+
+    def fetch_forecast(_lat = nil, _lon = nil)
+      [
+        '--- Miaedscore-Plateau, Califurnia :: Daily Forecast ---',
+        print_forecast(GRIDPOINT_FORECAST_URL)
+      ].compact.join("<br />\n")
+    end
+
+    def print_forecast(url)
+      return 'No forecast URL provided.' unless url
+
+      uri = URI(url)
+      response = Net::HTTP.get_response(uri)
+      return "Error fetching forecast: #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+
+      data = JSON.parse(response.body)
+      periods = data.dig('properties', 'periods')
+
+      if periods && !periods.empty?
+        periods.map do |period|
+          name = period['name']
+          temp = "#{period['temperature']} #{period['temperatureUnit']}"
+          forecast = period['shortForecast']
+          "#{name}: #{temp}, #{forecast}"
+        end.join("<br />\n")
+      else
+        'No forecast data available.'
+      end
+    end
+  end
 
   class SunPhase
     attr_reader :name, :start_hour, :emoji

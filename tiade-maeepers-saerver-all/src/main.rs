@@ -566,6 +566,48 @@ async fn main() -> tide::Result<()> {
         let contents = r######"
        require 'date'
        require 'fileutils'
+       require 'time'
+       require 'json'
+       require 'oj'
+       require 'date'
+       require 'net/http'
+
+      class ForecastByLongitude
+    GRIDPOINT_FORECAST_URL = 'https://api.weather.gov/gridpoints/EKA/93,22/forecast'.freeze
+
+    def initialize
+    end
+
+    def fetch_forecast(_lat = nil, _lon = nil)
+      [
+        '--- Miaedscore-Plateau, Califurnia :: Daily Forecast ---',
+        print_forecast(GRIDPOINT_FORECAST_URL)
+      ].compact.join("\n")
+    end
+
+    def print_forecast(url)
+      return 'No forecast URL provided.' unless url
+
+      uri = URI(url)
+      response = Net::HTTP.get_response(uri)
+      return "Error fetching forecast: #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+
+      data = JSON.parse(response.body)
+      periods = data.dig('properties', 'periods')
+
+      if periods && !periods.empty?
+        periods.map do |period|
+          name = period['name']
+          temp = "#{period['temperature']} #{period['temperatureUnit']}"
+          forecast = period['shortForecast']
+          "#{name}: #{temp}, #{forecast}"
+        end.join("\n")
+      else
+        'No forecast data available.'
+      end
+    end
+  end
+
 
     # This Ruby code is designed to be evaluated by the Magnus Ruby interpreter.
       class AECalendar
@@ -1113,6 +1155,62 @@ async fn main() -> tide::Result<()> {
 
             let result_path = format!(
                 "/root/midscore_io/rustby/rustby-vm/target/release/scripts/moon_{}.txt",
+                ts
+            );
+
+            // Block until the result file is available or until timeout
+            let start = std::time::Instant::now();
+            let timeout = std::time::Duration::from_secs(120);
+            while !std::path::Path::new(&result_path).exists() {
+                if start.elapsed() > timeout {
+                    return Ok("Timed out waiting for result file".into());
+                }
+                std::thread::sleep(std::time::Duration::from_millis(1));
+            }
+            let output =
+                std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+            // Remove script file after evaluation.
+
+            let _ = std::fs::remove_file(&result_path);
+            let _ = std::fs::remove_file(&filename);
+
+            // Return the HTML response.
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body(output);
+            res.insert_header("Content-Type", "text/plain; charset=utf-8");
+            Ok(res)
+            //Ok(output.into())
+        });
+
+    app.at("/weather")
+        .get(|mut req: tide::Request<AppState>| async move {
+            let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+            //td::fs::create_dir_all(script_dir).ok();
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            //res.set_body("HTML content for /moon route");
+            //res.set_content_type("text/html; charset=utf-8");
+            //return Ok(res);
+            // Grab Ruby code from request body.
+            let ruby_source = r######"
+
+    "#{ForecastByLongitude.new.fetch_forecast(39.068684, -122.781375)}"
+
+    "######;
+            if ruby_source.trim().is_empty() {
+                let mut resp = tide::Response::new(tide::StatusCode::Ok);
+                resp.set_body("No Ruby code supplied");
+                return Ok(resp);
+            }
+
+            // Create unique .rb filename.
+            let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+            let filename = format!("{}/weather_{}.rb", script_dir, ts);
+            std::fs::write(&filename, &ruby_source)
+                .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+            let result_path = format!(
+                "/root/midscore_io/rustby/rustby-vm/target/release/scripts/weather_{}.txt",
                 ts
             );
 

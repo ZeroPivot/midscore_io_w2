@@ -21,3 +21,34 @@ config/puma.pid
 config/puma.state
 page_views_local.txt
 server_main_domain_name.txt
+# Rust / Cargo build artifacts
+/target/
+
+# Rust compiled outputs
+*.rlib
+*.rmeta
+*.a
+
+# Shared libraries
+*.so
+*.dylib
+*.dll
+
+# Executables and objects
+*.exe
+*.o
+*.obj
+
+# Debug symbols
+*.pdb
+*.dSYM/
+
+# rustfmt backups
+**/*.rs.bk
+
+# Coverage/profiling files
+*.profraw
+*.profdata
+
+# wasm-pack output
+/pkg/

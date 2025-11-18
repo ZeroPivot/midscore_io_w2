@@ -1004,6 +1004,168 @@ async fn main() -> tide::Result<()> {
     //Ok(output.into())
   });
 
+    app.at("/schedule_ft").get(|mut req: tide::Request<AppState>| async move {
+      // Catch all POST variables into a hashmap and print them
+      let body = req.body_string().await.unwrap_or_default();
+      println!("Received POST body: {}", body);
+
+      let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+      let file_name: String = "second_life_chat_log.txt".to_string();
+
+  let ruby_source = format!(r######"
+require 'json'
+require 'time'
+
+previous_contents = File.read('/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt')
+
+# Parse each line as JSON and keep only objects with a timestamp
+entries = previous_contents.each_line.filter_map do |line|
+  begin
+    obj = JSON.parse(line)
+    obj if obj.is_a?(Hash) && obj['timestamp']
+  rescue JSON::ParserError
+    nil
+  end
+end
+
+# Initialize frequency tables
+hour_counts   = Hash.new(0)
+day_counts    = Hash.new(0)
+month_counts  = Hash.new(0)
+
+entries.each do |entry|
+  # Ensure timestamp exists and is numeric
+  ts = entry['timestamp'].to_i
+  time = Time.at(ts)
+
+  # Increment frequency tables
+  hour_counts[time.hour] += 1
+  day_counts[time.strftime('%A')] += 1
+  month_counts[time.strftime('%B')] += 1
+end
+
+# Build results
+results = ""
+results << "=== Frequency by Hour (0–23) ===\n"
+results << (hour_counts.sort_by {{ |hour, _| hour }}.map {{ |hour, count| "#{{hour}}: #{{count}}" }}.join("\n"))
+results << "\n\n=== Frequency by Day of Week ===\n"
+results << day_counts.map {{ |day, count| "#{{day}}: #{{count}}" }}.join("\n")
+results << "\n\n=== Frequency by Month ===\n"
+results << month_counts.map {{ |month, count| "#{{month}}: #{{count}}" }}.join("\n")
+results << "\n\n\n\n\n"
+
+results
+
+"######
+
+);
+
+
+    if ruby_source.trim().is_empty() {
+        let mut resp = tide::Response::new(tide::StatusCode::Ok);
+        resp.set_body("No Ruby code supplied");
+        return Ok(resp);
+    }
+
+    // Create unique .rb filename.
+    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+    let filename = format!("{}/sl_schedule_get_{}.rb", script_dir,ts);
+    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+
+
+
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/sl_schedule_get_{}.txt", ts);
+
+    // Block until the result file is available or until timeout
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(120);
+     while !std::path::Path::new(&result_path).exists() {
+      if start.elapsed() > timeout {
+        return Ok("Timed out waiting for result file".into());
+      }
+      std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+
+    // Remove script file after evaluation.
+
+    let _ = std::fs::remove_file(&result_path);
+    let _ = std::fs::remove_file(&filename);
+
+      //let output = "Log entry received and written to file successfully.";
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(output);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
+    app.at("/_ethereal_life_sl_logger_show_").get(|mut req: tide::Request<AppState>| async move {
+      // Catch all POST variables into a hashmap and print them
+      let body = req.body_string().await.unwrap_or_default();
+      println!("Received POST body: {}", body);
+
+      let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+      let file_name: String = "second_life_chat_log.txt".to_string();
+
+      let ruby_source = format!(r######"
+    previous_contents = File.read('/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt')
+
+    log = "#{{previous_contents}}".to_json
+
+    "#{{log}}"
+    "######
+
+    );
+
+
+    if ruby_source.trim().is_empty() {
+        let mut resp = tide::Response::new(tide::StatusCode::Ok);
+        resp.set_body("No Ruby code supplied");
+        return Ok(resp);
+    }
+
+    // Create unique .rb filename.
+    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+    let filename = format!("{}/sl_log_get_{}.rb", script_dir,ts);
+    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+
+
+
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/sl_log_get_{}.txt", ts);
+
+    // Block until the result file is available or until timeout
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(120);
+    while !std::path::Path::new(&result_path).exists() {
+      if start.elapsed() > timeout {
+        return Ok("Timed out waiting for result file".into());
+      }
+      std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+
+    // Remove script file after evaluation.
+
+    let _ = std::fs::remove_file(&result_path);
+    let _ = std::fs::remove_file(&filename);
+
+      //let output = "Log entry received and written to file successfully.";
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(output);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
     app.at("/sl_logger").post(|mut req: tide::Request<AppState>| async move {
     // Catch all POST variables into a hashmap and print them
     let body = req.body_string().await.unwrap_or_default();

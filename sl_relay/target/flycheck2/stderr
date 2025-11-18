@@ -1,7 +1,8 @@
-   0.212876832s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: dependency on `build_script_main` is newer than we are 1763453727.423419684s > 1763453609.755352065s "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rb-sys-0.9.117"
-   0.212940462s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: dependency on `build_script_build` is newer than we are 1763453727.423419684s > 1763453611.179352908s "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1"
-   0.215710507s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: false }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
-   0.215733220s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-d8ac825e34940509/bin-sl_relay`
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   0.556679050s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: false }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
+   0.556728533s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-d8ac825e34940509/bin-sl_relay`
 
 Caused by:
     No such file or directory (os error 2)
@@ -43,12 +44,8 @@ Stack backtrace:
   24: <unknown>
   25: __libc_start_main
   26: <unknown>
-   0.234836049s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="magnus"}: cargo::core::compiler::fingerprint: fingerprint dirty for magnus v0.7.1/Check { test: false }/TargetInner { name_inferred: true, doc_scrape_examples: Disabled, ..: lib_target("magnus", ["lib"], "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1/src/lib.rs", Edition2021) }
-   0.234864292s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="magnus"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleDependency { name: "build_script_build", dep_mtime: FileTime { seconds: 1763453727, nanos: 423419684 }, max_mtime: FileTime { seconds: 1763453611, nanos: 179352908 } })
-   0.239187610s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="rb_sys"}: cargo::core::compiler::fingerprint: fingerprint dirty for rb-sys v0.9.117/Check { test: false }/TargetInner { doctest: false, ..: lib_target("rb_sys", ["lib"], "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rb-sys-0.9.117/src/lib.rs", Edition2018) }
-   0.239211455s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="rb_sys"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleDependency { name: "build_script_main", dep_mtime: FileTime { seconds: 1763453727, nanos: 423419684 }, max_mtime: FileTime { seconds: 1763453609, nanos: 755352065 } })
-   0.248433361s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: true }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
-   0.248458307s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-75ff717365ec6765/test-bin-sl_relay`
+   0.588382202s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: true }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
+   0.588408261s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-75ff717365ec6765/test-bin-sl_relay`
 
 Caused by:
     No such file or directory (os error 2)
@@ -90,8 +87,6 @@ Stack backtrace:
   24: <unknown>
   25: __libc_start_main
   26: <unknown>
-    Checking rb-sys v0.9.117
-    Checking magnus v0.7.1
     Checking sl_relay v0.1.0 (/root/midscore_io/sl_relay)
 error: could not compile `sl_relay` (bin "sl_relay") due to 1 previous error; 18 warnings emitted
 warning: build failed, waiting for other jobs to finish...

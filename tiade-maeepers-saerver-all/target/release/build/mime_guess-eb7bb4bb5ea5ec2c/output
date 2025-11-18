@@ -1,0 +1,1 @@
+cargo:rustc-env=MIME_TYPES_GENERATED_PATH=/root/midscore_io/tiade-maeepers-saerver-all/target/release/build/mime_guess-eb7bb4bb5ea5ec2c/out/mime_types_generated.rs

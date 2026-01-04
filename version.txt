@@ -1,2 +1,2 @@
-19.0.0.1-alpha
-October 24, 2025 - "Muskium Source Hunter"
+19.0.0.2
+October 24, 2025 - "Stinkbutt Source"

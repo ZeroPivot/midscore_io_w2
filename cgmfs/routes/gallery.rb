@@ -150,7 +150,9 @@ class CGMFS
       'Cosmic Moon 🌌🌕', # 22
       'Celestial Moon 🌟🌕', # 23
       'Otter Moon 🐕🌌', # 24
-      'Muskium Otter Muskium Stinky Stimky Otter Moon 🦨🌌' # 25
+      'Muskium Otter Muskium Stinky Stimky Otter Moon 🦨🌌', # 25
+      'Light Elemental Moon 💡🌕', # 26
+      'Dark Elemental Moon 🌑🌕', # 27
 
     ]
     # Define 25 corresponding species with emojis.
@@ -179,7 +181,9 @@ class CGMFS
       'Infini-Vaeria Graevity-Infini 🌌🐕',
       'Graevity-Infini Infini-Vaeria 🌟🐕',
       'Otter 🦦',
-      'Muskium Otter Stinky Stimky 🦦🦨'
+      'Muskium Otter Stinky Stimky 🦦🦨',
+      'Light Elf 💡',
+      'Light Elf Cosmic 🌑',
 
     ]
 
@@ -209,7 +213,9 @@ class CGMFS
       'WereInfiniVaeriaGraevity 🐕🌌',
       'WereGraevityInfiniInfiniVaeria 🌟🐕',
       'WereOtter 🦦',
-      'WereMuskiumOtterStinkyStimky 🦦🦨'
+      'WereMuskiumOtterStinkyStimky 🦦🦨',
+      'WereLightElf 💡',
+      'WereLightElfCosmic 🌑'
     ]
 
     # Each moon phase is assumed to share an equal slice of the lunar cycle.

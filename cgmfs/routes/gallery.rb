@@ -124,7 +124,7 @@ class CGMFS
     # Average length of a full lunar cycle (in days)
     MOON_CYCLE_DAYS = 29.53
 
-    # The 25 fabled moon rotations with emojis:
+    # The 27 fabled moon rotations with emojis:
     MOON_ROTATIONS = [
       'New Moon 🌑', # 1
       'Waxing Crescent 🌒',     # 2
@@ -155,7 +155,7 @@ class CGMFS
       'Dark Elemental Moon 🌑🌕', # 27
 
     ]
-    # Define 25 corresponding species with emojis.
+    # Define 27 corresponding species with emojis.
     SPECIES = [
       'Dogg 🐶', # New Moon
       'Folf 🦊🐺', # Waxing Crescent
@@ -187,7 +187,7 @@ class CGMFS
 
     ]
 
-    # Define 25 corresponding were-forms with emojis.
+    # Define 27 corresponding were-forms with emojis.
     WERE_FORMS = [
       'WereDogg 🐶🌑',
       'WereFolf 🦊🌙',

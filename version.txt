@@ -1,2 +1,2 @@
-19.0.0.2
-October 24, 2025 - "Stinkbutt Source"
+20.0.0.1-final
+October 24, 2025 - "<a href='https://Stinkbutt.info'>StinkButt</a> Source"

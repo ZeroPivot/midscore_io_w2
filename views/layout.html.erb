@@ -25,7 +25,7 @@
     <meta property="og:url" content="<%= domain_name(@r) %>/<%= @type %>/<%= @user %>/view/<%= @id %>" />
     <meta property="og:description" content="Post By <%= @description || @title || @user %>" />
     <meta name="description" content="Post By <%= @description || @title || @user %>" />
-    <meta name="keywords" content="stimky.info, info, stinky info, stimky info, onlyfurs, only furs, onlyfans, porn, pr0n, pornography, nsfw, sfw, gay, homosexual, faggot, faggotry, stinky faggotry, stimky faggotry, stinky stimky champions, champions, gods of stink, gods of musk, gods of stimk, stinky gods, stinky wolf gods, stinky dogg gods, stinky yeen gods, miaedscore.online, miaedscore, miaed-score, vore, vorny, musk, musky, stinky, stimky, acetone, stinky acetone, stinky stimky champions, codename sniffa, sniffa, demiurge, simulation, simulator, sim, second life, stinky, stimky, stinky.zip, stimky.zip onemoondogg, pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, wolf, one moon planet, onemoonplane, blog,  gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art, zoophile hunters, pedophile hunters, bigot hunters, trans hunters, trans exposers, bigot exposers, pedophile exposers, democrat, republican, cenrist, democrat lol, sexy, signup, mega-game.net, meta game, meta, metaworld, furfaggotry, blogger, blog, gnosis, gnostic, gnocticism, ai, artificlal intelligence, service, blogger, gallery, furry gallery, furry bloggers, furry blogger, gay, homosexual, queer, twin flames, rhuxwolf, aylowolf, rhuxfolf, aylofolf, metagame, game, gaming, games, video games, software, hardware" />
+    <meta name="keywords" content="stimky.info, stinkbutt, stink, butt, stinky, stimky, musky, muskium, stinkbutt.info, info, stinky info, stimky info, onlyfurs, only furs, onlyfans, porn, pr0n, pornography, nsfw, sfw, gay, homosexual, faggot, faggotry, stinky faggotry, stimky faggotry, stinky stimky champions, champions, gods of stink, gods of musk, gods of stimk, stinky gods, stinky wolf gods, stinky dogg gods, stinky yeen gods, miaedscore.online, miaedscore, miaed-score, vore, vorny, musk, musky, stinky, stimky, acetone, stinky acetone, stinky stimky champions, codename sniffa, sniffa, demiurge, simulation, simulator, sim, second life, stinky, stimky, stinky.zip, stimky.zip onemoondogg, pornography, porn, pron, pr0n, furry porn, vore, cock vore, anal vore, galleries, deviantart, furaffinity, midscore, mid, mids, midscorian, wolf, one moon planet, onemoonplane, blog,  gamedev, gamedevelopment, indiegamedev, game, api, anthro, anthropomorphic, dragon, dragons, furry, furries, comic, comics, web, webcomic, dreamsigns, addictions, earth, planets, war, science, sciencefiction, wolf, wolves, lynx, fennec, fox, foxes, gallery, anthro, anthropomorphic, commission, commissions, actors, manedwolf, maned_wolf, canines, canids, fennecfox, future, german shepherd, axelshep, aylocollie, furryfurry, nsfw, gay, homosexual, faggotry, market, commissions, algorithm, simulator earth, simulation, role playing game, rpg, actors: simulator, actors: simula, simula, programming, coding, computer science rockstars, comp sci rockstars, computer science, computer information systems, mathematics, calculus, physics, furry artist, artist, canid, canines, role playing game, role-playing game, blog, journal, cdn, api, gallery, furry blog, furry gallery, emojis, emoji, collie, german shepherd, gshep, g-shep, hyena, yeen, striped hyena, aardwolf, spotted hyena, mathematics, discrete mathematics, phd, gaymer, furfag, furfaggotry, nsfl, flcl, anime, style, art style, artistry, digital art, zoophile hunters, pedophile hunters, bigot hunters, trans hunters, trans exposers, bigot exposers, pedophile exposers, democrat, republican, cenrist, democrat lol, sexy, signup, mega-game.net, meta game, meta, metaworld, furfaggotry, blogger, blog, gnosis, gnostic, gnocticism, ai, artificlal intelligence, service, blogger, gallery, furry gallery, furry bloggers, furry blogger, gay, homosexual, queer, twin flames, rhuxwolf, aylowolf, rhuxfolf, aylofolf, metagame, game, gaming, games, video games, software, hardware" />
     <meta name="author" content="Miaede-Score">
     <meta name="twitter:card" content="summary_large_image" /> <!-- changed 2021-04-15 -->
     <meta name="twitter:site" content="Miaedscore.online" />
@@ -235,7 +235,10 @@ FileUtils.touch('./hitches.txt')
 <br />
 <br />
 <br />
-  <center><pre>    # The 25 fabled moon rotations with emojis:
+  <center><pre>    # Average length of a full lunar cycle (in days)
+MOON_CYCLE_DAYS = 29.53
+
+# The 27 fabled moon rotations with emojis:
 MOON_ROTATIONS = [
   'New Moon 🌑', # 1
   'Waxing Crescent 🌒',     # 2
@@ -261,10 +264,12 @@ MOON_ROTATIONS = [
   'Cosmic Moon 🌌🌕', # 22
   'Celestial Moon 🌟🌕', # 23
   'Otter Moon 🐕🌌', # 24
-  'Muskium Otter Muskium Stinky Stimky Otter Moon 🦨🌌' # 25
+  'Muskium Otter Muskium Stinky Stimky Otter Moon 🦨🌌', # 25
+  'Light Elemental Moon 💡🌕', # 26
+  'Dark Elemental Moon 🌑🌕' # 27
 
 ]
-# Define 25 corresponding species with emojis.
+# Define 27 corresponding species with emojis.
 SPECIES = [
   'Dogg 🐶', # New Moon
   'Folf 🦊🐺', # Waxing Crescent
@@ -290,11 +295,13 @@ SPECIES = [
   'Infini-Vaeria Graevity-Infini 🌌🐕',
   'Graevity-Infini Infini-Vaeria 🌟🐕',
   'Otter 🦦',
-  'Muskium Otter Stinky Stimky 🦦🦨'
+  'Muskium Otter Stinky Stimky 🦦🦨',
+  'Light Elf 💡',
+  'Light Elf Cosmic 🌑'
 
 ]
 
-# Define 25 corresponding were-forms with emojis.
+# Define 27 corresponding were-forms with emojis.
 WERE_FORMS = [
   'WereDogg 🐶🌑',
   'WereFolf 🦊🌙',
@@ -320,7 +327,9 @@ WERE_FORMS = [
   'WereInfiniVaeriaGraevity 🐕🌌',
   'WereGraevityInfiniInfiniVaeria 🌟🐕',
   'WereOtter 🦦',
-  'WereMuskiumOtterStinkyStimky 🦦🦨'
+  'WereMuskiumOtterStinkyStimky 🦦🦨',
+  'WereLightElf 💡',
+  'WereLightElfCosmic 🌑'
 ]
 </pre>
 </center>

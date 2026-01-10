@@ -95,7 +95,7 @@ end
 # Average length of a full lunar cycle (in days)
 MOON_CYCLE_DAYS = 29.53
 
-# The 25 fabled moon rotations with emojis:
+# The 27 fabled moon rotations with emojis:
 MOON_ROTATIONS = [
   'New Moon 🌑', # 1
   'Waxing Crescent 🌒',     # 2
@@ -121,10 +121,12 @@ MOON_ROTATIONS = [
   'Cosmic Moon 🌌🌕', # 22
   'Celestial Moon 🌟🌕', # 23
   'Otter Moon 🐕🌌', # 24
-  'Muskium Otter Muskium Stinky Stimky Otter Moon 🦨🌌' # 25
+  'Muskium Otter Muskium Stinky Stimky Otter Moon 🦨🌌', # 25
+  'Light Elemental Moon 💡🌕', # 26
+  'Dark Elemental Moon 🌑🌕' # 27
 
 ]
-# Define 25 corresponding species with emojis.
+# Define 27 corresponding species with emojis.
 SPECIES = [
   'Dogg 🐶', # New Moon
   'Folf 🦊🐺', # Waxing Crescent
@@ -150,11 +152,13 @@ SPECIES = [
   'Infini-Vaeria Graevity-Infini 🌌🐕',
   'Graevity-Infini Infini-Vaeria 🌟🐕',
   'Otter 🦦',
-  'Muskium Otter Stinky Stimky 🦦🦨'
+  'Muskium Otter Stinky Stimky 🦦🦨',
+  'Light Elf 💡',
+  'Light Elf Cosmic 🌑'
 
 ]
 
-# Define 25 corresponding were-forms with emojis.
+# Define 27 corresponding were-forms with emojis.
 WERE_FORMS = [
   'WereDogg 🐶🌑',
   'WereFolf 🦊🌙',
@@ -180,7 +184,9 @@ WERE_FORMS = [
   'WereInfiniVaeriaGraevity 🐕🌌',
   'WereGraevityInfiniInfiniVaeria 🌟🐕',
   'WereOtter 🦦',
-  'WereMuskiumOtterStinkyStimky 🦦🦨'
+  'WereMuskiumOtterStinkyStimky 🦦🦨',
+  'WereLightElf 💡',
+  'WereLightElfCosmic 🌑'
 ]
 
 # Each moon phase is assumed to share an equal slice of the lunar cycle.

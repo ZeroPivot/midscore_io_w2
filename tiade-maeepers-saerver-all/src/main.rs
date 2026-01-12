@@ -950,6 +950,84 @@ WERE_FORMS = [
     //Ok(output.into())
   });
 
+    app.at("/analytics").get(|mut req: tide::Request<AppState>| async move {
+
+    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+    //td::fs::create_dir_all(script_dir).ok();
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    //res.set_body("HTML content for /moon route");
+    //res.set_content_type("text/html; charset=utf-8");
+    //return Ok(res);
+    // Grab Ruby code from request body.
+    let ruby_source = r######"
+
+        let ruby_source = format!(r######"
+    previous_contents = File.read('/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt').to_yaml
+    messages = []
+    messages = previous_contents
+
+    # Frequency tables
+    timestamp_frequency = Hash.new(0)
+    avatar_frequency = Hash.new(0)
+    hour_frequency = Hash.new(0)
+    messages.each do |msg| # Timestamp frequency
+    timestamp_frequency[msg[:timestamp]] += 1 # Avatar speaking frequency
+    avatar_frequency[msg[:avatar_name]] += 1 # 24-hour time frequency
+    message = ""
+    hour = Time.at(msg[:timestamp]).utc.hour hour_frequency[hour] += 1 end # Output results
+    message >> "Timestamp Frequency:" timestamp_frequency.sort.each do |timestamp, count|
+      "#{timestamp}: #{count}\n" end
+      message >>"Avatar Speaking Frequency:" avatar_frequency.sort.each do |avatar, count|
+      message >>"#{avatar}: #{count}" end
+      message >> "\n24-Hour Time Frequency:" (0..23).each do |hour| puts "#{hour}: #{hour_frequency[hour]}" end
+
+
+      #{{message}}
+    "######;
+
+
+    if ruby_source.trim().is_empty() {
+        let mut resp = tide::Response::new(tide::StatusCode::Ok);
+        resp.set_body("No Ruby code supplied");
+        return Ok(resp);
+    }
+
+    // Create unique .rb filename.
+    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+    let filename = format!("{}/moon_{}.rb", script_dir,ts);
+    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+
+
+
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/log_{}.txt", ts);
+
+    // Block until the result file is available or until timeout
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(120);
+    while !std::path::Path::new(&result_path).exists() {
+      if start.elapsed() > timeout {
+        return Ok("Timed out waiting for result file".into());
+      }
+      std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+
+    // Remove script file after evaluation.
+
+    let _ = std::fs::remove_file(&result_path);
+    let _ = std::fs::remove_file(&filename);
+
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(output);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
     app.at("/_ethereal_life_sl_logger_get_").get(|mut req: tide::Request<AppState>| async move {
       // Catch all POST variables into a hashmap and print them
       let body = req.body_string().await.unwrap_or_default();

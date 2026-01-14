@@ -68,7 +68,7 @@ version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "891477e0c6a8957309ee5c45a6368af3ae14bb510732d2684ffa19af310920f9"
 dependencies = [
- "getrandom 0.2.16",
+ "getrandom 0.2.17",
  "once_cell",
  "version_check",
 ]
@@ -925,9 +925,9 @@ dependencies = [
 
 [[package]]
 name = "curl-sys"
-version = "0.4.84+curl-8.17.0"
+version = "0.4.85+curl-8.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abc4294dc41b882eaff37973c2ec3ae203d0091341ee68fbadd1d06e0c18a73b"
+checksum = "c0efa6142b5ecc05f6d3eaa39e6af4888b9d3939273fb592c92b7088a8cf3fdb"
 dependencies = [
  "cc",
  "libc",
@@ -1131,9 +1131,9 @@ checksum = "f449e6c6c08c865631d4890cfacf252b3d396c9bcc83adb6623cdb02a8336c41"
 
 [[package]]
 name = "flate2"
-version = "1.1.5"
+version = "1.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bfe33edd8e85a12a67454e37f8c75e730830d83e313556ab9ebf9ee7fbeb3bfb"
+checksum = "b375d6465b98090a5f25b1c7703f3859783755aa9a80433b36e0379a3ec2f369"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
@@ -1321,9 +1321,9 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
-version = "0.2.16"
+version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "335ff9f135e4384c8150d6f27c6daed433577f86b4750418338c01a1a2528592"
+checksum = "ff2abc00be7fca6ebc474524697ae276ad847ad0a6b3faa4bcb027e9a4614ad0"
 dependencies = [
  "cfg-if 1.0.4",
  "libc",
@@ -2553,7 +2553,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6db2770f06117d490610c7488547d543617b21bfa07796d7a12f6f1bd53850d1"
 dependencies = [
  "rand_chacha 0.9.0",
- "rand_core 0.9.3",
+ "rand_core 0.9.5",
 ]
 
 [[package]]
@@ -2583,7 +2583,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3022b5f1df60f26e1ffddd6c66e8aa15de382ae63b3a0c1bfc0e4d3e3f325cb"
 dependencies = [
  "ppv-lite86",
- "rand_core 0.9.3",
+ "rand_core 0.9.5",
 ]
 
 [[package]]
@@ -2601,14 +2601,14 @@ version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
- "getrandom 0.2.16",
+ "getrandom 0.2.17",
 ]
 
 [[package]]
 name = "rand_core"
-version = "0.9.3"
+version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99d9a13982dcf210057a8a78572b2217b667c3beacbf3a0d8b454f6f82837d38"
+checksum = "76afc826de14238e6e8c374ddcc1fa19e374fd8dd986b0d2af0d02377261d83c"
 dependencies = [
  "getrandom 0.3.4",
 ]
@@ -3293,7 +3293,7 @@ dependencies = [
  "cfg-if 1.0.4",
  "encoding_rs",
  "futures-util",
- "getrandom 0.2.16",
+ "getrandom 0.2.17",
  "http-client",
  "http-types",
  "log",
@@ -4393,9 +4393,9 @@ dependencies = [
 
 [[package]]
 name = "zmij"
-version = "1.0.12"
+version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fc5a66a20078bf1251bde995aa2fdcc4b800c70b5d92dd2c62abc5c60f679f8"
+checksum = "bd8f3f50b848df28f887acb68e41201b5aea6bc8a8dacc00fb40635ff9a72fea"
 
 [[package]]
 name = "zune-core"

@@ -961,28 +961,55 @@ WERE_FORMS = [
     // Grab Ruby code from request body.
     let ruby_source = r######"
 
-        let ruby_source = format!(r######"
-    previous_contents = File.read('/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt').to_yaml
-    messages = []
-    messages = previous_contents
+
+    require 'json'
+    require 'time'
+    require 'yaml'
+
+    previous_contents = File.read('/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt')
+    yaml_array = previous_contents.split("\n").map { |line| line.to_yaml }.reject(&:empty?)
+
+    # Parse each line as JSON and keep only objects with a timestamp
+    entries = previous_contents.each_line.filter_map do |line|
+      begin
+        obj = JSON.parse(line)
+        obj if obj.is_a?(Hash) && obj['timestamp']
+      rescue JSON::ParserError
+        nil
+      end
+    end
 
     # Frequency tables
     timestamp_frequency = Hash.new(0)
     avatar_frequency = Hash.new(0)
     hour_frequency = Hash.new(0)
-    messages.each do |msg| # Timestamp frequency
-    timestamp_frequency[msg[:timestamp]] += 1 # Avatar speaking frequency
-    avatar_frequency[msg[:avatar_name]] += 1 # 24-hour time frequency
+
+    entries.each do |msg|
+      # Timestamp frequency
+      timestamp_frequency[msg['timestamp']] += 1
+      # Avatar speaking frequency
+      avatar_frequency[msg['avatar_name']] += 1 if msg['avatar_name']
+      # 24-hour time frequency
+      hour = Time.at(msg['timestamp'].to_i).utc.hour
+      hour_frequency[hour] += 1
+    end
+
+    # Build results
     message = ""
-    hour = Time.at(msg[:timestamp]).utc.hour hour_frequency[hour] += 1 end # Output results
-    message >> "Timestamp Frequency:" timestamp_frequency.sort.each do |timestamp, count|
-      "#{timestamp}: #{count}\n" end
-      message >>"Avatar Speaking Frequency:" avatar_frequency.sort.each do |avatar, count|
-      message >>"#{avatar}: #{count}" end
-      message >> "\n24-Hour Time Frequency:" (0..23).each do |hour| puts "#{hour}: #{hour_frequency[hour]}" end
+    message << "Timestamp Frequency:\n"
+    timestamp_frequency.sort.each do |timestamp, count|
+      message << "#{timestamp}: #{count}\n"
+    end
+    message << "\nAvatar Speaking Frequency:\n"
+    avatar_frequency.sort.each do |avatar, count|
+      message << "#{avatar}: #{count}\n"
+    end
+    message << "\n24-Hour Time Frequency:\n"
+    (0..23).each do |hour|
+      message << "#{hour}: #{hour_frequency[hour]}\n"
+    end
 
-
-      #{{message}}
+    "#{message}"
     "######;
 
 
@@ -994,7 +1021,7 @@ WERE_FORMS = [
 
     // Create unique .rb filename.
     let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
-    let filename = format!("{}/moon_{}.rb", script_dir,ts);
+    let filename = format!("{}/log_{}.rb", script_dir,ts);
     std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
 
 

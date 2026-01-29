@@ -152,7 +152,7 @@ class CGMFS
       'Otter Moon 🐕🌌', # 24
       'Muskium Otter Muskium Stinky Stimky Otter Moon 🦨🌌', # 25
       'Light Elemental Moon 💡🌕', # 26
-      'Dark Elemental Moon 🌑🌕', # 27
+      'Dark Elemental Moon 🌑🌕' # 27
 
     ]
     # Define 27 corresponding species with emojis.
@@ -183,7 +183,7 @@ class CGMFS
       'Otter 🦦',
       'Muskium Otter Stinky Stimky 🦦🦨',
       'Light Elf 💡',
-      'Light Elf Cosmic 🌑',
+      'Light Elf Cosmic 🌑'
 
     ]
 
@@ -602,13 +602,11 @@ class CGMFS
           File.rename(file_path, new_file_path)
           @sum_identifier = image_bytes_to_num_id_spec_fullpath(filename: new_file_path)
 
-
-
-      Thread.new do
+          Thread.new do
             create_image_thumbnail!(image_path: new_file_path, thumbnail_size: 350, thumbnail_path: "public/gallery_index/#{@user}/thumbnail_#{original_to_new_filename}")
           end
           Thread.new do
-           resize_image!(image_path: new_file_path, size: 1920, resized_image_path: "public/gallery_index/#{@user}/resized_#{original_to_new_filename}")
+            resize_image!(image_path: new_file_path, size: 1920, resized_image_path: "public/gallery_index/#{@user}/resized_#{original_to_new_filename}")
           end
         else
           uploadable = false
@@ -707,10 +705,6 @@ class CGMFS
           uploadable = true
           FileUtils.mkdir_p("public/gallery_index/#{@user}")
           File.open("public/gallery_index/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
-
-
-
-
 
           Thread.new do
             create_image_thumbnail!(image_path: "public/gallery_index/#{@user}/#{original_to_new_filename}", thumbnail_size: 350, thumbnail_path: "public/gallery_index/#{@user}/thumbnail_#{original_to_new_filename}")
@@ -1373,6 +1367,7 @@ class CGMFS
 
     r.is 'uwu', 'view', String do |user| # view the collections list
       user_failcheck(user, r)
+      private_view?(r, user)
       r.get do
         @user = user
         @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']

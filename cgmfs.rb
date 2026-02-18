@@ -118,6 +118,14 @@ class CGMFS < Roda
   # global database variable for future usages and for all databases currently used on this CGMFS system.
   $db = @@line_db
 
+
+  @@line_db["page_views"].pad.new_table!(database_name: "page_views_database", database_table: "page_views_table")
+  puts "Loading database: page_views..."
+  
+
+
+
+
   @@line_db["urls_redir"].pad.new_table!(database_name: "urls_database", database_table: "urls_table")
   @@line_db["blog"].pad.new_table!(database_name: "blog_database", database_table: "blog_table")
   @@line_db["user_blog_database"].pad.new_table!(database_name: "user_name_database",

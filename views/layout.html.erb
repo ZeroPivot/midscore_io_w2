@@ -140,7 +140,23 @@ div.galleryTable {
 
 
 <br>
-♾️(c)MiaedScore.online -- <%= $dog_blog_version %><br>
+
+
+
+
+ <% @@line_db["page_views"].pad['page_views_database', 'page_views_table'].set(0) do |hash|
+          #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+    if hash['page_views'].nil?
+        hash['page_views'] = 0
+      else
+        hash['page_views'] += 1
+      end
+  end
+
+@@line_db["page_views"].pad['page_views_database', 'page_views_table'].save_partition_to_file!(0)
+  %>
+
+♾️ [<%= @@line_db["page_views"].pad['page_views_database', 'page_views_table'].get(0)['page_views'] %>] -- (c) 2026-2032 <a href="https://miaedscore.online">MiaedScore.online</a> -- <%= $dog_blog_version %><br>
 <br />
 <center><%= formatted_pst_time %></center>
 <br />

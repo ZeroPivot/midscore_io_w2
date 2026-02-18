@@ -1,2 +1,2 @@
-20.1.0.0-rustby
-January 28, 2025 - "<a href='https://Stinkbutt.info'>StinkButt</a> Source"
+20.1.0.2-rustby
+February 18, 2026 - "<a href='https://Stinkbutt.info'>StinkButt</a> Source"

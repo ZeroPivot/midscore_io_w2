@@ -138,24 +138,9 @@ div.galleryTable {
   <% stop_rendering_time = Time.now.to_f %>
   <b></b> 📐 <%= ((stop_rendering_time - @start_rendering_time.to_f)).round(5) %>s [<%= ((stop_rendering_time - @start_rendering_time.to_f)*1000).round(5) %>ms]<br><br>
 
-<% if !@page_views %>
-  <% File.open("/home/midscore_io/views/page_views.txt", "r+") do |file| %>
-    <% @page_views = file.read.to_i %>
-    <% @page_views += 1 %>
-    <% file.rewind %>
-    <% file.write(@page_views) %>
-  <% end unless LOCAL %>
-<% end %>
-<% if LOCAL %>
-   <% File.open("views/page_views_local.txt", "r+") do |file| %>
-    <% @page_views = file.read.to_i %>
-    <% @page_views += 1 %>
-    <% file.rewind %>
-    <% file.write(@page_views) %>
-  <% end %>
-  <% end %>
+
 <br>
-♾️<%= @page_views.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %> -- (c)Miaed-Score -- <%= $dog_blog_version %><br>
+♾️(c)MiaedScore.online -- <%= $dog_blog_version %><br>
 <br />
 <center><%= formatted_pst_time %></center>
 <br />

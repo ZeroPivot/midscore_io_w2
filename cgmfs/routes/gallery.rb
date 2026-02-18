@@ -32,9 +32,6 @@ class CGMFS
     pst_time.strftime('%B, %d, %Y - %I:%M:%S %p SLT/PST')
   end
 
-  # Print the formatted date
-  puts formatted_pst_time
-
   # ========================================================
   # SunDance.rb - A whimsical solar phase tracker!
   # Models 15 daily sun phases based on Pacific Standard Time (PST).

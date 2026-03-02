@@ -138,24 +138,25 @@ div.galleryTable {
   <% stop_rendering_time = Time.now.to_f %>
   <b></b> 📐 <%= ((stop_rendering_time - @start_rendering_time.to_f)).round(5) %>s [<%= ((stop_rendering_time - @start_rendering_time.to_f)*1000).round(5) %>ms]<br><br>
 
-<% if !@page_views %>
-  <% File.open("/home/midscore_io/views/page_views.txt", "r+") do |file| %>
-    <% @page_views = file.read.to_i %>
-    <% @page_views += 1 %>
-    <% file.rewind %>
-    <% file.write(@page_views) %>
-  <% end unless LOCAL %>
-<% end %>
-<% if LOCAL %>
-   <% File.open("views/page_views_local.txt", "r+") do |file| %>
-    <% @page_views = file.read.to_i %>
-    <% @page_views += 1 %>
-    <% file.rewind %>
-    <% file.write(@page_views) %>
-  <% end %>
-  <% end %>
+
 <br>
-♾️<%= @page_views.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %> -- (c)Miaed-Score -- <%= $dog_blog_version %><br>
+
+
+
+
+ <% @@line_db["page_views"].pad['page_views_database', 'page_views_table'].set(0) do |hash|
+          #  break if post_index > @@line_db[@user].pad['blog_database', 'blog_statistics_table'].latest_id - 1
+    if hash['page_views'].nil?
+        hash['page_views'] = 0
+      else
+        hash['page_views'] += 1
+      end
+  end
+
+@@line_db["page_views"].pad['page_views_database', 'page_views_table'].save_partition_to_file!(0)
+  %>
+
+♾️ [<%= @@line_db["page_views"].pad['page_views_database', 'page_views_table'].get(0)['page_views'] %>] -- (c) 2026-2032 <a href="https://miaedscore.online">MiaedScore.online</a> -- <%= $dog_blog_version %><br>
 <br />
 <center><%= formatted_pst_time %></center>
 <br />
@@ -170,27 +171,23 @@ div.galleryTable {
 </center>
 </html>
 
-<% if @r %>
+
 <%
 
 # make sure the files exist no matter what
-FileUtils.touch("./main_request_log.txt")
-FileUtils.touch('./hitches.txt')
+FileUtils.touch("./main_request_log.txt") if !File.exist?("./main_request_log.txt")
+FileUtils.touch('./hitches.txt') if !File.exist?('./hitches.txt')
 
  @hitch_cookie = @r.params['h']
       @hitch_cookie = '' if @hitch_cookie.nil? || @hitch_cookie.empty? || @hitch_cookie == 'undefined'
       #@hitch_cookie = @hitch_cookie.gsub(/[^a-zA-Z0-9]/, '') # Sanitize the hitch cookie to allow only alphanumeric characters
-      Thread.new do
+
       File.open('./hitches.txt', 'a') { |f| f.puts("#{request.ip} - #{Time.now.to_s} - #{@hitch_cookie}\n") }
-      end
-
-
       %>
+<%
 
 
-
-<% File.open('main_request_log.txt', 'a') do |f| %>
-
+File.open('main_request_log.txt', 'a') do |f| %>
      <%
       # Log the request method
       f.puts "request_method: #{@r.request_method}"
@@ -223,10 +220,9 @@ FileUtils.touch('./hitches.txt')
 
       f.puts #newline
       # ... add more logs as needed ...
-
+end
       %>
-<% end %>
-    <% end %>
+
 
 
 

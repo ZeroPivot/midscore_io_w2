@@ -1,5 +1,8 @@
-   0.179552844s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: false }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
-   0.179580566s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-69e6a0a715803e1e/bin-sl_relay`
+   0.181749804s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: dependency on `build_script_main` is newer than we are 1772456857.579611846s > 1772456747.511916902s "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rb-sys-0.9.117"
+   0.181779360s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: dependency on `build_script_build` is newer than we are 1772456840.147660084s > 1772456746.771918957s "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1"
+   0.181836176s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: dependency on `magnus_macros` is newer than we are 1772456854.647619958s > 1772453162.133972119s "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1"
+   0.184801797s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: false }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
+   0.184816544s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-69e6a0a715803e1e/bin-sl_relay`
 
 Caused by:
     No such file or directory (os error 2)
@@ -20,29 +23,37 @@ Stack backtrace:
   12: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
   13: std::rt::lang_start::<()>::{closure#0}
   14: <&dyn core::ops::function::Fn<(), Output = i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe as core::ops::function::FnOnce<()>>::call_once
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/core/src/ops/function.rs:287:21
+             at /rustc/80381278a08582356c13b0f52af92d27c567c230/library/core/src/ops/function.rs:287:21
   15: std::panicking::catch_unwind::do_call::<&dyn core::ops::function::Fn<(), Output = i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe, i32>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panicking.rs:581:40
+             at /rustc/80381278a08582356c13b0f52af92d27c567c230/library/std/src/panicking.rs:581:40
   16: std::panicking::catch_unwind::<i32, &dyn core::ops::function::Fn<(), Output = i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panicking.rs:544:19
+             at /rustc/80381278a08582356c13b0f52af92d27c567c230/library/std/src/panicking.rs:544:19
   17: std::panic::catch_unwind::<&dyn core::ops::function::Fn<(), Output = i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe, i32>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panic.rs:359:14
+             at /rustc/80381278a08582356c13b0f52af92d27c567c230/library/std/src/panic.rs:359:14
   18: std::rt::lang_start_internal::{closure#0}
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/rt.rs:175:24
+             at /rustc/80381278a08582356c13b0f52af92d27c567c230/library/std/src/rt.rs:175:24
   19: std::panicking::catch_unwind::do_call::<std::rt::lang_start_internal::{closure#0}, isize>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panicking.rs:581:40
+             at /rustc/80381278a08582356c13b0f52af92d27c567c230/library/std/src/panicking.rs:581:40
   20: std::panicking::catch_unwind::<isize, std::rt::lang_start_internal::{closure#0}>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panicking.rs:544:19
+             at /rustc/80381278a08582356c13b0f52af92d27c567c230/library/std/src/panicking.rs:544:19
   21: std::panic::catch_unwind::<std::rt::lang_start_internal::{closure#0}, isize>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panic.rs:359:14
+             at /rustc/80381278a08582356c13b0f52af92d27c567c230/library/std/src/panic.rs:359:14
   22: std::rt::lang_start_internal
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/rt.rs:171:5
+             at /rustc/80381278a08582356c13b0f52af92d27c567c230/library/std/src/rt.rs:171:5
   23: main
   24: <unknown>
   25: __libc_start_main
   26: <unknown>
-   0.210239238s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: true }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
-   0.210258194s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-8ba65e7b25c29b57/test-bin-sl_relay`
+   0.203518954s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="magnus"}: cargo::core::compiler::fingerprint: fingerprint dirty for magnus v0.7.1/Check { test: false }/TargetInner { name_inferred: true, doc_scrape_examples: Disabled, ..: lib_target("magnus", ["lib"], "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1/src/lib.rs", Edition2021) }
+   0.203536888s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="magnus"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
+   0.204072130s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint dirty for magnus v0.7.1/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1/build.rs", Edition2021) }
+   0.204082840s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="build-script-build"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
+   0.207461485s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="build-script-main"}: cargo::core::compiler::fingerprint: fingerprint dirty for rb-sys v0.9.117/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-main", "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rb-sys-0.9.117/build/main.rs", Edition2018) }
+   0.207476222s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="build-script-main"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
+   0.208796384s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="rb_sys"}: cargo::core::compiler::fingerprint: fingerprint dirty for rb-sys v0.9.117/Check { test: false }/TargetInner { doctest: false, ..: lib_target("rb_sys", ["lib"], "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rb-sys-0.9.117/src/lib.rs", Edition2018) }
+   0.208808066s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="rb_sys"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
+   0.217527758s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: true }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
+   0.217539741s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-8ba65e7b25c29b57/test-bin-sl_relay`
 
 Caused by:
     No such file or directory (os error 2)
@@ -63,28 +74,5 @@ Stack backtrace:
   12: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
   13: std::rt::lang_start::<()>::{closure#0}
   14: <&dyn core::ops::function::Fn<(), Output = i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe as core::ops::function::FnOnce<()>>::call_once
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/core/src/ops/function.rs:287:21
+             at /rustc/80381278a08582356c13b0f52af92d27c567c230/library/core/src/ops/function.rs:287:21
   15: std::panicking::catch_unwind::do_call::<&dyn core::ops::function::Fn<(), Output = i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe, i32>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panicking.rs:581:40
-  16: std::panicking::catch_unwind::<i32, &dyn core::ops::function::Fn<(), Output = i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panicking.rs:544:19
-  17: std::panic::catch_unwind::<&dyn core::ops::function::Fn<(), Output = i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe, i32>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panic.rs:359:14
-  18: std::rt::lang_start_internal::{closure#0}
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/rt.rs:175:24
-  19: std::panicking::catch_unwind::do_call::<std::rt::lang_start_internal::{closure#0}, isize>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panicking.rs:581:40
-  20: std::panicking::catch_unwind::<isize, std::rt::lang_start_internal::{closure#0}>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panicking.rs:544:19
-  21: std::panic::catch_unwind::<std::rt::lang_start_internal::{closure#0}, isize>
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/panic.rs:359:14
-  22: std::rt::lang_start_internal
-             at /rustc/842bd5be253e17831e318fdbd9d01d716557cc75/library/std/src/rt.rs:171:5
-  23: main
-  24: <unknown>
-  25: __libc_start_main
-  26: <unknown>
-    Checking sl_relay v0.1.0 (/root/midscore_io/sl_relay)
-error: could not compile `sl_relay` (bin "sl_relay") due to 1 previous error; 18 warnings emitted
-warning: build failed, waiting for other jobs to finish...
-error: could not compile `sl_relay` (bin "sl_relay" test) due to 1 previous error; 18 warnings emitted

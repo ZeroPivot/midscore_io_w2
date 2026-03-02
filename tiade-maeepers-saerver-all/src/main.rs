@@ -253,110 +253,12 @@ async fn main() -> tide::Result<()> {
     use url::Url;
     //let rustby_eval_title = rustby_eval_title.clone();
 
-    // Utility function to list files in a directory with a specific extension.
-    fn list_files_with_ext(dir: &str, ext: &str) -> std::io::Result<Vec<String>> {
-        let mut files = Vec::new();
-        for entry in std::fs::read_dir(dir)? {
-            let entry = entry?;
-            let path = entry.path();
-            if path.extension().and_then(|e| e.to_str()) == Some(ext) {
-                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                    files.push(name.to_string());
-                }
-            }
-        }
-        Ok(files)
-    }
-
-    // For CSS
-    let css_files = list_files_with_ext("./css", "css")?;
-    let css_list_index = css_files.join(", ");
-    let css_html_index = format!(
-        "<html><head>{}</head><body></body></html>",
-        css_files
-            .iter()
-            .map(|f| format!("<link rel=\"stylesheet\" href=\"/css/{}\" />", f))
-            .collect::<Vec<_>>()
-            .join("\n")
-    );
-
-    // For JS
-    let js_files = list_files_with_ext("./js", "js")?;
-    let js_list_index = js_files.join(", ");
-    let js_html_index = format!(
-        "<html><head>{}</head><body></body></html>",
-        js_files
-            .iter()
-            .map(|f| format!("<script src=\"/js/{}\"></script>", f))
-            .collect::<Vec<_>>()
-            .join("\n")
-    );
-
-    // For IMG (no specific extension check here, adjust as needed)
-    let img_files: Vec<String> = std::fs::read_dir("./img")?
-        .filter_map(|entry| {
-            let p = entry.ok()?.path();
-            p.file_name().and_then(|n| n.to_str()).map(String::from)
-        })
-        .collect();
-    let img_list_index = img_files.join(", ");
-    let img_html_index = format!(
-        "<html><body>{}</body></html>",
-        img_files
-            .iter()
-            .map(|f| format!("<img src=\"/img/{}\" alt=\"{}\" />", f, f))
-            .collect::<Vec<_>>()
-            .join("\n")
-    );
-
-    // For FONTS
-    let fonts_files: Vec<String> = std::fs::read_dir("./fonts")?
-        .filter_map(|entry| {
-            let p = entry.ok()?.path();
-            p.file_name().and_then(|n| n.to_str()).map(String::from)
-        })
-        .collect();
-    let fonts_list_index = fonts_files.join(", ");
-    let fonts_html_index = format!(
-        "<html><body><ul>{}</ul></body></html>",
-        fonts_files
-            .iter()
-            .map(|f| format!("<li>{}</li>", f))
-            .collect::<Vec<_>>()
-            .join("")
-    );
-
-    // For PUBLIC
-    let public_files: Vec<String> = std::fs::read_dir("./public")?
-        .filter_map(|entry| {
-            let p = entry.ok()?.path();
-            p.file_name().and_then(|n| n.to_str()).map(String::from)
-        })
-        .collect();
-    let public_list_index = public_files.join(", ");
-    let public_html_index = format!(
-        "<html><body><ul>{}</ul></body></html>",
-        public_files
-            .iter()
-            .map(|f| format!("<li>{}</li>", f))
-            .collect::<Vec<_>>()
-            .join("")
-    );
-
-    // Check all directories before serving; if any are missing, raise an error.
-    for dir in &["./css", "./js", "./img", "./fonts", "./public"] {
-        if std::fs::metadata(dir).is_err() {
-            eprintln!("Error: directory {} not found", dir);
-            panic!("Directory not found");
-        }
-    }
-
     // Serve each directory. Tide will serve new files as they appear.
-    app.at("/css").serve_dir("./css/")?;
-    app.at("/js").serve_dir("./js/")?;
-    app.at("/img").serve_dir("./img/")?;
-    app.at("/fonts").serve_dir("./fonts/")?;
-    app.at("/public").serve_dir("./public/")?;
+    // app.at("/css").serve_dir("./css/")?;
+    // app.at("/js").serve_dir("./js/")?;
+    // app.at("/img").serve_dir("./img/")?;
+    // app.at("/fonts").serve_dir("./fonts/")?;
+    // app.at("/public").serve_dir("./public/")?;
 
     #[derive(serde::Deserialize)]
     struct PraexyForm {
@@ -1046,6 +948,139 @@ WERE_FORMS = [
     let _ = std::fs::remove_file(&result_path);
     let _ = std::fs::remove_file(&filename);
 
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(output);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
+    app.at("/incrementor_get").get(|mut req: tide::Request<AppState>| async move {
+      // Catch all POST variables into a hashmap and print them
+      let body = req.body_string().await.unwrap_or_default();
+      println!("Received POST body: {}", body);
+
+      let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+      let file_name: String = "incrementor.txt".to_string();
+
+      let ruby_source = format!(r######"
+      incrementor = File.read('/root/midscore_io/tiade-maeepers-saerver-all/target/release/incrementor.txt').to_s
+
+      #{{incrementor}}
+
+    "######
+
+    );
+
+
+    if ruby_source.trim().is_empty() {
+        let mut resp = tide::Response::new(tide::StatusCode::Ok);
+        resp.set_body("No Ruby code supplied");
+        return Ok(resp);
+    }
+
+    // Create unique .rb filename.
+    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+    let filename = format!("{}/sl_log_get_{}.rb", script_dir,ts);
+    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+
+
+
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/sl_log_get_{}.txt", ts);
+
+    // Block until the result file is available or until timeout
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(120);
+    while !std::path::Path::new(&result_path).exists() {
+      if start.elapsed() > timeout {
+        return Ok("Timed out waiting for result file".into());
+      }
+      std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+
+    // Remove script file after evaluation.
+
+    let _ = std::fs::remove_file(&result_path);
+    let _ = std::fs::remove_file(&filename);
+
+      //let output = "Log entry received and written to file successfully.";
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(output);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
+    app.at("/incrementor").get(|mut req: tide::Request<AppState>| async move {
+      // Catch all POST variables into a hashmap and print them
+      let body = req.body_string().await.unwrap_or_default();
+      println!("Received POST body: {}", body);
+
+      let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+      let file_name: String = "incrementor.txt".to_string();
+
+      let ruby_source = format!(r######"
+
+        incrementor_path = '/root/midscore_io/tiade-maeepers-saerver-all/target/release/incrementor.txt'
+        File.write(incrementor_path, '0') unless File.exist?(incrementor_path)
+
+        incrementor = File.open(incrementor_path, 'r+') do |file|
+          file.flock(File::LOCK_EX)
+          current = file.read.to_i
+          updated = current + 1
+          file.rewind
+          file.write(updated.to_s)
+          file.truncate(file.pos)
+          updated
+        end
+
+        #{{incrementor}}
+        "######
+
+    );
+
+
+    if ruby_source.trim().is_empty() {
+        let mut resp = tide::Response::new(tide::StatusCode::Ok);
+        resp.set_body("No Ruby code supplied");
+        return Ok(resp);
+    }
+
+    // Create unique .rb filename.
+    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+    let filename = format!("{}/incrementor_{}.rb", script_dir,ts);
+    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+
+
+
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/incrementor_{}.txt", ts);
+
+    // Block until the result file is available or until timeout
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(120);
+    while !std::path::Path::new(&result_path).exists() {
+      if start.elapsed() > timeout {
+        return Ok("Timed out waiting for result file".into());
+      }
+      std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+
+    // Remove script file after evaluation.
+
+    let _ = std::fs::remove_file(&result_path);
+    let _ = std::fs::remove_file(&filename);
+
+      //let output = "Log entry received and written to file successfully.";
 
      // Return the HTML response.
     let mut res = tide::Response::new(tide::StatusCode::Ok);

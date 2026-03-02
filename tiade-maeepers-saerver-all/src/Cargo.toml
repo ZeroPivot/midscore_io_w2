@@ -15,11 +15,10 @@ macroquad = { version = "0.4.13", features = [
     "log-rs",
     "quad-snd",
 ] }
-magnus = { version = "0.7.1", features = ["embed"] }
+
 base64 = "0.22.1"
 bincode = { version = "1.3.3", features = ["i128"] }
-load_file = "1.0.1"
-num-bigfloat = "1.7.1"
+load_file = "1.0.1"num-bigfloat = "1.7.1"
 num-bigint = { version = "0.4.6", features = [
     "arbitrary",
     "quickcheck",

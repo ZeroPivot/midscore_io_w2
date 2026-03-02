@@ -1,8 +1,11 @@
-   0.219565874s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: dependency on `build_script_main` is newer than we are 1772456857.579611846s > 1772456747.511916902s "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rb-sys-0.9.117"
-   0.219612321s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: dependency on `build_script_build` is newer than we are 1772456840.147660084s > 1772456746.771918957s "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1"
-   0.219675619s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: dependency on `magnus_macros` is newer than we are 1772456854.647619958s > 1772453162.133972119s "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1"
-   0.223303821s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: false }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
-   0.223325201s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-69e6a0a715803e1e/bin-sl_relay`
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   0.366935076s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: dependency on `build_script_main` is newer than we are 1772456857.579611846s > 1772456747.511916902s "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rb-sys-0.9.117"
+   0.366971785s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: dependency on `build_script_build` is newer than we are 1772456840.147660084s > 1772456746.771918957s "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1"
+   0.367048789s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: dependency on `magnus_macros` is newer than we are 1772456854.647619958s > 1772453162.133972119s "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1"
+   0.370233942s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: false }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
+   0.370257757s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-69e6a0a715803e1e/bin-sl_relay`
 
 Caused by:
     No such file or directory (os error 2)
@@ -44,16 +47,16 @@ Stack backtrace:
   24: <unknown>
   25: __libc_start_main
   26: <unknown>
-   0.244193516s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="magnus"}: cargo::core::compiler::fingerprint: fingerprint dirty for magnus v0.7.1/Check { test: false }/TargetInner { name_inferred: true, doc_scrape_examples: Disabled, ..: lib_target("magnus", ["lib"], "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1/src/lib.rs", Edition2021) }
-   0.244214365s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="magnus"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
-   0.244818976s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint dirty for magnus v0.7.1/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1/build.rs", Edition2021) }
-   0.244829827s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="build-script-build"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
-   0.247763047s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="build-script-main"}: cargo::core::compiler::fingerprint: fingerprint dirty for rb-sys v0.9.117/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-main", "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rb-sys-0.9.117/build/main.rs", Edition2018) }
-   0.247777955s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="build-script-main"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
-   0.249181582s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="rb_sys"}: cargo::core::compiler::fingerprint: fingerprint dirty for rb-sys v0.9.117/Check { test: false }/TargetInner { doctest: false, ..: lib_target("rb_sys", ["lib"], "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rb-sys-0.9.117/src/lib.rs", Edition2018) }
-   0.249195098s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="rb_sys"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
-   0.258563956s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: true }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
-   0.258579756s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-8ba65e7b25c29b57/test-bin-sl_relay`
+   0.389206495s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="magnus"}: cargo::core::compiler::fingerprint: fingerprint dirty for magnus v0.7.1/Check { test: false }/TargetInner { name_inferred: true, doc_scrape_examples: Disabled, ..: lib_target("magnus", ["lib"], "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1/src/lib.rs", Edition2021) }
+   0.389233174s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="magnus"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
+   0.389763287s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint dirty for magnus v0.7.1/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/magnus-0.7.1/build.rs", Edition2021) }
+   0.389779427s  INFO prepare_target{force=false package_id=magnus v0.7.1 target="build-script-build"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
+   0.392714773s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="build-script-main"}: cargo::core::compiler::fingerprint: fingerprint dirty for rb-sys v0.9.117/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-main", "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rb-sys-0.9.117/build/main.rs", Edition2018) }
+   0.392734149s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="build-script-main"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
+   0.394100928s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="rb_sys"}: cargo::core::compiler::fingerprint: fingerprint dirty for rb-sys v0.9.117/Check { test: false }/TargetInner { doctest: false, ..: lib_target("rb_sys", ["lib"], "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rb-sys-0.9.117/src/lib.rs", Edition2018) }
+   0.394123390s  INFO prepare_target{force=false package_id=rb-sys v0.9.117 target="rb_sys"}: cargo::core::compiler::fingerprint:     dirty: RustcChanged
+   0.403035336s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint: fingerprint error for sl_relay v0.1.0 (/root/midscore_io/sl_relay)/Check { test: true }/TargetInner { name: "sl_relay", doc: true, ..: with_path("/root/midscore_io/sl_relay/src/main.rs", Edition2024) }
+   0.403054723s  INFO prepare_target{force=false package_id=sl_relay v0.1.0 (/root/midscore_io/sl_relay) target="sl_relay"}: cargo::core::compiler::fingerprint:     err: failed to read `/root/midscore_io/sl_relay/target/debug/.fingerprint/sl_relay-8ba65e7b25c29b57/test-bin-sl_relay`
 
 Caused by:
     No such file or directory (os error 2)
@@ -75,4 +78,3 @@ Stack backtrace:
   13: std::rt::lang_start::<()>::{closure#0}
   14: <&dyn core::ops::function::Fn<(), Output = i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe as core::ops::function::FnOnce<()>>::call_once
              at /rustc/80381278a08582356c13b0f52af92d27c567c230/library/core/src/ops/function.rs:287:21
-  15: std::panicking::catch_unwind::do_call::<&dyn core::ops::function::Fn<(), Output = i32> + core::marker::Sync + core::panic::unwind_safe::RefUnwindSafe, i32>

@@ -28,7 +28,7 @@ class CGMFS
   # ========================================================
 
   def formatted_pst_time
-    pst_time = Time.now.getlocal('-08:00')
+    pst_time = Time.now.getlocal('-07:00')
     pst_time.strftime('%B, %d, %Y - %I:%M:%S %p SLT/PST')
   end
 
@@ -347,7 +347,7 @@ class CGMFS
     end
 
     def formatted_pst_time
-      pst_time = Time.now.getlocal('-08:00')
+      pst_time = Time.now.getlocal('-07:00')
       pst_time.strftime('%B, %d, %Y - %I:%M:%S %p SLT/PST')
     end
   end

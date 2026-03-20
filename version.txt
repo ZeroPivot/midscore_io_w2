@@ -1,2 +1,2 @@
-21.0.0.2-rustby-dev
-March 12, 2026 6:17AM PST/SLT - "<a href='https://Stinkbutt.info'>StinkButt</a> Source"
+21.0.0.3-rustby-dev
+March 20, 2026 4:57AM PST/SLT - "<a href='https://Stinkbutt.info'>The Stinky Stimky Champions</a> Source"

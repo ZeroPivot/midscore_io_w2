@@ -938,7 +938,7 @@ hour_freq    = Hash.new(0)
 WEEKDAYS = %w[Sunday Monday Tuesday Wednesday Thursday Friday Saturday]
 
 events.each do |e|
-  t = Time.at(e['timestamp'].to_i).getlocal('-08:00')
+  t = Time.at(e['timestamp'].to_i).getlocal('-07:00')
   weekday_freq[WEEKDAYS[t.wday]] += 1
   hour_freq[t.hour] += 1
 end

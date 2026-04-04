@@ -72,6 +72,57 @@ class CGMFS
     end
   end
 
+
+
+class MoonPhase13
+  REFERENCE_NEW_MOON = Time.utc(2000, 1, 6, 18, 14, 0)
+  LUNAR_CYCLE = 29.530588853 # synodic month in days
+
+  PHASES = [
+    ["New Moon", "🌑"],
+    ["Waxing Crescent I", "🌒"],
+    ["Waxing Crescent II", "🌒"],
+    ["First Quarter", "🌓"],
+    ["Waxing Gibbous I", "🌔"],
+    ["Waxing Gibbous II", "🌔"],
+    ["Full Moon", "🌕"],
+    ["Waning Gibbous I", "🌖"],
+    ["Waning Gibbous II", "🌖"],
+    ["Last Quarter", "🌗"],
+    ["Waning Crescent I", "🌘"],
+    ["Waning Crescent II", "🌘"],
+    ["Dark Moon", "🌑"]
+  ]
+
+  def initialize(time = Time.now.utc)
+    @time = time
+  end
+
+  def moon_age
+    days_since_new = (@time - REFERENCE_NEW_MOON) / 86_400.0
+    days_since_new % LUNAR_CYCLE
+  end
+
+  def phase_index
+    ((moon_age / LUNAR_CYCLE) * PHASES.length).floor
+  end
+
+  def phase
+    PHASES[phase_index]
+  end
+
+  def display
+    name, emoji = phase
+     return "🌙 Moon Phase: #{name} #{emoji}<br />
+     🕒 UTC Time: #{@time}<br />
+     📆 Moon Age: #{moon_age.round(2)} days<br />"
+  end
+end
+
+# Example usage
+# MoonPhase13.new.display
+
+
   class SunPhase
     attr_reader :name, :start_hour, :emoji
 

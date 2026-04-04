@@ -120,6 +120,8 @@ div.galleryTable {
   <%= "<font size=\"4\">#{MoonPhaseDetails.print_details_for_date(Date.today)}</font>" %>
 <br />
   <br /><b>120</b>🕰️<%= convert_to_120_second_time_pst  %> PST<br />
+  <br />
+  <%= MoonPhase13.new.display %>
   <hr>
  <br>
   <% if session['user'] %>
@@ -327,6 +329,24 @@ WERE_FORMS = [
   'WereLightElf 💡',
   'WereLightElfCosmic 🌑'
 ]
+
+
+# Normal Moon Phases
+  PHASES = [
+    ["New Moon", "🌑"],
+    ["Waxing Crescent I", "🌒"],
+    ["Waxing Crescent II", "🌒"],
+    ["First Quarter", "🌓"],
+    ["Waxing Gibbous I", "🌔"],
+    ["Waxing Gibbous II", "🌔"],
+    ["Full Moon", "🌕"],
+    ["Waning Gibbous I", "🌖"],
+    ["Waning Gibbous II", "🌖"],
+    ["Last Quarter", "🌗"],
+    ["Waning Crescent I", "🌘"],
+    ["Waning Crescent II", "🌘"],
+    ["Dark Moon", "🌑"]
+  ]
 </pre>
 </center>
 

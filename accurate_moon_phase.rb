@@ -1,3 +1,4 @@
+
 # Define a method to calculate the Julian Day Number for a given date
 def julian_day(year, month, day)
   a = (14 - month) / 12

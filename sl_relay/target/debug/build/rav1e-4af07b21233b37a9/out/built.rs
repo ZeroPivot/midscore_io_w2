@@ -57,7 +57,7 @@ pub static RUSTDOC: &str = "rustdoc";
 pub static OPT_LEVEL: &str = "3";
 #[doc=r#"The parallelism that was specified during compilation."#]
 #[allow(dead_code)]
-pub static NUM_JOBS: u32 = 4;
+pub static NUM_JOBS: u32 = 12;
 #[doc=r#"Value of DEBUG for the profile used during compilation."#]
 #[allow(dead_code)]
 pub static DEBUG: bool = true;
@@ -75,10 +75,10 @@ pub static FEATURES_LOWERCASE: [&str; 1] = ["threading"];
 pub static FEATURES_LOWERCASE_STR: &str = "threading";
 #[doc=r#"The output of `rustc -V`"#]
 #[allow(dead_code)]
-pub static RUSTC_VERSION: &str = "rustc 1.97.0-nightly (d3cd04068 2026-05-16)";
+pub static RUSTC_VERSION: &str = "rustc 1.97.0-nightly (20de910db 2026-05-02)";
 #[doc=r#"The output of `rustdoc -V`; empty string if `rustdoc -V` failed to execute"#]
 #[allow(dead_code)]
-pub static RUSTDOC_VERSION: &str = "rustdoc 1.97.0-nightly (d3cd04068 2026-05-16)";
+pub static RUSTDOC_VERSION: &str = "rustdoc 1.97.0-nightly (20de910db 2026-05-02)";
 #[doc=r#"The target architecture, given by `CARGO_CFG_TARGET_ARCH`."#]
 #[allow(dead_code)]
 pub static CFG_TARGET_ARCH: &str = "x86_64";

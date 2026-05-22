@@ -145,7 +145,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     if path.extension().and_then(|e| e.to_str()) == Some("rb") {
                         let code = fs::read_to_string(&path)?;
                         let result = match ruby.eval::<Value>(&code) {
-                            Ok(val) => val.to_string(),
+                            Ok(val) => {
+                                // Call Ruby .to_s to get a proper string representation
+                                let s_val: Value = val.funcall("to_s", ()).unwrap_or(val);
+                                // Try to extract as RString
+                                if let Ok(rstr) = RString::try_convert(s_val) {
+                                    unsafe { rstr.as_str().unwrap_or("").to_owned() }
+                                } else {
+                                    format!("{}", val)
+                                }
+                            },
                             Err(e) => format!("Error: {}", e),
                         };
                         let txt_path = path.with_extension("txt");

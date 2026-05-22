@@ -44,3 +44,6 @@ cargo:rustc-cfg=ossl110h
 cargo:rustc-cfg=ossl111
 cargo:rustc-cfg=ossl111d
 cargo:rustc-cfg=ossl300
+cargo:rustc-cfg=ossl310
+cargo:rustc-cfg=ossl320
+cargo:rustc-cfg=ossl330

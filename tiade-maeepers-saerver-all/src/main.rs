@@ -253,110 +253,12 @@ async fn main() -> tide::Result<()> {
     use url::Url;
     //let rustby_eval_title = rustby_eval_title.clone();
 
-    // Utility function to list files in a directory with a specific extension.
-    fn list_files_with_ext(dir: &str, ext: &str) -> std::io::Result<Vec<String>> {
-        let mut files = Vec::new();
-        for entry in std::fs::read_dir(dir)? {
-            let entry = entry?;
-            let path = entry.path();
-            if path.extension().and_then(|e| e.to_str()) == Some(ext) {
-                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                    files.push(name.to_string());
-                }
-            }
-        }
-        Ok(files)
-    }
-
-    // For CSS
-    let css_files = list_files_with_ext("./css", "css")?;
-    let css_list_index = css_files.join(", ");
-    let css_html_index = format!(
-        "<html><head>{}</head><body></body></html>",
-        css_files
-            .iter()
-            .map(|f| format!("<link rel=\"stylesheet\" href=\"/css/{}\" />", f))
-            .collect::<Vec<_>>()
-            .join("\n")
-    );
-
-    // For JS
-    let js_files = list_files_with_ext("./js", "js")?;
-    let js_list_index = js_files.join(", ");
-    let js_html_index = format!(
-        "<html><head>{}</head><body></body></html>",
-        js_files
-            .iter()
-            .map(|f| format!("<script src=\"/js/{}\"></script>", f))
-            .collect::<Vec<_>>()
-            .join("\n")
-    );
-
-    // For IMG (no specific extension check here, adjust as needed)
-    let img_files: Vec<String> = std::fs::read_dir("./img")?
-        .filter_map(|entry| {
-            let p = entry.ok()?.path();
-            p.file_name().and_then(|n| n.to_str()).map(String::from)
-        })
-        .collect();
-    let img_list_index = img_files.join(", ");
-    let img_html_index = format!(
-        "<html><body>{}</body></html>",
-        img_files
-            .iter()
-            .map(|f| format!("<img src=\"/img/{}\" alt=\"{}\" />", f, f))
-            .collect::<Vec<_>>()
-            .join("\n")
-    );
-
-    // For FONTS
-    let fonts_files: Vec<String> = std::fs::read_dir("./fonts")?
-        .filter_map(|entry| {
-            let p = entry.ok()?.path();
-            p.file_name().and_then(|n| n.to_str()).map(String::from)
-        })
-        .collect();
-    let fonts_list_index = fonts_files.join(", ");
-    let fonts_html_index = format!(
-        "<html><body><ul>{}</ul></body></html>",
-        fonts_files
-            .iter()
-            .map(|f| format!("<li>{}</li>", f))
-            .collect::<Vec<_>>()
-            .join("")
-    );
-
-    // For PUBLIC
-    let public_files: Vec<String> = std::fs::read_dir("./public")?
-        .filter_map(|entry| {
-            let p = entry.ok()?.path();
-            p.file_name().and_then(|n| n.to_str()).map(String::from)
-        })
-        .collect();
-    let public_list_index = public_files.join(", ");
-    let public_html_index = format!(
-        "<html><body><ul>{}</ul></body></html>",
-        public_files
-            .iter()
-            .map(|f| format!("<li>{}</li>", f))
-            .collect::<Vec<_>>()
-            .join("")
-    );
-
-    // Check all directories before serving; if any are missing, raise an error.
-    for dir in &["./css", "./js", "./img", "./fonts", "./public"] {
-        if std::fs::metadata(dir).is_err() {
-            eprintln!("Error: directory {} not found", dir);
-            panic!("Directory not found");
-        }
-    }
-
     // Serve each directory. Tide will serve new files as they appear.
-    app.at("/css").serve_dir("./css/")?;
-    app.at("/js").serve_dir("./js/")?;
-    app.at("/img").serve_dir("./img/")?;
-    app.at("/fonts").serve_dir("./fonts/")?;
-    app.at("/public").serve_dir("./public/")?;
+    // app.at("/css").serve_dir("./css/")?;
+    // app.at("/js").serve_dir("./js/")?;
+    // app.at("/img").serve_dir("./img/")?;
+    // app.at("/fonts").serve_dir("./fonts/")?;
+    // app.at("/public").serve_dir("./public/")?;
 
     #[derive(serde::Deserialize)]
     struct PraexyForm {
@@ -950,67 +852,364 @@ WERE_FORMS = [
     //Ok(output.into())
   });
 
-    app.at("/analytics").get(|mut req: tide::Request<AppState>| async move {
+    app.at("/analytics")
+        .get(|mut req: tide::Request<AppState>| async move {
+            let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+            //td::fs::create_dir_all(script_dir).ok();
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            //res.set_body("HTML content for /moon route");
+            //res.set_content_type("text/html; charset=utf-8");
+            //return Ok(res);
+            // Grab Ruby code from request body.
+            let ruby_source = r######"
 
-    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
-    //td::fs::create_dir_all(script_dir).ok();
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    //res.set_body("HTML content for /moon route");
-    //res.set_content_type("text/html; charset=utf-8");
-    //return Ok(res);
-    // Grab Ruby code from request body.
-    let ruby_source = r######"
 
 
-    require 'json'
-    require 'time'
-    require 'yaml'
+require 'json'
+require 'time'
 
-    previous_contents = File.read('/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt')
-    yaml_array = previous_contents.split("\n").map { |line| line.to_yaml }.reject(&:empty?)
+# Load and parse chat logs from file.
+# This supports both strict JSON and Ruby-hash style lines like:
+# [{avatar_id: "...", message: "..."}, {...}]
+path = '/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt'
+raw = File.exist?(path) ? File.read(path) : ''
+entries = []
 
-    # Parse each line as JSON and keep only objects with a timestamp
-    entries = previous_contents.each_line.filter_map do |line|
-      begin
-        obj = JSON.parse(line)
-        obj if obj.is_a?(Hash) && obj['timestamp']
-      rescue JSON::ParserError
-        nil
-      end
+parse_any = lambda do |text|
+  begin
+    JSON.parse(text)
+  rescue JSON::ParserError
+    eval(text)
+  end
+end
+
+raw.each_line do |line|
+  line = line.strip
+  next if line.empty?
+
+  begin
+    parsed = parse_any.call(line)
+    if parsed.is_a?(Array)
+      parsed.each { |item| entries << item if item.is_a?(Hash) }
+    elsif parsed.is_a?(Hash)
+      entries << parsed
     end
+  rescue StandardError
+    # Skip malformed lines and continue processing.
+  end
+end
 
-    # Frequency tables
-    timestamp_frequency = Hash.new(0)
-    avatar_frequency = Hash.new(0)
-    hour_frequency = Hash.new(0)
+# Fallback: try parsing whole file if line-by-line found nothing.
+if entries.empty? && !raw.strip.empty?
+  begin
+    parsed = parse_any.call(raw)
+    if parsed.is_a?(Array)
+      parsed.each { |item| entries << item if item.is_a?(Hash) }
+    elsif parsed.is_a?(Hash)
+      entries << parsed
+    end
+  rescue StandardError
+    entries = []
+  end
+end
 
-    entries.each do |msg|
-      # Timestamp frequency
-      timestamp_frequency[msg['timestamp']] += 1
-      # Avatar speaking frequency
-      avatar_frequency[msg['avatar_name']] += 1 if msg['avatar_name']
-      # 24-hour time frequency
-      hour = Time.at(msg['timestamp'].to_i).utc.hour
-      hour_frequency[hour] += 1
-    end
+# Normalize keys for mixed JSON/Ruby inputs.
+entries.map! do |e|
+  next e unless e.respond_to?(:transform_keys)
+  e.transform_keys { |k| k.respond_to?(:to_s) ? k.to_s : k }
+end
 
-    # Build results
-    message = ""
-    message << "Timestamp Frequency:\n"
-    timestamp_frequency.sort.each do |timestamp, count|
-      message << "#{timestamp}: #{count}\n"
-    end
-    message << "\nAvatar Speaking Frequency:\n"
-    avatar_frequency.sort.each do |avatar, count|
-      message << "#{avatar}: #{count}\n"
-    end
-    message << "\n24-Hour Time Frequency:\n"
-    (0..23).each do |hour|
-      message << "#{hour}: #{hour_frequency[hour]}\n"
-    end
+# Deduplicate observer captures
+unique = {}
+entries.each do |e|
+  next unless e.is_a?(Hash)
+  next unless e['timestamp']
 
-    "#{message}"
+  key = [e['avatar_id'], e['timestamp'], e['message']]
+  unique[key] ||= e
+end
+
+events = unique.values
+
+# Frequency tables
+weekday_freq = Hash.new(0)
+hour_freq    = Hash.new(0)
+
+WEEKDAYS = %w[Sunday Monday Tuesday Wednesday Thursday Friday Saturday]
+
+events.each do |e|
+  t = Time.at(e['timestamp'].to_i).getlocal('-07:00')
+  weekday_freq[WEEKDAYS[t.wday]] += 1
+  hour_freq[t.hour] += 1
+end
+
+out = ""
+out << "Second Life chat frequency report (PST)\n"
+out << "Total unique events: #{events.length}\n\n"
+out << "=== Message Frequency by Day of Week ===\n"
+WEEKDAYS.each do |day|
+  out << "%-9s : %d\n" % [day, weekday_freq[day]]
+end
+
+out << "\n=== Message Frequency by Hour (PST, 24h) ===\n"
+(0..23).each do |h|
+  out << "%02d:00-%02d:59 : %d\n" % [h, h, hour_freq[h]]
+end
+
+put_and_return = out
+
+#{{put_and_return}}
     "######;
+
+            if ruby_source.trim().is_empty() {
+                let mut resp = tide::Response::new(tide::StatusCode::Ok);
+                resp.set_body("No Ruby code supplied");
+                return Ok(resp);
+            }
+
+            // Create unique .rb filename.
+            let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+            let filename = format!("{}/lanalytics_second_life_{}.rb", script_dir, ts);
+            std::fs::write(&filename, &ruby_source)
+                .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+            let result_path = format!(
+                "/root/midscore_io/rustby/rustby-vm/target/release/scripts/lanalytics_second_life_{}.txt",
+                ts
+            );
+
+            // Block until the result file is available or until timeout
+            let start = std::time::Instant::now();
+            let timeout = std::time::Duration::from_secs(120);
+            while !std::path::Path::new(&result_path).exists() {
+                if start.elapsed() > timeout {
+                    return Ok("Timed out waiting for result file".into());
+                }
+                std::thread::sleep(std::time::Duration::from_millis(1));
+            }
+            let output =
+                std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+            // Remove script file after evaluation.
+
+            let _ = std::fs::remove_file(&result_path);
+            let _ = std::fs::remove_file(&filename);
+
+            // Return the HTML response.
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body(output);
+            res.insert_header("Content-Type", "text/plain; charset=utf-8");
+            Ok(res)
+            //Ok(output.into())
+        });
+
+    app.at("/chatlog")
+        .get(|_req: tide::Request<AppState>| async move {
+            use std::collections::{HashMap, BTreeMap};
+
+            let log_path = "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
+            let raw = std::fs::read_to_string(log_path).unwrap_or_default();
+
+            // Parse each line as a Ruby-hash-style array by converting to JSON
+            let mut all_entries: Vec<serde_json::Value> = Vec::new();
+            for line in raw.lines() {
+                let line = line.trim();
+                if line.is_empty() { continue; }
+                // Convert Ruby hash syntax to JSON: symbol keys to strings
+                let json_line = line
+                    .replace("\\.", ".")
+                    .replace("\\\"", "\"");
+                // Try direct JSON parse first
+                if let Ok(val) = serde_json::from_str::<serde_json::Value>(&json_line) {
+                    if let Some(arr) = val.as_array() {
+                        all_entries.extend(arr.iter().cloned());
+                    } else {
+                        all_entries.push(val);
+                    }
+                    continue;
+                }
+                // Convert Ruby symbol keys to JSON string keys
+                let converted = json_line
+                    .replace("{avatar_id:", "{\"avatar_id\":")
+                    .replace(", avatar_id:", ", \"avatar_id\":")
+                    .replace("avatar_name:", "\"avatar_name\":")
+                    .replace("captured_by:", "\"captured_by\":")
+                    .replace("message:", "\"message\":")
+                    .replace("sim_name:", "\"sim_name\":")
+                    .replace("timestamp:", "\"timestamp\":")
+                    .replace("x_pos:", "\"x_pos\":")
+                    .replace("y_pos:", "\"y_pos\":")
+                    .replace("z_pos:", "\"z_pos\":");
+                if let Ok(val) = serde_json::from_str::<serde_json::Value>(&converted) {
+                    if let Some(arr) = val.as_array() {
+                        all_entries.extend(arr.iter().cloned());
+                    } else {
+                        all_entries.push(val);
+                    }
+                }
+            }
+
+            // Deduplicate by (avatar_id, timestamp, message)
+            let mut unique: HashMap<String, &serde_json::Value> = HashMap::new();
+            for entry in &all_entries {
+                let key = format!("{}|{}|{}",
+                    entry["avatar_id"].as_str().unwrap_or(""),
+                    entry["timestamp"].as_i64().or_else(|| entry["timestamp"].as_f64().map(|f| f as i64)).unwrap_or(0),
+                    entry["message"].as_str().unwrap_or("")
+                );
+                unique.entry(key).or_insert(entry);
+            }
+
+            // Sort by timestamp
+            let mut events: Vec<&serde_json::Value> = unique.into_values().collect();
+            events.sort_by_key(|e| e["timestamp"].as_i64().or_else(|| e["timestamp"].as_f64().map(|f| f as i64)).unwrap_or(0));
+
+            // Group by date (PST = UTC-8)
+            let mut grouped: BTreeMap<String, Vec<&serde_json::Value>> = BTreeMap::new();
+            for e in &events {
+                let ts = e["timestamp"].as_i64().or_else(|| e["timestamp"].as_f64().map(|f| f as i64)).unwrap_or(0);
+                let dt = chrono::DateTime::from_timestamp(ts, 0)
+                    .unwrap_or_default()
+                    .with_timezone(&chrono::FixedOffset::west_opt(8 * 3600).unwrap());
+                let day_key = dt.format("%A, %B %d, %Y").to_string();
+                grouped.entry(day_key).or_default().push(e);
+            }
+
+            let sep = "-".repeat(80);
+            let now_pst = Utc::now().with_timezone(&chrono::FixedOffset::west_opt(8 * 3600).unwrap());
+            let mut out = String::new();
+            out.push_str(&format!("{}\n", sep));
+            out.push_str(&format!("  SECOND LIFE CHAT LOG VIEWER\n"));
+            out.push_str(&format!("  Total Messages: {} | Generated: {}\n", events.len(), now_pst.format("%m/%d/%Y %I:%M:%S %p PST")));
+            out.push_str(&format!("{}\n\n", sep));
+
+            for (date, day_events) in &grouped {
+                out.push_str(&format!("  [ {} ] — {} message(s)\n", date, day_events.len()));
+                out.push_str(&format!("  {}\n\n", "~".repeat(76)));
+
+                for (i, e) in day_events.iter().enumerate() {
+                    let ts = e["timestamp"].as_i64().or_else(|| e["timestamp"].as_f64().map(|f| f as i64)).unwrap_or(0);
+                    let dt = chrono::DateTime::from_timestamp(ts, 0)
+                        .unwrap_or_default()
+                        .with_timezone(&chrono::FixedOffset::west_opt(8 * 3600).unwrap());
+                    let time_str = dt.format("%I:%M:%S %p").to_string();
+                    let name = e["avatar_name"].as_str().unwrap_or("(unknown)");
+                    let name = if name.is_empty() { "(unknown)" } else { name };
+                    let msg = e["message"].as_str().unwrap_or("");
+                    let sim = e["sim_name"].as_str().unwrap_or("");
+                    let captured = e["captured_by"].as_str().unwrap_or("");
+                    let avatar_id = e["avatar_id"].as_str().unwrap_or("");
+
+                    out.push_str(&format!("  #{}  {} PST\n", i + 1, time_str));
+                    out.push_str(&format!("  From:        {}\n", name));
+                    out.push_str(&format!("  Avatar ID:   {}\n", avatar_id));
+                    out.push_str(&format!("  Message:     {}\n", msg));
+                    out.push_str(&format!("  Region:      {}\n", sim));
+                    out.push_str(&format!("  Position:    ({}, {}, {})\n",
+                        e["x_pos"].as_f64().unwrap_or(0.0),
+                        e["y_pos"].as_f64().unwrap_or(0.0),
+                        e["z_pos"].as_f64().unwrap_or(0.0)));
+                    out.push_str(&format!("  Captured By: {}\n", captured));
+                    out.push_str(&format!("  Timestamp:   {}\n", ts));
+                    out.push_str(&format!("  {}\n", "-".repeat(40)));
+                }
+                out.push('\n');
+            }
+
+            out.push_str(&format!("{}\n", sep));
+            out.push_str(&format!("  END OF LOG — {} total entries\n", events.len()));
+            out.push_str(&format!("{}\n", sep));
+
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body(out);
+            res.insert_header("Content-Type", "text/plain; charset=utf-8");
+            Ok(res)
+        });
+
+    app.at("/read")
+        .get(|mut req: tide::Request<AppState>| async move {
+            let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+            //td::fs::create_dir_all(script_dir).ok();
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            //res.set_body("HTML content for /moon route");
+            //res.set_content_type("text/html; charset=utf-8");
+            //return Ok(res);
+            // Grab Ruby code from request body.
+            let ruby_source = r######"
+
+
+
+require 'json'
+require 'time'
+
+# Load and parse chat logs from file.
+# This supports both strict JSON and Ruby-hash style lines like:
+# [{avatar_id: "...", message: "..."}, {...}]
+path = '/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt'
+raw = File.exist?(path) ? File.read(path) : ''
+entries = []
+
+
+    "######;
+
+            if ruby_source.trim().is_empty() {
+                let mut resp = tide::Response::new(tide::StatusCode::Ok);
+                resp.set_body("No Ruby code supplied");
+                return Ok(resp);
+            }
+
+            // Create unique .rb filename.
+            let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+            let filename = format!("{}/lanalytics_second_life_{}.rb", script_dir, ts);
+            std::fs::write(&filename, &ruby_source)
+                .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+            let result_path = format!(
+                "/root/midscore_io/rustby/rustby-vm/target/release/scripts/lanalytics_second_life_{}.txt",
+                ts
+            );
+
+            // Block until the result file is available or until timeout
+            let start = std::time::Instant::now();
+            let timeout = std::time::Duration::from_secs(120);
+            while !std::path::Path::new(&result_path).exists() {
+                if start.elapsed() > timeout {
+                    return Ok("Timed out waiting for result file".into());
+                }
+                std::thread::sleep(std::time::Duration::from_millis(1));
+            }
+            let output =
+                std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+            // Remove script file after evaluation.
+
+            let _ = std::fs::remove_file(&result_path);
+            let _ = std::fs::remove_file(&filename);
+
+            // Return the HTML response.
+            let mut res = tide::Response::new(tide::StatusCode::Ok);
+            res.set_body(output);
+            res.insert_header("Content-Type", "text/plain; charset=utf-8");
+            Ok(res)
+            //Ok(output.into())
+        });
+
+    app.at("/incrementor_get").get(|mut req: tide::Request<AppState>| async move {
+      // Catch all POST variables into a hashmap and print them
+      let body = req.body_string().await.unwrap_or_default();
+      println!("Received POST body: {}", body);
+
+      let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+      let file_name: String = "incrementor.txt".to_string();
+
+      let ruby_source = format!(r######"
+      incrementor = File.read('/root/midscore_io/tiade-maeepers-saerver-all/target/release/incrementor.txt').to_s
+
+      #{{incrementor}}
+
+    "######
+
+    );
 
 
     if ruby_source.trim().is_empty() {
@@ -1021,13 +1220,13 @@ WERE_FORMS = [
 
     // Create unique .rb filename.
     let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
-    let filename = format!("{}/log_{}.rb", script_dir,ts);
+    let filename = format!("{}/sl_log_get_{}.rb", script_dir,ts);
     std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
 
 
 
 
-    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/log_{}.txt", ts);
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/sl_log_get_{}.txt", ts);
 
     // Block until the result file is available or until timeout
     let start = std::time::Instant::now();
@@ -1046,6 +1245,79 @@ WERE_FORMS = [
     let _ = std::fs::remove_file(&result_path);
     let _ = std::fs::remove_file(&filename);
 
+      //let output = "Log entry received and written to file successfully.";
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(output);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
+    app.at("/incrementor").get(|mut req: tide::Request<AppState>| async move {
+      // Catch all POST variables into a hashmap and print them
+      let body = req.body_string().await.unwrap_or_default();
+      println!("Received POST body: {}", body);
+
+      let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+      let file_name: String = "incrementor.txt".to_string();
+
+      let ruby_source = format!(r######"
+
+        incrementor_path = '/root/midscore_io/tiade-maeepers-saerver-all/target/release/incrementor.txt'
+        File.write(incrementor_path, '0') unless File.exist?(incrementor_path)
+
+        incrementor = File.open(incrementor_path, 'r+') do |file|
+          file.flock(File::LOCK_EX)
+          current = file.read.to_i
+          updated = current + 1
+          file.rewind
+          file.write(updated.to_s)
+          file.truncate(file.pos)
+          updated
+        end
+
+        #{{incrementor}}
+        "######
+
+    );
+
+
+    if ruby_source.trim().is_empty() {
+        let mut resp = tide::Response::new(tide::StatusCode::Ok);
+        resp.set_body("No Ruby code supplied");
+        return Ok(resp);
+    }
+
+    // Create unique .rb filename.
+    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+    let filename = format!("{}/incrementor_{}.rb", script_dir,ts);
+    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+
+
+
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/incrementor_{}.txt", ts);
+
+    // Block until the result file is available or until timeout
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(120);
+    while !std::path::Path::new(&result_path).exists() {
+      if start.elapsed() > timeout {
+        return Ok("Timed out waiting for result file".into());
+      }
+      std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+
+    // Remove script file after evaluation.
+
+    let _ = std::fs::remove_file(&result_path);
+    let _ = std::fs::remove_file(&filename);
+
+      //let output = "Log entry received and written to file successfully.";
 
      // Return the HTML response.
     let mut res = tide::Response::new(tide::StatusCode::Ok);

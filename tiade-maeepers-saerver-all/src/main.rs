@@ -867,10 +867,11 @@ WERE_FORMS = [
 
 require 'json'
 require 'time'
+require 'oj'
+require 'yaml'
 
 # Load and parse chat logs from file.
-# This supports both strict JSON and Ruby-hash style lines like:
-# [{avatar_id: "...", message: "..."}, {...}]
+# Supports both strict JSON and Ruby-hash style lines.
 path = '/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt'
 raw = File.exist?(path) ? File.read(path) : ''
 entries = []
@@ -879,7 +880,15 @@ parse_any = lambda do |text|
   begin
     JSON.parse(text)
   rescue JSON::ParserError
-    eval(text)
+    begin
+      Oj.load(text)
+    rescue StandardError
+      begin
+        YAML.safe_load(text, permitted_classes: [Time, Date, Symbol], aliases: true)
+      rescue StandardError
+        eval(text)
+      end
+    end
   end
 end
 
@@ -919,7 +928,7 @@ entries.map! do |e|
   e.transform_keys { |k| k.respond_to?(:to_s) ? k.to_s : k }
 end
 
-# Deduplicate observer captures
+# Deduplicate observer captures.
 unique = {}
 entries.each do |e|
   next unless e.is_a?(Hash)
@@ -931,22 +940,50 @@ end
 
 events = unique.values
 
-# Frequency tables
+# Frequency tables.
 weekday_freq = Hash.new(0)
-hour_freq    = Hash.new(0)
+hour_freq = Hash.new(0)
+month_freq = Hash.new(0)
+year_freq = Hash.new(0)
+month_year_freq = Hash.new(0)
+day_of_month_freq = Hash.new(0)
 
-WEEKDAYS = %w[Sunday Monday Tuesday Wednesday Thursday Friday Saturday]
+WEEKDAYS = %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday]
+MONTHS = %w[January February March April May June July August September October November December]
 
+valid_times = []
 events.each do |e|
-  t = Time.at(e['timestamp'].to_i).getlocal('-07:00')
-  weekday_freq[WEEKDAYS[t.wday]] += 1
+  ts = e['timestamp'].to_i
+  next if ts <= 0
+
+  t = Time.at(ts).getlocal('-07:00')
+  valid_times << t
+
+  weekday_freq[t.strftime('%A')] += 1
   hour_freq[t.hour] += 1
+  month_freq[t.strftime('%B')] += 1
+  year_freq[t.year] += 1
+  month_year_freq[t.strftime('%Y-%m')] += 1
+  day_of_month_freq[t.day] += 1
 end
+
+avatars = events.map { |e| e['avatar_id'].to_s.strip }.reject(&:empty?).uniq
+messages = events.map { |e| e['message'].to_s.strip }.reject(&:empty?).uniq
+
+earliest = valid_times.min
+latest = valid_times.max
 
 out = ""
 out << "Second Life chat frequency report (PST)\n"
-out << "Total unique events: #{events.length}\n\n"
-out << "=== Message Frequency by Day of Week ===\n"
+out << "Source file: #{path}\n"
+out << "Raw parsed entries: #{entries.length}\n"
+out << "Total unique events: #{events.length}\n"
+out << "Unique avatar IDs: #{avatars.length}\n"
+out << "Unique message bodies: #{messages.length}\n"
+out << "First event (PST): #{earliest ? earliest.strftime('%Y-%m-%d %H:%M:%S %Z') : 'N/A'}\n"
+out << "Last event (PST):  #{latest ? latest.strftime('%Y-%m-%d %H:%M:%S %Z') : 'N/A'}\n"
+
+out << "\n=== Message Frequency by Day of Week (Monday-Sunday) ===\n"
 WEEKDAYS.each do |day|
   out << "%-9s : %d\n" % [day, weekday_freq[day]]
 end
@@ -954,6 +991,34 @@ end
 out << "\n=== Message Frequency by Hour (PST, 24h) ===\n"
 (0..23).each do |h|
   out << "%02d:00-%02d:59 : %d\n" % [h, h, hour_freq[h]]
+end
+
+out << "\n=== Message Frequency by Month ===\n"
+MONTHS.each do |month|
+  out << "%-9s : %d\n" % [month, month_freq[month]]
+end
+
+out << "\n=== Message Frequency by Year ===\n"
+if year_freq.empty?
+  out << "No valid timestamped events found.\n"
+else
+  year_freq.keys.sort.each do |year|
+    out << "%d : %d\n" % [year, year_freq[year]]
+  end
+end
+
+out << "\n=== Message Frequency by Month-Year (YYYY-MM) ===\n"
+if month_year_freq.empty?
+  out << "No valid timestamped events found.\n"
+else
+  month_year_freq.keys.sort.each do |ym|
+    out << "#{ym} : #{month_year_freq[ym]}\n"
+  end
+end
+
+out << "\n=== Message Frequency by Day of Month (1-31) ===\n"
+(1..31).each do |d|
+  out << "%02d : %d\n" % [d, day_of_month_freq[d]]
 end
 
 put_and_return = out

@@ -1,20 +1,22 @@
-// Second Life LSL relay for the CGMFS Ollama team backend.
+// Second Life LSL relay for the unified Rust Ollama relay backend.
 // Backend contract:
-//   POST  https://stimky.info:1111/chat/<team>    body: {"message":"..."}
-//   GET   https://stimky.info:1111/history/<team>
+//   POST  https://stimky.info/chat/<team>    body: {"message":"..."}
+//   GET   https://stimky.info/history/<team>
+//   POST  https://stimky.info/sl_logger      body: one log entry per line
 //
 // The Ruby backend already concatenates per-team history and the live
 // Second Life text chat log on every request. This script focuses on
 // reliable message delivery, in-world controls, and readable replies.
 
-string BASE_URL = "https://stimky.info:1111";
-string RELAY_VERSION = "2026-07-31b";
+string BASE_URL = "https://stimky.info";
+string RELAY_VERSION = "2026-07-31c";
 string TEAM_NAME = "secondlife";
 integer CONTROL_CHANNEL = -77553311;
 integer ALLOW_GROUP_ACCESS = FALSE;
 integer AUTO_RELAY_LOCAL_CHAT = FALSE;
 integer SPEAK_REPLIES_PUBLICLY = FALSE;
 integer INCLUDE_WORLD_CONTEXT = TRUE;
+integer ENABLE_SL_LOG_MIRROR = TRUE;
 integer DEBUG_MODE = TRUE;
 integer MAX_RETRIES = 3;
 float REQUEST_TIMEOUT = 90.0;
@@ -23,6 +25,7 @@ integer MAX_OUTPUT_CHARS = 900;
 integer QUEUE_STRIDE = 2;
 integer REQUEST_KIND_CHAT = 1;
 integer REQUEST_KIND_HISTORY = 2;
+integer REQUEST_KIND_LOG = 3;
 
 key gOwner;
 integer gControlListenHandle;
@@ -107,12 +110,36 @@ string endpoint_url(integer request_kind)
     {
         return BASE_URL + "/history/" + encoded_team;
     }
+    if (request_kind == REQUEST_KIND_LOG)
+    {
+        return BASE_URL + "/sl_logger";
+    }
     return BASE_URL + "/chat/" + encoded_team;
 }
 
 string json_body_for_message(string message)
 {
     return llJsonSetValue("{}", ["message"], message);
+}
+
+string sl_log_entry_line(string raw_message, key speaker_id, string speaker_name)
+{
+    vector p = llGetPos();
+    string payload = llList2Json(
+        JSON_OBJECT,
+        [
+            "avatar_id", (string)speaker_id,
+            "avatar_name", speaker_name,
+            "captured_by", llKey2Name(gOwner),
+            "message", raw_message,
+            "sim_name", llGetRegionName(),
+            "timestamp", llGetUnixTime(),
+            "x_pos", p.x,
+            "y_pos", p.y,
+            "z_pos", p.z
+        ]
+    );
+    return payload;
 }
 
 integer say_chunks(string prefix, string text)
@@ -203,6 +230,11 @@ integer send_active_request()
         params += [HTTP_METHOD, "POST", HTTP_MIMETYPE, "application/json"];
         body = json_body_for_message(gActivePayload);
     }
+    else if (gActiveKind == REQUEST_KIND_LOG)
+    {
+        params += [HTTP_METHOD, "POST", HTTP_MIMETYPE, "text/plain"];
+        body = gActivePayload;
+    }
     else
     {
         params += [HTTP_METHOD, "GET"];
@@ -279,6 +311,7 @@ integer show_status()
     lines += ["Auto relay local chat: " + bool_text(AUTO_RELAY_LOCAL_CHAT)];
     lines += ["Public replies: " + bool_text(SPEAK_REPLIES_PUBLICLY)];
     lines += ["Include world context: " + bool_text(INCLUDE_WORLD_CONTEXT)];
+    lines += ["Mirror to /sl_logger: " + bool_text(ENABLE_SL_LOG_MIRROR)];
     lines += ["Debug mode: " + bool_text(DEBUG_MODE)];
     lines += ["Request timeout (s): " + (string)REQUEST_TIMEOUT];
     lines += ["Max retries: " + (string)MAX_RETRIES];
@@ -307,6 +340,7 @@ integer show_help()
     lines += ["auto on|off    - relay owner local chat on channel 0"]; 
     lines += ["public on|off  - say replies on channel 0 instead of owner chat"]; 
     lines += ["context on|off - include avatar/object/region metadata"]; 
+    lines += ["log on|off     - mirror prompts to /sl_logger as JSON lines"]; 
     lines += ["debug on|off   - toggle debug output"]; 
     lines += ["(Current timeout/retries shown in status)"];
     lines += ["status         - show current configuration and counters"]; 
@@ -326,6 +360,10 @@ integer handle_chat_submission(string raw_message, key speaker_id, string speake
         return 0;
     }
 
+    if (ENABLE_SL_LOG_MIRROR)
+    {
+        enqueue_request(REQUEST_KIND_LOG, sl_log_entry_line(raw_message, speaker_id, speaker_name));
+    }
     enqueue_request(REQUEST_KIND_CHAT, build_contextual_message(raw_message, speaker_id, speaker_name));
     pump_queue();
     return 0;
@@ -409,6 +447,20 @@ integer handle_command(key speaker_id, string speaker_name, string message)
             INCLUDE_WORLD_CONTEXT = FALSE;
         }
         notify("World context is " + bool_text(INCLUDE_WORLD_CONTEXT) + ".");
+        return 0;
+    }
+
+    if (command == "log")
+    {
+        if (is_true_word(remainder))
+        {
+            ENABLE_SL_LOG_MIRROR = TRUE;
+        }
+        else if (is_false_word(remainder))
+        {
+            ENABLE_SL_LOG_MIRROR = FALSE;
+        }
+        notify("Mirror to /sl_logger is " + bool_text(ENABLE_SL_LOG_MIRROR) + ".");
         return 0;
     }
 
@@ -549,6 +601,10 @@ default
             }
             gLastReply = history;
             say_chunks("[ollama history] ", history);
+        }
+        else if (gActiveKind == REQUEST_KIND_LOG)
+        {
+            debug("log mirror accepted: HTTP " + (string)status);
         }
         else
         {

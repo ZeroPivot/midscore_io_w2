@@ -1255,8 +1255,9 @@ WERE_FORMS = [
         });
 
     app.at("/").get(|_| async {
-        let mut res = tide::Response::new(tide::StatusCode::Found);
-        res.insert_header("Location", "/gallery");
+        let mut res = tide::Response::new(tide::StatusCode::Ok);        
+        res.set_body("<!DOCTYPE html>\n<html>\n<head>\n  <title>Home</title>\n</head>\n<body>\n  <h1>Welcome</h1>\n</body>\n</html>".to_string());
+      res.insert_header("Content-Type", "text/html; charset=utf-8");
         Ok(res)
     });
     /*

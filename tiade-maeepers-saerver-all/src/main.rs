@@ -853,219 +853,242 @@ WERE_FORMS = [
   });
 
     app.at("/analytics")
-        .get(|mut req: tide::Request<AppState>| async move {
-            let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
-            //td::fs::create_dir_all(script_dir).ok();
-            let mut res = tide::Response::new(tide::StatusCode::Ok);
-            //res.set_body("HTML content for /moon route");
-            //res.set_content_type("text/html; charset=utf-8");
-            //return Ok(res);
-            // Grab Ruby code from request body.
-            let ruby_source = r######"
+        .get(|_req: tide::Request<AppState>| async move {
+            use chrono::{Datelike, FixedOffset, Timelike};
+            use std::collections::{BTreeMap, HashMap, HashSet};
 
+            const PATH: &str =
+                "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
+            const WEEKDAYS: [&str; 7] = [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday",
+            ];
+            const MONTHS: [&str; 12] = [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+            ];
 
-
-require 'json'
-require 'time'
-require 'oj'
-require 'yaml'
-
-# Load and parse chat logs from file.
-# Supports both strict JSON and Ruby-hash style lines.
-path = '/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt'
-raw = File.exist?(path) ? File.read(path) : ''
-entries = []
-
-parse_any = lambda do |text|
-  begin
-    JSON.parse(text)
-  rescue JSON::ParserError
-    begin
-      Oj.load(text)
-    rescue StandardError
-      begin
-        YAML.safe_load(text, permitted_classes: [Time, Date, Symbol], aliases: true)
-      rescue StandardError
-        eval(text)
-      end
-    end
-  end
-end
-
-raw.each_line do |line|
-  line = line.strip
-  next if line.empty?
-
-  begin
-    parsed = parse_any.call(line)
-    if parsed.is_a?(Array)
-      parsed.each { |item| entries << item if item.is_a?(Hash) }
-    elsif parsed.is_a?(Hash)
-      entries << parsed
-    end
-  rescue StandardError
-    # Skip malformed lines and continue processing.
-  end
-end
-
-# Fallback: try parsing whole file if line-by-line found nothing.
-if entries.empty? && !raw.strip.empty?
-  begin
-    parsed = parse_any.call(raw)
-    if parsed.is_a?(Array)
-      parsed.each { |item| entries << item if item.is_a?(Hash) }
-    elsif parsed.is_a?(Hash)
-      entries << parsed
-    end
-  rescue StandardError
-    entries = []
-  end
-end
-
-# Normalize keys for mixed JSON/Ruby inputs.
-entries.map! do |e|
-  next e unless e.respond_to?(:transform_keys)
-  e.transform_keys { |k| k.respond_to?(:to_s) ? k.to_s : k }
-end
-
-# Deduplicate observer captures.
-unique = {}
-entries.each do |e|
-  next unless e.is_a?(Hash)
-  next unless e['timestamp']
-
-  key = [e['avatar_id'], e['timestamp'], e['message']]
-  unique[key] ||= e
-end
-
-events = unique.values
-
-# Frequency tables.
-weekday_freq = Hash.new(0)
-hour_freq = Hash.new(0)
-month_freq = Hash.new(0)
-year_freq = Hash.new(0)
-month_year_freq = Hash.new(0)
-day_of_month_freq = Hash.new(0)
-
-WEEKDAYS = %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday]
-MONTHS = %w[January February March April May June July August September October November December]
-
-valid_times = []
-events.each do |e|
-  ts = e['timestamp'].to_i
-  next if ts <= 0
-
-  t = Time.at(ts).getlocal('-07:00')
-  valid_times << t
-
-  weekday_freq[t.strftime('%A')] += 1
-  hour_freq[t.hour] += 1
-  month_freq[t.strftime('%B')] += 1
-  year_freq[t.year] += 1
-  month_year_freq[t.strftime('%Y-%m')] += 1
-  day_of_month_freq[t.day] += 1
-end
-
-avatars = events.map { |e| e['avatar_id'].to_s.strip }.reject(&:empty?).uniq
-messages = events.map { |e| e['message'].to_s.strip }.reject(&:empty?).uniq
-
-earliest = valid_times.min
-latest = valid_times.max
-
-out = ""
-out << "Second Life chat frequency report (PST)\n"
-out << "Source file: #{path}\n"
-out << "Raw parsed entries: #{entries.length}\n"
-out << "Total unique events: #{events.length}\n"
-out << "Unique avatar IDs: #{avatars.length}\n"
-out << "Unique message bodies: #{messages.length}\n"
-out << "First event (PST): #{earliest ? earliest.strftime('%Y-%m-%d %H:%M:%S %Z') : 'N/A'}\n"
-out << "Last event (PST):  #{latest ? latest.strftime('%Y-%m-%d %H:%M:%S %Z') : 'N/A'}\n"
-
-out << "\n=== Message Frequency by Day of Week (Monday-Sunday) ===\n"
-WEEKDAYS.each do |day|
-  out << "%-9s : %d\n" % [day, weekday_freq[day]]
-end
-
-out << "\n=== Message Frequency by Hour (PST, 24h) ===\n"
-(0..23).each do |h|
-  out << "%02d:00-%02d:59 : %d\n" % [h, h, hour_freq[h]]
-end
-
-out << "\n=== Message Frequency by Month ===\n"
-MONTHS.each do |month|
-  out << "%-9s : %d\n" % [month, month_freq[month]]
-end
-
-out << "\n=== Message Frequency by Year ===\n"
-if year_freq.empty?
-  out << "No valid timestamped events found.\n"
-else
-  year_freq.keys.sort.each do |year|
-    out << "%d : %d\n" % [year, year_freq[year]]
-  end
-end
-
-out << "\n=== Message Frequency by Month-Year (YYYY-MM) ===\n"
-if month_year_freq.empty?
-  out << "No valid timestamped events found.\n"
-else
-  month_year_freq.keys.sort.each do |ym|
-    out << "#{ym} : #{month_year_freq[ym]}\n"
-  end
-end
-
-out << "\n=== Message Frequency by Day of Month (1-31) ===\n"
-(1..31).each do |d|
-  out << "%02d : %d\n" % [d, day_of_month_freq[d]]
-end
-
-put_and_return = out
-
-#{{put_and_return}}
-    "######;
-
-            if ruby_source.trim().is_empty() {
-                let mut resp = tide::Response::new(tide::StatusCode::Ok);
-                resp.set_body("No Ruby code supplied");
-                return Ok(resp);
-            }
-
-            // Create unique .rb filename.
-            let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
-            let filename = format!("{}/lanalytics_second_life_{}.rb", script_dir, ts);
-            std::fs::write(&filename, &ruby_source)
-                .map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
-
-            let result_path = format!(
-                "/root/midscore_io/rustby/rustby-vm/target/release/scripts/lanalytics_second_life_{}.txt",
-                ts
-            );
-
-            // Block until the result file is available or until timeout
-            let start = std::time::Instant::now();
-            let timeout = std::time::Duration::from_secs(120);
-            while !std::path::Path::new(&result_path).exists() {
-                if start.elapsed() > timeout {
-                    return Ok("Timed out waiting for result file".into());
+            fn extract_entries(value: serde_json::Value, out: &mut Vec<serde_json::Value>) {
+                match value {
+                    serde_json::Value::Array(arr) => {
+                        for item in arr {
+                            if item.is_object() {
+                                out.push(item);
+                            }
+                        }
+                    }
+                    serde_json::Value::Object(_) => out.push(value),
+                    _ => {}
                 }
-                std::thread::sleep(std::time::Duration::from_millis(1));
             }
-            let output =
-                std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
 
-            // Remove script file after evaluation.
+            fn rubyish_to_json(input: &str) -> String {
+                input
+                    .replace("\\.", ".")
+                    .replace("\\\"", "\"")
+                    .replace("{avatar_id:", "{\"avatar_id\":")
+                    .replace(", avatar_id:", ", \"avatar_id\":")
+                    .replace("avatar_name:", "\"avatar_name\":")
+                    .replace("captured_by:", "\"captured_by\":")
+                    .replace("message:", "\"message\":")
+                    .replace("sim_name:", "\"sim_name\":")
+                    .replace("timestamp:", "\"timestamp\":")
+                    .replace("x_pos:", "\"x_pos\":")
+                    .replace("y_pos:", "\"y_pos\":")
+                    .replace("z_pos:", "\"z_pos\":")
+            }
 
-            let _ = std::fs::remove_file(&result_path);
-            let _ = std::fs::remove_file(&filename);
+            fn timestamp_as_i64(v: &serde_json::Value) -> Option<i64> {
+                if let Some(i) = v.as_i64() {
+                    return Some(i);
+                }
+                if let Some(f) = v.as_f64() {
+                    return Some(f as i64);
+                }
+                if let Some(s) = v.as_str() {
+                    return s.trim().parse::<i64>().ok();
+                }
+                None
+            }
 
-            // Return the HTML response.
+            let raw = std::fs::read_to_string(PATH).unwrap_or_default();
+            let mut entries: Vec<serde_json::Value> = Vec::new();
+
+            for line in raw.lines() {
+                let line = line.trim();
+                if line.is_empty() {
+                    continue;
+                }
+
+                if let Ok(val) = serde_json::from_str::<serde_json::Value>(line) {
+                    extract_entries(val, &mut entries);
+                    continue;
+                }
+
+                let converted = rubyish_to_json(line);
+                if let Ok(val) = serde_json::from_str::<serde_json::Value>(&converted) {
+                    extract_entries(val, &mut entries);
+                }
+            }
+
+            if entries.is_empty() && !raw.trim().is_empty() {
+                if let Ok(val) = serde_json::from_str::<serde_json::Value>(&raw) {
+                    extract_entries(val, &mut entries);
+                } else {
+                    let converted = rubyish_to_json(&raw);
+                    if let Ok(val) = serde_json::from_str::<serde_json::Value>(&converted) {
+                        extract_entries(val, &mut entries);
+                    }
+                }
+            }
+
+            let mut unique: HashMap<(String, i64, String), serde_json::Value> = HashMap::new();
+            for entry in &entries {
+                let ts = match timestamp_as_i64(&entry["timestamp"]) {
+                    Some(ts) => ts,
+                    None => continue,
+                };
+                let key = (
+                    entry["avatar_id"].as_str().unwrap_or("").to_string(),
+                    ts,
+                    entry["message"].as_str().unwrap_or("").to_string(),
+                );
+                unique.entry(key).or_insert_with(|| entry.clone());
+            }
+
+            let events: Vec<serde_json::Value> = unique.into_values().collect();
+
+            let mut weekday_freq = [0usize; 7];
+            let mut hour_freq = [0usize; 24];
+            let mut month_freq = [0usize; 12];
+            let mut year_freq: BTreeMap<i32, usize> = BTreeMap::new();
+            let mut month_year_freq: BTreeMap<String, usize> = BTreeMap::new();
+            let mut day_of_month_freq = [0usize; 32];
+
+            let mut avatars: HashSet<String> = HashSet::new();
+            let mut messages: HashSet<String> = HashSet::new();
+            let mut earliest: Option<chrono::DateTime<FixedOffset>> = None;
+            let mut latest: Option<chrono::DateTime<FixedOffset>> = None;
+
+            let pst = FixedOffset::west_opt(7 * 3600).unwrap();
+
+            for e in &events {
+                let avatar = e["avatar_id"].as_str().unwrap_or("").trim();
+                if !avatar.is_empty() {
+                    avatars.insert(avatar.to_string());
+                }
+
+                let msg = e["message"].as_str().unwrap_or("").trim();
+                if !msg.is_empty() {
+                    messages.insert(msg.to_string());
+                }
+
+                let ts = match timestamp_as_i64(&e["timestamp"]) {
+                    Some(ts) if ts > 0 => ts,
+                    _ => continue,
+                };
+
+                let dt_utc = match chrono::DateTime::from_timestamp(ts, 0) {
+                    Some(dt) => dt,
+                    None => continue,
+                };
+                let dt = dt_utc.with_timezone(&pst);
+
+                if earliest.map(|v| dt < v).unwrap_or(true) {
+                    earliest = Some(dt);
+                }
+                if latest.map(|v| dt > v).unwrap_or(true) {
+                    latest = Some(dt);
+                }
+
+                let weekday_idx = dt.weekday().num_days_from_monday() as usize;
+                weekday_freq[weekday_idx] += 1;
+                hour_freq[dt.hour() as usize] += 1;
+                month_freq[dt.month0() as usize] += 1;
+                *year_freq.entry(dt.year()).or_insert(0) += 1;
+                *month_year_freq
+                    .entry(dt.format("%Y-%m").to_string())
+                    .or_insert(0) += 1;
+                day_of_month_freq[dt.day() as usize] += 1;
+            }
+
+            let mut out = String::new();
+            out.push_str("Second Life chat frequency report (PST)\n");
+            out.push_str(&format!("Source file: {}\n", PATH));
+            out.push_str(&format!("Raw parsed entries: {}\n", entries.len()));
+            out.push_str(&format!("Total unique events: {}\n", events.len()));
+            out.push_str(&format!("Unique avatar IDs: {}\n", avatars.len()));
+            out.push_str(&format!("Unique message bodies: {}\n", messages.len()));
+            out.push_str(&format!(
+                "First event (PST): {}\n",
+                earliest
+                    .map(|dt| dt.format("%Y-%m-%d %H:%M:%S %Z").to_string())
+                    .unwrap_or_else(|| "N/A".to_string())
+            ));
+            out.push_str(&format!(
+                "Last event (PST):  {}\n",
+                latest
+                    .map(|dt| dt.format("%Y-%m-%d %H:%M:%S %Z").to_string())
+                    .unwrap_or_else(|| "N/A".to_string())
+            ));
+
+            out.push_str("\n=== Message Frequency by Day of Week (Monday-Sunday) ===\n");
+            for (i, day) in WEEKDAYS.iter().enumerate() {
+                out.push_str(&format!("{:<9} : {}\n", day, weekday_freq[i]));
+            }
+
+            out.push_str("\n=== Message Frequency by Hour (PST, 24h) ===\n");
+            for (h, count) in hour_freq.iter().enumerate() {
+                out.push_str(&format!("{:02}:00-{:02}:59 : {}\n", h, h, count));
+            }
+
+            out.push_str("\n=== Message Frequency by Month ===\n");
+            for (i, month) in MONTHS.iter().enumerate() {
+                out.push_str(&format!("{:<9} : {}\n", month, month_freq[i]));
+            }
+
+            out.push_str("\n=== Message Frequency by Year ===\n");
+            if year_freq.is_empty() {
+                out.push_str("No valid timestamped events found.\n");
+            } else {
+                for (year, count) in &year_freq {
+                    out.push_str(&format!("{} : {}\n", year, count));
+                }
+            }
+
+            out.push_str("\n=== Message Frequency by Month-Year (YYYY-MM) ===\n");
+            if month_year_freq.is_empty() {
+                out.push_str("No valid timestamped events found.\n");
+            } else {
+                for (ym, count) in &month_year_freq {
+                    out.push_str(&format!("{} : {}\n", ym, count));
+                }
+            }
+
+            out.push_str("\n=== Message Frequency by Day of Month (1-31) ===\n");
+            for day in 1..=31 {
+                out.push_str(&format!("{:02} : {}\n", day, day_of_month_freq[day]));
+            }
+
             let mut res = tide::Response::new(tide::StatusCode::Ok);
-            res.set_body(output);
+            res.set_body(out);
             res.insert_header("Content-Type", "text/plain; charset=utf-8");
             Ok(res)
-            //Ok(output.into())
         });
 
     app.at("/chatlog")

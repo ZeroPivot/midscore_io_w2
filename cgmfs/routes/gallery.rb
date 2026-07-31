@@ -72,56 +72,53 @@ class CGMFS
     end
   end
 
+  class MoonPhase13
+    REFERENCE_NEW_MOON = Time.utc(2000, 1, 6, 18, 14, 0)
+    LUNAR_CYCLE = 29.530588853 # synodic month in days
 
+    PHASES = [
+      ['New Moon', '🌑'],
+      ['Waxing Crescent I', '🌒'],
+      ['Waxing Crescent II', '🌒'],
+      ['First Quarter', '🌓'],
+      ['Waxing Gibbous I', '🌔'],
+      ['Waxing Gibbous II', '🌔'],
+      ['Full Moon', '🌕'],
+      ['Waning Gibbous I', '🌖'],
+      ['Waning Gibbous II', '🌖'],
+      ['Last Quarter', '🌗'],
+      ['Waning Crescent I', '🌘'],
+      ['Waning Crescent II', '🌘'],
+      ['Dark Moon', '🌑']
+    ]
 
-class MoonPhase13
-  REFERENCE_NEW_MOON = Time.utc(2000, 1, 6, 18, 14, 0)
-  LUNAR_CYCLE = 29.530588853 # synodic month in days
+    def initialize(time = Time.now.utc)
+      @time = time
+    end
 
-  PHASES = [
-    ["New Moon", "🌑"],
-    ["Waxing Crescent I", "🌒"],
-    ["Waxing Crescent II", "🌒"],
-    ["First Quarter", "🌓"],
-    ["Waxing Gibbous I", "🌔"],
-    ["Waxing Gibbous II", "🌔"],
-    ["Full Moon", "🌕"],
-    ["Waning Gibbous I", "🌖"],
-    ["Waning Gibbous II", "🌖"],
-    ["Last Quarter", "🌗"],
-    ["Waning Crescent I", "🌘"],
-    ["Waning Crescent II", "🌘"],
-    ["Dark Moon", "🌑"]
-  ]
+    def moon_age
+      days_since_new = (@time - REFERENCE_NEW_MOON) / 86_400.0
+      days_since_new % LUNAR_CYCLE
+    end
 
-  def initialize(time = Time.now.utc)
-    @time = time
-  end
+    def phase_index
+      ((moon_age / LUNAR_CYCLE) * PHASES.length).floor
+    end
 
-  def moon_age
-    days_since_new = (@time - REFERENCE_NEW_MOON) / 86_400.0
-    days_since_new % LUNAR_CYCLE
-  end
+    def phase
+      PHASES[phase_index]
+    end
 
-  def phase_index
-    ((moon_age / LUNAR_CYCLE) * PHASES.length).floor
-  end
-
-  def phase
-    PHASES[phase_index]
-  end
-
-  def display
-    name, emoji = phase
-     return "🌙 Moon Phase: #{name} #{emoji}<br />
+    def display
+      name, emoji = phase
+      "🌙 Moon Phase: #{name} #{emoji}<br />
      🕒 UTC Time: #{@time}<br />
      📆 Moon Age: #{moon_age.round(2)} days<br />"
+    end
   end
-end
 
-# Example usage
-# MoonPhase13.new.display
-
+  # Example usage
+  # MoonPhase13.new.display
 
   class SunPhase
     attr_reader :name, :start_hour, :emoji
@@ -505,6 +502,8 @@ end
       thumbnail.save(thumbnail_path, :jpeg)
     when '.png'
       thumbnail.save(thumbnail_path, :png)
+    when '.gif'
+      thumbnail.save(thumbnail_path, :gif)
     when '.bmp'
       thumbnail.save(thumbnail_path, :bmp)
     end
@@ -520,6 +519,8 @@ end
       resized.save(resized_image_path, :jpeg)
     when '.png'
       resized.save(resized_image_path, :png)
+    when '.gif'
+      resized.save(resized_image_path, :gif)
     when '.bmp'
       resized.save(resized_image_path, :bmp)
     end
@@ -598,6 +599,10 @@ end
       r.post do
         uploadable = false
         uploaded_filehandle = r.params['url']
+        if uploaded_filehandle.nil? || uploaded_filehandle.strip.empty?
+          next "<html><body>Upload failed. Missing URL. <a href='#{domain_name(r)}/gallery/upload/url'>Upload</a></body></html>"
+        end
+
         description = "url upload - #{r.params['url']} - Time: #{Time.now}"
         tags = 'url_upload'
         @title = title = "url upload - #{Time.now}"
@@ -618,28 +623,32 @@ end
         # 13. Add a filter option
 
         original_to_new_filename = "#{Time.now.to_f}_url_upload_#{@user}"
-        file_contents = URI.open(uploaded_filehandle).read
+        begin
+          file_contents = URI.open(uploaded_filehandle).read
+        rescue StandardError
+          next "<html><body>Upload failed. Could not fetch URL. <a href='#{domain_name(r)}/gallery/upload/url'>Upload</a></body></html>"
+        end
         # @sum_identifier = image_bytes_to_num_id(user: @user, filename: original_to_new_filename)
         # Write the file to a temporary gallery location
         FileUtils.mkdir_p("public/gallery_index/#{@user}")
         file_path = "public/gallery_index/#{@user}/#{original_to_new_filename}"
 
-        File.open(file_path, 'w') do |file|
+        File.open(file_path, 'wb') do |file|
           file.write(file_contents)
         end
 
         file_size = file_contents.size
 
-        file_type = FastImage.type(uploaded_filehandle)
+        file_type = FastImage.type(file_path)
 
         if %i[jpeg png gif].include?(file_type)
           uploadable = true
           FileUtils.mkdir_p("public/gallery_index/#{@user}")
           # Rename the file to include the extension
-          file_type = FastImage.type(uploaded_filehandle)
           file_extension = case file_type
                            when :jpeg then '.jpg'
                            when :png then '.png'
+                           when :gif then '.gif'
                            else
                              ''
                            end
@@ -724,6 +733,10 @@ end
         # get the image temp file parameters through roda:
         uploadable = false
         uploaded_filehandle = r.params['file']
+        if uploaded_filehandle.nil? || uploaded_filehandle[:tempfile].nil?
+          next "<html><body>Upload failed. Missing file input. <a href='#{domain_name(r)}/gallery/upload'>Upload</a></body></html>"
+        end
+
         description = r.params['description'] || ''
         tags = r.params['tags'] || ''
         title = r.params['title'] || ''
@@ -741,9 +754,11 @@ end
         title = 'untitled' if title.empty?
         file_extension = File.extname(uploaded_filehandle[:filename])
         original_to_new_filename = "#{@user}_#{Time.now.to_f}_original_#{file_extension}"
+        uploaded_filehandle[:tempfile].rewind
         file_contents = uploaded_filehandle[:tempfile].read
         file_size = file_contents.size
 
+        uploaded_filehandle[:tempfile].rewind
         file_type = FastImage.type(uploaded_filehandle[:tempfile])
 
         # list all possible file types in File.extname:
@@ -752,7 +767,7 @@ end
         if ['.jpg', '.jpeg', '.png', '.bmp', '.gif'].include?(file_extension) && %i[jpeg png gif].include?(file_type) # add .zip later, et al.
           uploadable = true
           FileUtils.mkdir_p("public/gallery_index/#{@user}")
-          File.open("public/gallery_index/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
+          File.open("public/gallery_index/#{@user}/#{original_to_new_filename}", 'wb') { |file| file.write(file_contents) }
 
           Thread.new do
             create_image_thumbnail!(image_path: "public/gallery_index/#{@user}/#{original_to_new_filename}", thumbnail_size: 350, thumbnail_path: "public/gallery_index/#{@user}/thumbnail_#{original_to_new_filename}")
@@ -1042,16 +1057,20 @@ end
         @id = id
         @title = "Post Attachment to Gallery ID #{@id}"
 
-        if @url_params
+        if @url_params && !@url_params.strip.empty?
 
-          @uri_url = URI.open(@url_params.to_s)
+          begin
+            @uri_url = URI.open(@url_params.to_s)
+          rescue StandardError
+            next "<html><body>Upload failed. Invalid attachment URL. <a href='#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments/upload'>Upload</a></body></html>"
+          end
           @uploaded_filehandle = @uri_url.read
-          @meta = @uri_url.meta['content-type'].split('/').last # this doesn't seem to work for some urls
+          @meta = @uri_url.meta['content-type']&.split('/')&.last || 'bin' # this doesn't seem to work for some urls
 
           @file_name = Time.now.to_f.to_s + '_attachment' + '.' + @meta
 
           FileUtils.mkdir_p("public/gallery_index/#{@user}/attachments")
-          File.open("public/gallery_index/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
+          File.open("public/gallery_index/#{@user}/attachments/#{@file_name}", 'wb') { |file| file.write(@uploaded_filehandle) }
           @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
           @id = id
           @image = @gallery.get(@id)
@@ -1074,10 +1093,14 @@ end
           @gallery.save_partition_by_id_to_file!(@id)
 
         else
+          if r.params['file'].nil? || r.params['file'][:tempfile].nil?
+            next "<html><body>Upload failed. Missing attachment file. <a href='#{domain_name(r)}/gallery/view/#{@user}/id/#{@id}/attachments/upload'>Upload</a></body></html>"
+          end
+
           @uploaded_filehandle = r.params['file'][:tempfile].read
           @file_name = Time.now.to_f.to_s + '_' + r.params['file'][:filename]
           FileUtils.mkdir_p("public/gallery_index/#{@user}/attachments")
-          File.open("public/gallery_index/#{@user}/attachments/#{@file_name}", 'w') { |file| file.puts @uploaded_filehandle }
+          File.open("public/gallery_index/#{@user}/attachments/#{@file_name}", 'wb') { |file| file.write(@uploaded_filehandle) }
           @gallery = @@line_db[@user].pad['gallery_database', 'gallery_table']
           @id = id
           @image = @gallery.get(@id)
@@ -1349,7 +1372,7 @@ end
           if ['.jpg', '.jpeg', '.png', '.bmp'].include?(file_extension) # add .zip later, et al.
             uploadable = true
             FileUtils.mkdir_p("public/gallery_index/#{@user}")
-            File.open("public/gallery_index/#{@user}/#{original_to_new_filename}", 'w') { |file| file.write(file_contents) }
+            File.open("public/gallery_index/#{@user}/#{original_to_new_filename}", 'wb') { |file| file.write(file_contents) }
             Thread.new do
               create_image_thumbnail!(image_path: "public/gallery_index/#{@user}/#{original_to_new_filename}", thumbnail_size: 255, thumbnail_path: "public/gallery_index/#{@user}/thumbnail_#{original_to_new_filename}")
             end

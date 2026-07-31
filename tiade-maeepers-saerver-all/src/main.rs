@@ -9,7 +9,7 @@ use tide_rustls::TlsListener;
 
 use chrono::Utc;
 use tiade_ollama_relay::{RelayConfig as OllamaRelayConfig, mount_routes as mount_ollama_routes};
-mod roda_tide_rewrite;
+
 
 // v1.0.0.0
 
@@ -1403,8 +1403,7 @@ WERE_FORMS = [
         Ok("File deleted")
     });
 
-    // Mount this last so Roda-compatible handlers are the effective routes for overlaps.
-    roda_tide_rewrite::mount_roda_compat_routes(&mut app);
+  
 
     // Listen on all interfaces over standard HTTPS (TLS) port.
     let addresses = vec!["0.0.0.0:443"];

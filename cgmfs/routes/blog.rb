@@ -43,25 +43,24 @@ class SunPhase2
   end
 end
 
-
 class MoonPhase13
   REFERENCE_NEW_MOON = Time.utc(2000, 1, 6, 18, 14, 0)
   LUNAR_CYCLE = 29.530588853 # synodic month in days
 
   PHASES = [
-    ["New Moon", "🌑"],
-    ["Waxing Crescent I", "🌒"],
-    ["Waxing Crescent II", "🌒"],
-    ["First Quarter", "🌓"],
-    ["Waxing Gibbous I", "🌔"],
-    ["Waxing Gibbous II", "🌔"],
-    ["Full Moon", "🌕"],
-    ["Waning Gibbous I", "🌖"],
-    ["Waning Gibbous II", "🌖"],
-    ["Last Quarter", "🌗"],
-    ["Waning Crescent I", "🌘"],
-    ["Waning Crescent II", "🌘"],
-    ["Dark Moon", "🌑"]
+    ['New Moon', '🌑'],
+    ['Waxing Crescent I', '🌒'],
+    ['Waxing Crescent II', '🌒'],
+    ['First Quarter', '🌓'],
+    ['Waxing Gibbous I', '🌔'],
+    ['Waxing Gibbous II', '🌔'],
+    ['Full Moon', '🌕'],
+    ['Waning Gibbous I', '🌖'],
+    ['Waning Gibbous II', '🌖'],
+    ['Last Quarter', '🌗'],
+    ['Waning Crescent I', '🌘'],
+    ['Waning Crescent II', '🌘'],
+    ['Dark Moon', '🌑']
   ]
 
   def initialize(time = Time.now.utc)
@@ -83,12 +82,11 @@ class MoonPhase13
 
   def display
     name, emoji = phase
-     return "🌙 Moon Phase: #{name} #{emoji}<br />
+    "🌙 Moon Phase: #{name} #{emoji}<br />
      🕒 UTC Time: #{@time}<br />
      📆 Moon Age: #{moon_age.round(2)} days<br />"
   end
 end
-
 
 class SunPhase
   # Represents a phase of the sun with a name, start hour, and emoji.
@@ -600,21 +598,20 @@ class CGMFS
           r.redirect('/404') if @body.nil? # redirect to 404 if no pinned post
         else
           @post = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id.to_i)
+          r.redirect('/404') if @post.nil?
+
           @rendered_type = @post['blog_post_rendered_type']
           @body = @post['blog_post_body']
-          @title = @@line_db[@user].pad['blog_database', 'blog_table'].get(0)['blog_post_title']
-
-          r.redirect('/404') if @post.nil?
+          @title = @post['blog_post_title']
         end
 
         if @rendered_type == 'markdown'
           markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, quote: true, strikethrough: true,
                                                                       fenced_code_blocks: true, tables: true, no_intra_emphasis: true, space_after_headers: true, superscript: true, lax_spacing: true, footnotes: true, autolink: true)
-          @body = @post['blog_post_body']
           @markdown_body = @post['blog_post_body_markdown'] # save markdown body for later
-          @markdown_body = @body.to_s # save markdown body for later
+          @markdown_body = @body.to_s if @markdown_body.to_s.empty?
           @body = markdown.render(@markdown_body) if @rendered_type == 'markdown'
-          @title = @@line_db[@user].pad['blog_database', 'blog_table'].get(0)['blog_post_title']
+          @title = @post['blog_post_title']
 
         end
 
@@ -1031,8 +1028,8 @@ class CGMFS
           @title = 'New Blog Post'
           @possible_rendering_types = %w[wysiwyg markdown html]
           @rendered_type = @r.params['rendered_type'].to_s
-          @rendered_type = 'wmarkdown' if @rendered_type == ''
-          @rendered_type = 'markdown' unless @possible_rendering_types.include?(@rendered_type)
+          @rendered_type = 'wysiwyg' if @rendered_type == ''
+          @rendered_type = 'wysiwyg' unless @possible_rendering_types.include?(@rendered_type)
           @view = case @rendered_type
                   when 'wysiwyg'
                     'blog/new_wysiwyg'
@@ -1070,7 +1067,7 @@ class CGMFS
           @_params['blog_post_comments'] = r.params['blog_post_comments'].to_s
           @_params['blog_post_status'] = r.params['blog_post_status'].to_s
           @_params['blog_status_locked'] = false
-          if @_params['blog_post_title'] != '' && (@_params['blog_post_body'] != '' || @_params['blog_post_body_markdown'] != '') && @_params['blog_post_tags'] != '' && @_params['blog_post_date'] != '' && @_params['blog_post_author'] != '' && @_params['blog_post_category'] != ''
+          if @_params['blog_post_title'] != '' && (@_params['blog_post_body'] != '' || @_params['blog_post_body_markdown'] != '') && @_params['blog_post_tags'] != '' && @_params['blog_post_date'] != '' && @_params['blog_post_author'] != ''
             valid = true
           else
             valid = false
@@ -1157,15 +1154,15 @@ class CGMFS
             @user = user
             @session = session
             # @@line_db[@user]
-            @pin = @@line_db[user].pad['blog_database', 'blog_pinned_table'][0]
+            @pin = @@line_db[user].pad['blog_database', 'blog_pinned_table'][0] || {}
             @r = r
             @title = "All Blog Posts by #{@user}"
             @posts = @@line_db[@user].pad['blog_database', 'blog_table'][:all]
             @tagged_posts = []
             @tagged = []
             @tags = @posts.map do |post|
-                      post['blog_post_tags'].split(', ') if post['blog_post_tags']
-                    end.flatten.uniq[0..-2]
+              post['blog_post_tags'].split(', ') if post['blog_post_tags']
+            end.flatten.compact.map(&:strip).reject(&:empty?).uniq
             @desc_view = r.params['desc']
             # @page_views = @@line_db[@user].pad['blog_database', 'blog_statistics_table'][0]['page_views']
             # @page_views = 0 if @page_views == nil

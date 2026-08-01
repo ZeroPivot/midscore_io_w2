@@ -415,6 +415,11 @@ async fn main() -> tide::Result<()> {
             let rest = req.param("rest").unwrap_or("");
             // Build the target URL for the 8080 server.
             let target_url = format!("https://miaedscore.online:8080/{}", rest);
+            let escaped_target_url = target_url
+              .replace('&', "&amp;")
+              .replace('"', "&quot;")
+              .replace('<', "&lt;")
+              .replace('>', "&gt;");
 
             // Build an HTML page with an iframe loading the target URL.
             // A JavaScript snippet removes any query parameters from the browser URL.
@@ -450,7 +455,7 @@ async fn main() -> tide::Result<()> {
     <iframe src="{0}" title="Bridge - Embedded 8080 Server"></iframe>
   </body>
   </html>"#,
-                target_url
+                escaped_target_url
             );
 
             // Return the HTML response.

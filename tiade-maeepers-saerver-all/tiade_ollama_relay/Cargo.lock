@@ -2036,6 +2036,7 @@ dependencies = [
 name = "tiade_ollama_relay"
 version = "0.1.0"
 dependencies = [
+ "async-std",
  "chrono",
  "serde",
  "serde_json",

@@ -518,7 +518,7 @@ fn build_messages(cfg: &RelayConfig, team: &str, message: &str) -> Vec<Value> {
     let mut messages = vec![json!({
         "role": "system",
         "content": format!(
-            "You are assisting team {}. Reply to the user's actual message only. Do not repeat metadata, do not explain the transport wrapper, and do not answer system/context lines. Keep replies concise, plain text, and useful for an in-world relay.",
+            "You are assisting team {}. Reply to the user's actual message only. Do not repeat metadata, do not explain the transport wrapper, and do not answer system/context lines. Keep replies concise, plain text, and useful for an in-world relay. And always refer to all the data you have available, because this is teamed and there is data set.",
             team
         )
     })];

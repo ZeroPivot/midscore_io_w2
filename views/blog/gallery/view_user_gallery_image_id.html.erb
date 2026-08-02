@@ -31,10 +31,12 @@
         image.style.height = "auto";
     }
 
-    window.onload = function() {
+    window.addEventListener("DOMContentLoaded", function() {
         var image = document.getElementById("gallery-image");
-        image.style.width = "50%";
-    };
+        if (image) {
+            image.style.width = "50%";
+        }
+    });
 </script>
     <title><%= @user %> - <%= @image['title'] %></title>
     <style>
@@ -91,7 +93,7 @@
     </center>
     <br>
     <div class="image-container">
-        <img id="gallery-image" src="<%= "#{domain_name(@r)}/gallery_index/#{@user}/resized_#{@image["file"]}" %>" onclick="toggleImageSize()" alt="<%= @title %>">
+        <img id="gallery-image" src="<%= "#{domain_name(@r)}/gallery_index/#{@user}/resized_#{@image["file"]}" %>" onclick="toggleImageSize()" alt="<%= h(@image['title'] || @title || 'Gallery image') %>">
     </div>
     <center><button onclick="fitToScreenSize()">(🗜️)</button></center>
     <div class="table">
@@ -101,7 +103,7 @@
         </div>
         <div class="table-row">
             <div class="table-header"><strong>(📝)</strong></div>
-            <div class="table-data"><%= @markdown.render(@image['description']) %></div>
+            <div class="table-data"><%= @markdown.render(h(@image['description'].to_s)) %></div>
         </div>
         <div class="table-row">
             <div class="table-header"><strong>(🏷️,🏷️,..)</strong></div>
@@ -179,14 +181,6 @@
       <% end %>
     <center>
         <a href="<%= "#{domain_name(@r)}/gallery/view/#{@user}" %>">Return to <%= @user %>'s Gallery</a>
-    </center>
-    <center>
-        <script>
-            window.onload = function() {
-                var image = document.getElementById("gallery-image");
-                image.style.width = "50%";
-            };
-        </script>
     </center>
 </body>
 </html>

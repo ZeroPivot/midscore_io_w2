@@ -20,11 +20,6 @@
 <% if @session["user"] == @user %>
   <a href="<%= domain_name(@r) %>/blog/<%= @user %>/private_toggle"><%= "(🔐)" if blog_lock_status == true %><%= "(🔓)" if blog_lock_status == false  || blog_lock_status == nil %></a><br>
 <% end %>
-<% if @reversed_posts == nil %>
-  <%= "<a href='#{domain_name(@r)}/blog/#{@user}/view/?reverse=1'>(🔀)</a>" %><br />
-<% elsif @reversed_posts == '1' %>
-   <%= "<a href='#{domain_name(@r)}/blog/#{@user}/view/'>(🔀)</a>" %><br />
-<% end %>
     <div class="node" style="text-align: center;">
       <a href="<%= domain_name(@r) %>/blog/<%= @user %>/pin"><b>📌</b></a><br>
       <%= "✍️&nbsp;" + @pin["blog_post_author"].to_s + "<br />" if @pin["blog_post_author"] != "" %>
@@ -37,7 +32,7 @@
  <br>
   <div class="node" style="text-align: center;">
     🏷️<br><% @tags.each do |tag| %>
-      <a href="<%= domain_name(@r) %>/blog/<%= @user %>/tag/<%= tag %>"><b>[<%= tag %>]</b></a>&nbsp;
+      <a href="<%= domain_name(@r) %>/blog/<%= @user %>/tag/<%= ERB::Util.url_encode(tag.to_s) %>"><b>[<%= tag %>]</b></a>&nbsp;
       <% end %>
     </div>
     <br><br>

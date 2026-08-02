@@ -7,6 +7,13 @@
 # https://aritywolf.net
 # https://artywalf.net
 
+## Documentation Index
+
+- docs/CODE_DOCUMENTATION.md
+  - Architecture overview, route map, view map, data model notes, and extension guidance.
+- docs/WORK_LOG_2026-08-01.md
+  - Detailed engineering log of the optimization and bug-fix session, with validations and known risks.
+
 def CGMFS: comicman (comic manager) gallery filesystem
 
 # Current version: 3.2.5

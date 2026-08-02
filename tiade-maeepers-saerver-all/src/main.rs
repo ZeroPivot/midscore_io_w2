@@ -860,6 +860,25 @@ WERE_FORMS = [
     //Ok(output.into())
   });
 
+
+
+   app.at("/random").get(|mut req: tide::Request<AppState>| async move {
+
+
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    use rand::Rng;
+    let mut rng = rand::thread_rng();
+    let random_value: u32 = rng.gen_range(0..2);
+    let output = random_value.to_string();
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(output);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+
     // Migrated endpoints are mounted by tiade_ollama_relay::mount_routes.
 
     app.at("/ae")

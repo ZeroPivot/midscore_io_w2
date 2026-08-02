@@ -81,9 +81,9 @@ threads 0, 16
 # ...existing code...
 
 # Update with the actual paths to your key and certificate
-ssl_bind '74.208.171.8', '443', {
-  key: '/etc/letsencrypt/live/stimky.info/privkey.pem',
-  cert: '/etc/letsencrypt/live/stimky.info/fullchain.pem',
+ssl_bind '0.0.0.0', '443', {
+  key: '/etc/letsencrypt/live/miaedscore.online/privkey.pem',
+  cert: '/etc/letsencrypt/live/miaedscore.online/fullchain.pem',
   verify_mode: 'none'
 }
 

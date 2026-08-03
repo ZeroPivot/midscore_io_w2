@@ -48,6 +48,569 @@ pub fn redirect(url: &str) -> tide::Response {
     res
 }
 
+const SIGIL_DECK_ROOT: &str = "/root/midscore_io/tiade-maeepers-saerver-all/sigil_deck_data";
+const SIGIL_DECK_DB_PATH: &str = "/root/midscore_io/tiade-maeepers-saerver-all/sigil_deck_data/deck.json";
+const SIGIL_DECK_UPLOAD_DIR: &str = "/root/midscore_io/tiade-maeepers-saerver-all/sigil_deck_data/uploads";
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+struct SigilDeckEntry {
+    id: u64,
+    title: String,
+    description: String,
+    image_file: String,
+    mime_type: String,
+    created_at: String,
+}
+
+#[derive(Default, serde::Serialize, serde::Deserialize)]
+struct SigilDeckDb {
+    entries: Vec<SigilDeckEntry>,
+}
+
+#[derive(Clone, Debug)]
+struct MultipartFile {
+    filename: String,
+    content_type: Option<String>,
+    data: Vec<u8>,
+}
+
+fn escape_html(input: &str) -> String {
+    input
+        .replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&#39;")
+}
+
+fn sigil_deck_now_string() -> String {
+    Utc::now().to_rfc3339()
+}
+
+fn sigil_deck_ensure_storage() -> tide::Result<()> {
+    std::fs::create_dir_all(SIGIL_DECK_UPLOAD_DIR)
+        .map_err(|e| tide::Error::from_str(tide::StatusCode::InternalServerError, e.to_string()))?;
+    Ok(())
+}
+
+fn load_sigil_deck_entries() -> tide::Result<Vec<SigilDeckEntry>> {
+    sigil_deck_ensure_storage()?;
+    match std::fs::read_to_string(SIGIL_DECK_DB_PATH) {
+        Ok(raw) => {
+            let db: SigilDeckDb = serde_json::from_str(&raw)
+                .map_err(|e| tide::Error::from_str(tide::StatusCode::InternalServerError, e.to_string()))?;
+            Ok(db.entries)
+        }
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(Vec::new()),
+        Err(err) => Err(tide::Error::from_str(
+            tide::StatusCode::InternalServerError,
+            err.to_string(),
+        )),
+    }
+}
+
+fn save_sigil_deck_entries(entries: &[SigilDeckEntry]) -> tide::Result<()> {
+    sigil_deck_ensure_storage()?;
+    let db = SigilDeckDb {
+        entries: entries.to_vec(),
+    };
+    let raw = serde_json::to_string_pretty(&db)
+        .map_err(|e| tide::Error::from_str(tide::StatusCode::InternalServerError, e.to_string()))?;
+    std::fs::write(SIGIL_DECK_DB_PATH, raw)
+        .map_err(|e| tide::Error::from_str(tide::StatusCode::InternalServerError, e.to_string()))?;
+    Ok(())
+}
+
+fn sigil_mime_from_ext(ext: &str) -> &'static str {
+    match ext {
+        "jpg" | "jpeg" => "image/jpeg",
+        "png" => "image/png",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        "bmp" => "image/bmp",
+        _ => "application/octet-stream",
+    }
+}
+
+fn sigil_ext_from_format(format: image::ImageFormat) -> Option<&'static str> {
+    match format {
+        image::ImageFormat::Jpeg => Some("jpg"),
+        image::ImageFormat::Png => Some("png"),
+        image::ImageFormat::Gif => Some("gif"),
+        image::ImageFormat::WebP => Some("webp"),
+        image::ImageFormat::Bmp => Some("bmp"),
+        _ => None,
+    }
+}
+
+fn find_subslice(haystack: &[u8], needle: &[u8]) -> Option<usize> {
+    if needle.is_empty() || haystack.len() < needle.len() {
+        return None;
+    }
+    haystack.windows(needle.len()).position(|window| window == needle)
+}
+
+fn split_by_slice<'a>(haystack: &'a [u8], sep: &[u8]) -> Vec<&'a [u8]> {
+    let mut out = Vec::new();
+    let mut start = 0usize;
+    while let Some(pos) = find_subslice(&haystack[start..], sep) {
+        let at = start + pos;
+        out.push(&haystack[start..at]);
+        start = at + sep.len();
+    }
+    out.push(&haystack[start..]);
+    out
+}
+
+fn extract_disposition_attr(disposition: &str, key: &str) -> Option<String> {
+    let pattern = format!("{}=\"", key);
+    let start = disposition.find(&pattern)? + pattern.len();
+    let rest = &disposition[start..];
+    let end = rest.find('"')?;
+    Some(rest[..end].to_string())
+}
+
+fn parse_multipart_form_data(
+    content_type: &str,
+    body: &[u8],
+) -> (std::collections::HashMap<String, String>, std::collections::HashMap<String, MultipartFile>) {
+    let mut fields = std::collections::HashMap::new();
+    let mut files = std::collections::HashMap::new();
+
+    let boundary = content_type
+        .split(';')
+        .find_map(|part| {
+            let trimmed = part.trim();
+            trimmed
+                .strip_prefix("boundary=")
+                .map(|value| value.trim_matches('"').to_string())
+        })
+        .unwrap_or_default();
+
+    if boundary.is_empty() {
+        return (fields, files);
+    }
+
+    let marker = format!("--{}", boundary);
+    for mut part in split_by_slice(body, marker.as_bytes()) {
+        if part.is_empty() {
+            continue;
+        }
+        if part.starts_with(b"\r\n") {
+            part = &part[2..];
+        }
+        if part == b"--" || part == b"--\r\n" {
+            continue;
+        }
+        if part.ends_with(b"\r\n") {
+            part = &part[..part.len().saturating_sub(2)];
+        }
+        if part.ends_with(b"--") {
+            part = &part[..part.len().saturating_sub(2)];
+        }
+
+        let Some(header_end) = find_subslice(part, b"\r\n\r\n") else {
+            continue;
+        };
+        let header_bytes = &part[..header_end];
+        let mut data = part[header_end + 4..].to_vec();
+        while data.ends_with(b"\r") || data.ends_with(b"\n") {
+            data.pop();
+        }
+
+        let headers = String::from_utf8_lossy(header_bytes);
+        let mut name = None::<String>;
+        let mut filename = None::<String>;
+        let mut part_content_type = None::<String>;
+
+        for line in headers.lines() {
+            let lower = line.to_ascii_lowercase();
+            if lower.starts_with("content-disposition:") {
+                name = extract_disposition_attr(line, "name");
+                filename = extract_disposition_attr(line, "filename");
+            } else if lower.starts_with("content-type:") {
+                part_content_type = line
+                    .split_once(':')
+                    .map(|(_, value)| value.trim().to_string())
+                    .filter(|value| !value.is_empty());
+            }
+        }
+
+        let Some(name) = name else {
+            continue;
+        };
+
+        if let Some(filename) = filename {
+            files.insert(
+                name,
+                MultipartFile {
+                    filename,
+                    content_type: part_content_type,
+                    data,
+                },
+            );
+        } else {
+            fields.insert(name, String::from_utf8_lossy(&data).trim().to_string());
+        }
+    }
+
+    (fields, files)
+}
+
+fn render_sigil_deck_page(entries: &[SigilDeckEntry]) -> String {
+    let mut cards = String::new();
+    if entries.is_empty() {
+        cards.push_str(
+            r#"<section class="empty-state"><h2>No sigils in the deck yet.</h2><p>Upload the first image to seed the tarot deck.</p></section>"#,
+        );
+    } else {
+        for entry in entries {
+            let image_src = format!("/sigil-deck/image/{}", entry.image_file);
+            let _ = std::fmt::Write::write_fmt(
+                &mut cards,
+                format_args!(
+                    r#"<a class="card" href="/sigil-deck/card/{id}">
+  <img src="{image_src}" alt="{title}">
+  <div class="card-body">
+    <h2>{title}</h2>
+    <p>{description}</p>
+    <span class="meta">Drawn {created_at}</span>
+  </div>
+</a>"#,
+                    id = entry.id,
+                    image_src = image_src,
+                    title = escape_html(&entry.title),
+                    description = escape_html(&entry.description),
+                    created_at = escape_html(&entry.created_at),
+                ),
+            );
+        }
+    }
+
+    format!(
+      r##"<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigil Tarot Deck</title>
+  <style>
+    :root {{
+      color-scheme: dark;
+      --bg: #0e0c12;
+      --panel: rgba(19, 17, 26, 0.86);
+      --panel-strong: #1e1a29;
+      --text: #f4efe6;
+      --muted: #b7ad9e;
+      --line: rgba(255, 241, 214, 0.12);
+      --gold: #e8c06a;
+      --gold-strong: #ffd98a;
+      --teal: #7ed9c4;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+    }}
+
+    * {{ box-sizing: border-box; }}
+    html {{ scroll-behavior: smooth; }}
+    body {{
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(126, 217, 196, 0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(232, 192, 106, 0.18), transparent 24%),
+        linear-gradient(180deg, #17131d 0%, #0e0c12 42%, #09070b 100%);
+      font-family: Georgia, 'Times New Roman', serif;
+    }}
+
+    .wrap {{
+      width: min(1120px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 18px 0 48px;
+    }}
+
+    .hero {{
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(25, 21, 32, 0.96), rgba(16, 14, 22, 0.92));
+      box-shadow: var(--shadow);
+    }}
+
+    .hero::after {{
+      content: '';
+      position: absolute;
+      inset: auto -10% -35% auto;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(232, 192, 106, 0.24), transparent 68%);
+      pointer-events: none;
+    }}
+
+    .eyebrow {{
+      margin: 0 0 10px;
+      color: var(--gold-strong);
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      font-size: 0.74rem;
+    }}
+
+    h1 {{
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 4rem);
+      line-height: 0.96;
+      max-width: 12ch;
+    }}
+
+    .lede {{
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: 1.03rem;
+      line-height: 1.6;
+      margin: 14px 0 0;
+    }}
+
+    .actions {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }}
+
+    .button {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 241, 214, 0.18);
+      color: var(--text);
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.03);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }}
+
+    .button.primary {{
+      background: linear-gradient(135deg, var(--gold), #a67528);
+      color: #181106;
+      font-weight: 700;
+      border-color: transparent;
+    }}
+
+    .button:hover {{ transform: translateY(-1px); border-color: rgba(255, 217, 138, 0.5); }}
+
+    .upload {{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+    }}
+
+    .field {{ display: grid; gap: 8px; }}
+    .field.full {{ grid-column: 1 / -1; }}
+    label {{ color: var(--muted); font-size: 0.92rem; }}
+    input, textarea {{
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 241, 214, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 14px 14px;
+      font: inherit;
+    }}
+    textarea {{ min-height: 120px; resize: vertical; }}
+    input[type="file"] {{ padding: 12px; }}
+
+    .upload button {{
+      grid-column: 1 / -1;
+      min-height: 48px;
+      border: 0;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--teal), #4e8f86);
+      color: #08110f;
+      font: inherit;
+      font-weight: 800;
+    }}
+
+    .section {{ margin-top: 20px; }}
+    .section h2 {{ margin: 0 0 12px; font-size: 1.2rem; }}
+    .section p {{ margin: 0 0 16px; color: var(--muted); }}
+
+    .grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }}
+
+    .card {{
+      display: block;
+      overflow: hidden;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      text-decoration: none;
+      box-shadow: var(--shadow);
+      min-height: 100%;
+    }}
+
+    .card img {{
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      object-fit: cover;
+      background: var(--panel-strong);
+    }}
+
+    .card-body {{ padding: 14px; }}
+    .card-body h2 {{ margin: 0 0 8px; font-size: 1.03rem; }}
+    .card-body p {{ margin: 0 0 10px; color: var(--muted); line-height: 1.5; font-size: 0.96rem; }}
+    .meta {{ color: rgba(244, 239, 230, 0.7); font-size: 0.82rem; letter-spacing: 0.03em; }}
+
+    .empty-state {{
+      padding: 22px;
+      border-radius: 22px;
+      border: 1px dashed rgba(255, 241, 214, 0.18);
+      background: rgba(255, 255, 255, 0.03);
+    }}
+
+    @media (max-width: 720px) {{
+      .wrap {{ width: min(100% - 16px, 1120px); padding-top: 10px; }}
+      .hero {{ padding: 18px; border-radius: 22px; }}
+      .upload {{ grid-template-columns: 1fr; }}
+      .field.full {{ grid-column: auto; }}
+      .grid {{ grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }}
+      h1 {{ max-width: 100%; }}
+    }}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <p class="eyebrow">Sigil Tarot Deck</p>
+      <h1>Draw a sigil for the game.</h1>
+      <p class="lede">Upload an image, write its meaning, and keep the deck in one scrollable gallery. Tap random to pull a card from the stack, or browse the collection below.</p>
+      <div class="actions">
+        <a class="button primary" href="/sigil-deck/random">Draw Random Card</a>
+        <a class="button" href="#deck">Browse Deck</a>
+      </div>
+      <form class="upload" method="post" action="/sigil-deck/upload" enctype="multipart/form-data">
+        <div class="field full">
+          <label for="image">Image</label>
+          <input id="image" type="file" name="image" accept="image/*" required>
+        </div>
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" type="text" name="title" placeholder="Sigil name" required>
+        </div>
+        <div class="field">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" placeholder="Meaning, effect, lore, or gameplay trigger."></textarea>
+        </div>
+        <button type="submit">Save to Deck</button>
+      </form>
+    </section>
+
+    <section class="section" id="deck">
+      <h2>Deck Selection</h2>
+      <p>Scroll through the cards or draw one at random for play.</p>
+      <div class="grid">
+        {cards}
+      </div>
+    </section>
+  </div>
+</body>
+</html>"##,
+        cards = cards
+    )
+}
+
+fn render_sigil_card_page(entry: &SigilDeckEntry, deck_size: usize) -> String {
+    let image_src = format!("/sigil-deck/image/{}", entry.image_file);
+    format!(
+      r##"<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title} - Sigil Tarot Deck</title>
+  <style>
+    :root {{
+      color-scheme: dark;
+      --panel: rgba(19, 17, 26, 0.86);
+      --text: #f4efe6;
+      --muted: #b7ad9e;
+      --line: rgba(255, 241, 214, 0.12);
+      --gold: #e8c06a;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      min-height: 100vh;
+      padding: 16px;
+      color: var(--text);
+      background: linear-gradient(180deg, #17131d 0%, #0e0c12 100%);
+      font-family: Georgia, 'Times New Roman', serif;
+    }}
+    .shell {{ width: min(920px, 100%); margin: 0 auto; }}
+    .panel {{
+      padding: 18px;
+      border-radius: 26px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+    }}
+    img {{ width: 100%; display: block; border-radius: 20px; aspect-ratio: 4 / 5; object-fit: cover; background: #1a1621; }}
+    h1 {{ margin: 16px 0 10px; font-size: clamp(1.8rem, 4vw, 3rem); }}
+    p {{ color: var(--muted); line-height: 1.6; }}
+    .meta {{ display: grid; gap: 10px; margin-top: 12px; }}
+    .actions {{ display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }}
+    a {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 241, 214, 0.18);
+      color: var(--text);
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.03);
+    }}
+    .primary {{ background: linear-gradient(135deg, var(--gold), #a67528); color: #181106; font-weight: 700; border-color: transparent; }}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="panel">
+      <img src="{image_src}" alt="{title}">
+      <h1>{title}</h1>
+      <p>{description}</p>
+      <div class="meta">
+        <p>Deck size: {deck_size}</p>
+        <p>Created: {created_at}</p>
+      </div>
+      <div class="actions">
+        <a class="primary" href="/sigil-deck/random">Draw Another</a>
+        <a href="/sigil-deck">Back to Deck</a>
+      </div>
+    </section>
+  </div>
+</body>
+</html>"##,
+        title = escape_html(&entry.title),
+        description = escape_html(&entry.description),
+        created_at = escape_html(&entry.created_at),
+        image_src = image_src,
+        deck_size = deck_size,
+    )
+}
+
 use anyhow::Result;
 use image::DynamicImage;
 use std::io::Cursor;
@@ -878,6 +1441,135 @@ WERE_FORMS = [
     Ok(res)
     //Ok(output.into())
   });
+
+    app.at("/sigil-deck").get(|_| async move {
+      let entries = load_sigil_deck_entries()?;
+      let mut res = tide::Response::new(tide::StatusCode::Ok);
+      res.set_body(render_sigil_deck_page(&entries));
+      res.insert_header("Content-Type", "text/html; charset=utf-8");
+      Ok(res)
+    });
+
+    app.at("/sigil-deck/upload").post(|mut req: tide::Request<AppState>| async move {
+      let content_type = req
+        .header("content-type")
+        .and_then(|values| values.get(0))
+        .map(|value| value.as_str().to_string())
+        .unwrap_or_default();
+
+      if !content_type.contains("multipart/form-data") {
+        return Ok(tide::Response::new(tide::StatusCode::BadRequest));
+      }
+
+      let raw = req.body_bytes().await?;
+      let (fields, files) = parse_multipart_form_data(&content_type, &raw);
+      let title = fields
+        .get("title")
+        .cloned()
+        .unwrap_or_else(|| "Untitled Sigil".to_string());
+      let description = fields
+        .get("description")
+        .cloned()
+        .unwrap_or_else(|| "No description provided yet.".to_string());
+      let Some(upload) = files.get("image").cloned().or_else(|| files.values().next().cloned()) else {
+        return Ok(tide::Response::new(tide::StatusCode::BadRequest));
+      };
+
+      image::load_from_memory(&upload.data)
+        .map_err(|e| tide::Error::from_str(tide::StatusCode::BadRequest, e.to_string()))?;
+      let format = image::guess_format(&upload.data)
+        .map_err(|e| tide::Error::from_str(tide::StatusCode::BadRequest, e.to_string()))?;
+      let ext = sigil_ext_from_format(format)
+        .ok_or_else(|| tide::Error::from_str(tide::StatusCode::BadRequest, "unsupported image type"))?;
+
+      sigil_deck_ensure_storage()?;
+      let mut entries = load_sigil_deck_entries()?;
+      let next_id = entries
+        .iter()
+        .map(|entry| entry.id)
+        .max()
+        .unwrap_or(0)
+        .saturating_add(1);
+      let filename = format!("sigil_{}_{}.{}", next_id, Utc::now().timestamp_millis(), ext);
+      let path = format!("{}/{}", SIGIL_DECK_UPLOAD_DIR, filename);
+      std::fs::write(&path, &upload.data)
+        .map_err(|e| tide::Error::from_str(tide::StatusCode::InternalServerError, e.to_string()))?;
+
+      entries.push(SigilDeckEntry {
+        id: next_id,
+        title,
+        description,
+        image_file: filename.clone(),
+        mime_type: sigil_mime_from_ext(ext).to_string(),
+        created_at: sigil_deck_now_string(),
+      });
+      save_sigil_deck_entries(&entries)?;
+
+      Ok(redirect(&format!("/sigil-deck/card/{}", next_id)))
+    });
+
+    app.at("/sigil-deck/image/:filename").get(|req: tide::Request<AppState>| async move {
+      let filename = req.param("filename").unwrap_or("");
+      let safe_name = std::path::Path::new(filename)
+        .file_name()
+        .and_then(|part| part.to_str())
+        .unwrap_or("");
+      if safe_name.is_empty() {
+        return Ok(tide::Response::new(tide::StatusCode::BadRequest));
+      }
+
+      let path = format!("{}/{}", SIGIL_DECK_UPLOAD_DIR, safe_name);
+      let bytes = match std::fs::read(&path) {
+        Ok(bytes) => bytes,
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+          return Ok(tide::Response::new(tide::StatusCode::NotFound));
+        }
+        Err(err) => {
+          return Err(tide::Error::from_str(
+            tide::StatusCode::InternalServerError,
+            err.to_string(),
+          ));
+        }
+      };
+
+      let ext = std::path::Path::new(safe_name)
+        .extension()
+        .and_then(|value| value.to_str())
+        .unwrap_or("bin");
+      let mut res = tide::Response::new(tide::StatusCode::Ok);
+      res.set_body(bytes);
+      res.insert_header("Content-Type", sigil_mime_from_ext(ext));
+      Ok(res)
+    });
+
+    app.at("/sigil-deck/card/:id").get(|req: tide::Request<AppState>| async move {
+      let id: u64 = req.param("id").unwrap_or("0").parse().unwrap_or(0);
+      let entries = load_sigil_deck_entries()?;
+      let Some(entry) = entries.iter().find(|entry| entry.id == id).cloned() else {
+        return Ok(tide::Response::new(tide::StatusCode::NotFound));
+      };
+
+      let mut res = tide::Response::new(tide::StatusCode::Ok);
+      res.set_body(render_sigil_card_page(&entry, entries.len()));
+      res.insert_header("Content-Type", "text/html; charset=utf-8");
+      Ok(res)
+    });
+
+    app.at("/sigil-deck/random").get(|_| async move {
+      let entries = load_sigil_deck_entries()?;
+      if entries.is_empty() {
+        let mut res = tide::Response::new(tide::StatusCode::Ok);
+        res.set_body(render_sigil_deck_page(&entries));
+        res.insert_header("Content-Type", "text/html; charset=utf-8");
+        return Ok(res);
+      }
+
+      use rand::Rng;
+      let index = rand::thread_rng().gen_range(0..entries.len());
+      let entry = entries[index].clone();
+
+      Ok(redirect(&format!("/sigil-deck/card/{}", entry.id)))
+    });
 
     // Migrated endpoints are mounted by tiade_ollama_relay::mount_routes.
 

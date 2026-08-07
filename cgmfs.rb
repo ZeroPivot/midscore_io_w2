@@ -21,6 +21,7 @@ require 'uri'
 require 'net/http'
 require 'net/https'
 require 'yuicompressor'
+require 'roda'
 require 'roda/plugins/assets'
 require 'oj' # JSON binary parser
 require 'json' # JSON parser

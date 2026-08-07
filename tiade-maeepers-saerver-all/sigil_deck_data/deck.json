@@ -1,0 +1,20 @@
+{
+  "entries": [
+    {
+      "id": 1,
+      "title": "Stimky Fool",
+      "description": "You are probably horny or want to draw from life.",
+      "image_file": "sigil_1_1785770979178.jpg",
+      "mime_type": "image/jpeg",
+      "created_at": "2026-08-03T15:29:39.184918106+00:00"
+    },
+    {
+      "id": 2,
+      "title": "The Actors  Team Of 20+",
+      "description": "Main Card",
+      "image_file": "sigil_2_1785773724884.png",
+      "mime_type": "image/png",
+      "created_at": "2026-08-03T16:15:24.884771905+00:00"
+    }
+  ]
+}

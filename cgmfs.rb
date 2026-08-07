@@ -107,10 +107,12 @@ class CGMFS < Roda
   # @@sl_db.load_last_entry_from_file!
   # @@sl_db.load_max_partition_archive_from_file!
   # @@sl_db.load_partition_archive_id_from_file!
-  version_file = File.open("version.txt", "r")
-  version = version_file.readline.chomp
-  timestamp = version_file.readline.chomp
-  version_file.close
+  version_lines = File.readlines("version.txt", chomp: true)
+  version = version_lines[0].to_s
+  timestamp = version_lines[1].to_s
+
+  version, timestamp = version.split(" - ", 2) if timestamp.empty? && version.include?(" - ")
+
   $dog_blog_version = "(v#️⃣#{version}):[ 🏗️#{timestamp} ]" # used in layout.html.erb
 
   @@line_db = LineDB.new
@@ -118,13 +120,8 @@ class CGMFS < Roda
   # global database variable for future usages and for all databases currently used on this CGMFS system.
   $db = @@line_db
 
-
   @@line_db["page_views"].pad.new_table!(database_name: "page_views_database", database_table: "page_views_table")
   puts "Loading database: page_views..."
-  
-
-
-
 
   @@line_db["urls_redir"].pad.new_table!(database_name: "urls_database", database_table: "urls_table")
   @@line_db["blog"].pad.new_table!(database_name: "blog_database", database_table: "blog_table")

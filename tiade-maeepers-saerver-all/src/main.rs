@@ -93,6 +93,15 @@ fn sigil_deck_ensure_storage() -> tide::Result<()> {
     Ok(())
 }
 
+fn sigil_deck_upload_path(filename: &str) -> tide::Result<std::path::PathBuf> {
+  let safe_name = std::path::Path::new(filename)
+    .file_name()
+    .and_then(|part| part.to_str())
+    .filter(|part| *part == filename)
+    .ok_or_else(|| tide::Error::from_str(tide::StatusCode::BadRequest, "invalid sigil filename"))?;
+  Ok(std::path::Path::new(SIGIL_DECK_UPLOAD_DIR).join(safe_name))
+}
+
 fn load_sigil_deck_entries() -> tide::Result<Vec<SigilDeckEntry>> {
     sigil_deck_ensure_storage()?;
     match std::fs::read_to_string(SIGIL_DECK_DB_PATH) {
@@ -570,6 +579,14 @@ fn render_sigil_card_page(entry: &SigilDeckEntry, deck_size: usize) -> String {
     p {{ color: var(--muted); line-height: 1.6; }}
     .meta {{ display: grid; gap: 10px; margin-top: 12px; }}
     .actions {{ display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }}
+    .manage {{ display: grid; gap: 12px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }}
+    .manage h2 {{ margin: 0; font-size: 1.2rem; }}
+    .field {{ display: grid; gap: 7px; }}
+    label {{ color: var(--muted); font-size: 0.92rem; }}
+    input, textarea {{ width: 100%; border: 1px solid var(--line); border-radius: 10px; background: rgba(255, 255, 255, 0.05); color: var(--text); padding: 10px 12px; font: inherit; }}
+    textarea {{ min-height: 110px; resize: vertical; }}
+    button {{ min-height: 42px; border: 1px solid var(--line); border-radius: 10px; padding: 0 14px; background: var(--gold); color: #181106; font: inherit; font-weight: 700; cursor: pointer; }}
+    .delete button {{ background: #a64c48; color: #fff7f4; }}
     a {{
       display: inline-flex;
       align-items: center;
@@ -599,6 +616,25 @@ fn render_sigil_card_page(entry: &SigilDeckEntry, deck_size: usize) -> String {
         <a class="primary" href="/sigil-deck/random">Draw Another</a>
         <a href="/sigil-deck">Back to Deck</a>
       </div>
+      <form class="manage" method="post" action="/sigil-deck/card/{id}/update" enctype="multipart/form-data">
+        <h2>Edit Sigil</h2>
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" type="text" name="title" value="{title}" required>
+        </div>
+        <div class="field">
+          <label for="description">Description</label>
+          <textarea id="description" name="description">{description}</textarea>
+        </div>
+        <div class="field">
+          <label for="image">Replace image</label>
+          <input id="image" type="file" name="image" accept="image/*">
+        </div>
+        <button type="submit">Update Sigil</button>
+      </form>
+      <form class="delete" method="post" action="/sigil-deck/card/{id}/delete">
+        <button type="submit">Delete Sigil</button>
+      </form>
     </section>
   </div>
 </body>
@@ -607,6 +643,7 @@ fn render_sigil_card_page(entry: &SigilDeckEntry, deck_size: usize) -> String {
         description = escape_html(&entry.description),
         created_at = escape_html(&entry.created_at),
         image_src = image_src,
+        id = entry.id,
         deck_size = deck_size,
     )
 }
@@ -1524,6 +1561,71 @@ WERE_FORMS = [
       save_sigil_deck_entries(&entries)?;
 
       Ok(redirect(&format!("/sigil-deck/card/{}", next_id)))
+    });
+
+    app.at("/sigil-deck/card/:id/update").post(|mut req: tide::Request<AppState>| async move {
+      let id: u64 = req.param("id").unwrap_or("0").parse().unwrap_or(0);
+      let content_type = req
+        .header("content-type")
+        .and_then(|values| values.get(0))
+        .map(|value| value.as_str().to_string())
+        .unwrap_or_default();
+      if !content_type.contains("multipart/form-data") {
+        return Ok(tide::Response::new(tide::StatusCode::BadRequest));
+      }
+
+      let raw = req.body_bytes().await?;
+      let (fields, files) = parse_multipart_form_data(&content_type, &raw);
+      let mut entries = load_sigil_deck_entries()?;
+      let Some(entry_index) = entries.iter().position(|entry| entry.id == id) else {
+        return Ok(tide::Response::new(tide::StatusCode::NotFound));
+      };
+      let entry = &mut entries[entry_index];
+      entry.title = fields.get("title").cloned().unwrap_or_else(|| entry.title.clone());
+      entry.description = fields
+        .get("description")
+        .cloned()
+        .unwrap_or_else(|| entry.description.clone());
+
+      let mut old_image_path = None;
+      if let Some(upload) = files.get("image").filter(|file| !file.data.is_empty()) {
+        image::load_from_memory(&upload.data)
+          .map_err(|e| tide::Error::from_str(tide::StatusCode::BadRequest, e.to_string()))?;
+        let format = image::guess_format(&upload.data)
+          .map_err(|e| tide::Error::from_str(tide::StatusCode::BadRequest, e.to_string()))?;
+        let ext = sigil_ext_from_format(format)
+          .ok_or_else(|| tide::Error::from_str(tide::StatusCode::BadRequest, "unsupported image type"))?;
+        let filename = format!("sigil_{}_{}.{}", id, Utc::now().timestamp_millis(), ext);
+        let new_image_path = sigil_deck_upload_path(&filename)?;
+        std::fs::write(&new_image_path, &upload.data)
+          .map_err(|e| tide::Error::from_str(tide::StatusCode::InternalServerError, e.to_string()))?;
+        old_image_path = Some(sigil_deck_upload_path(&entry.image_file)?);
+        entry.image_file = filename;
+        entry.mime_type = sigil_mime_from_ext(ext).to_string();
+      }
+
+      save_sigil_deck_entries(&entries)?;
+      if let Some(path) = old_image_path {
+        std::fs::remove_file(path)
+          .map_err(|e| tide::Error::from_str(tide::StatusCode::InternalServerError, e.to_string()))?;
+      }
+      Ok(redirect(&format!("/sigil-deck/card/{}", id)))
+    });
+
+    app.at("/sigil-deck/card/:id/delete").post(|req: tide::Request<AppState>| async move {
+      let id: u64 = req.param("id").unwrap_or("0").parse().unwrap_or(0);
+      let mut entries = load_sigil_deck_entries()?;
+      let Some(entry_index) = entries.iter().position(|entry| entry.id == id) else {
+        return Ok(tide::Response::new(tide::StatusCode::NotFound));
+      };
+      let entry = entries.remove(entry_index);
+      let image_path = sigil_deck_upload_path(&entry.image_file)?;
+      std::fs::remove_file(image_path).map_err(|err| match err.kind() {
+        std::io::ErrorKind::NotFound => tide::Error::from_str(tide::StatusCode::NotFound, "sigil image not found"),
+        _ => tide::Error::from_str(tide::StatusCode::InternalServerError, err.to_string()),
+      })?;
+      save_sigil_deck_entries(&entries)?;
+      Ok(redirect("/sigil-deck"))
     });
 
     app.at("/sigil-deck/image/:filename").get(|req: tide::Request<AppState>| async move {

@@ -1,6 +1,4 @@
 class CGMFS
-  ROOT = ''
-
   hash_branch 'card' do |r|
     r.on do
       r.get do

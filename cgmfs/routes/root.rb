@@ -8,9 +8,7 @@ def family_logged_in?(r)
 end
 
 class CGMFS
-  ROOT = ''
-
-  hash_branch ROOT do |r|
+  hash_branch '' do |r|
     r.on do
       r.get do
         # family_logged_in?(r) # -- TEMP FAILSAFE (v9.0.0.1)

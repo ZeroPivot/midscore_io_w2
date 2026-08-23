@@ -238,11 +238,6 @@ WERE_FORMS = [
 PHASE_COUNT  = MOON_ROTATIONS.size # 15 total phases
 PHASE_LENGTH = MOON_CYCLE_DAYS / PHASE_COUNT # Days per phase
 
-# === Constants and Definitions ===
-
-# Average length of a full lunar cycle (in days)
-MOON_CYCLE_DAYS = 29.53
-
 class Calendar
   attr_reader :date
 
@@ -269,10 +264,6 @@ class Calendar
     pst_time.strftime('%B, %d, %Y - %I:%M:%S %p PST')
   end
 end
-
-# Each moon phase is assumed to share an equal slice of the lunar cycle.
-PHASE_COUNT  = MOON_ROTATIONS.size # 15 total phases
-PHASE_LENGTH = MOON_CYCLE_DAYS / PHASE_COUNT # Days per phase
 
 # === Core Function ===
 
@@ -1210,9 +1201,7 @@ class CGMFS
             begin
               @id_check = @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)['id']
               'This entry does not exist in the database.' if @id_check.nil?
-              if @id_check && @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)['blog_status_locked'] == true
-                'This entry is locked.'
-              end
+              'This entry is locked.' if @id_check && @@line_db[@user].pad['blog_database', 'blog_table'].get(@id)['blog_status_locked'] == true
             rescue StandardError
               'Something went wrong or was tampered with. As a word of caution, this is a beta version of the blog system.'
             end

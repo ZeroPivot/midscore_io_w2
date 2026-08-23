@@ -2,7 +2,7 @@
   "entries": [
     {
       "id": 1,
-      "title": "Stimky Fool",
+      "title": "The Stimky Fools",
       "description": "You are probably horny or want to draw from life.",
       "image_file": "sigil_1_1785770979178.jpg",
       "mime_type": "image/jpeg",
@@ -10,11 +10,43 @@
     },
     {
       "id": 2,
-      "title": "The Actors  Team Of 20+",
-      "description": "Main Card",
-      "image_file": "sigil_2_1785773724884.png",
+      "title": "The Auto Crash/Auto Restart Sigil",
+      "description": "Nobody can say they are sorry, anytime it comes up the Nths backwards sigil suffers.",
+      "image_file": "sigil_2_1786126069351.jpg",
+      "mime_type": "image/jpeg",
+      "created_at": "2026-08-07T18:07:49.351637941+00:00"
+    },
+    {
+      "id": 3,
+      "title": "The Anti Anxiety Sigil",
+      "description": "No more anxiety, 100% of the time.",
+      "image_file": "sigil_3_1786126121360.jpg",
+      "mime_type": "image/jpeg",
+      "created_at": "2026-08-07T18:08:41.360324823+00:00"
+    },
+    {
+      "id": 4,
+      "title": "The Auto Gut Out/Gut In Sigil",
+      "description": "Emotions have no effect on us, it just crashes the Nths backwards sigil.",
+      "image_file": "sigil_4_1786126236879.jpg",
+      "mime_type": "image/jpeg",
+      "created_at": "2026-08-07T18:10:36.880288255+00:00"
+    },
+    {
+      "id": 7,
+      "title": "The Auto-Charge Auto-Discharge Source [Placement] Sigil",
+      "description": "This sigil works with duplicates; make one with or without color and the same for the other, then entangle them by rubbing them together or having one digital and one physical that reflects it. Stabalizes and charges energy.",
+      "image_file": "sigil_7_1786721671541.png",
       "mime_type": "image/png",
-      "created_at": "2026-08-03T16:15:24.884771905+00:00"
+      "created_at": "2026-08-14T15:34:31.546294193+00:00"
+    },
+    {
+      "id": 8,
+      "title": "The Wake-Up Crystals",
+      "description": "These crystals, like irl that one time, should wake us up and keep us awake throughout the day.",
+      "image_file": "sigil_8_1786813655429.png",
+      "mime_type": "image/png",
+      "created_at": "2026-08-15T16:43:10.585003876+00:00"
     }
   ]
 }

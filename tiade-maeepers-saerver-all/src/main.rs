@@ -51,6 +51,7 @@ pub fn redirect(url: &str) -> tide::Response {
 const SIGIL_DECK_ROOT: &str = "/root/midscore_io/tiade-maeepers-saerver-all/sigil_deck_data";
 const SIGIL_DECK_DB_PATH: &str = "/root/midscore_io/tiade-maeepers-saerver-all/sigil_deck_data/deck.json";
 const SIGIL_DECK_UPLOAD_DIR: &str = "/root/midscore_io/tiade-maeepers-saerver-all/sigil_deck_data/uploads";
+const SIGIL_DECK_MAX_IMAGE_SIDE: u32 = 1600;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 struct SigilDeckEntry {
@@ -118,6 +119,74 @@ fn load_sigil_deck_entries() -> tide::Result<Vec<SigilDeckEntry>> {
     }
 }
 
+fn render_flashcard_page(entries: &[SigilDeckEntry]) -> String {
+    let cards = entries
+        .iter()
+        .map(|entry| {
+            serde_json::json!({
+                "id": entry.id,
+                "front": entry.title,
+                "back": entry.description,
+                "image": format!("/sigil-deck/image/{}", entry.image_file),
+                "source": "Sigil deck",
+            })
+        })
+        .collect::<Vec<_>>();
+    let cards_json = serde_json::to_string(&cards)
+        .unwrap_or_else(|_| "[]".to_string())
+        .replace("</", "<\\/");
+
+    format!(
+        r##"<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recall Deck</title>
+  <style>
+    :root {{ --paper: #f4f0e6; --ink: #1c2631; --muted: #64707a; --line: #d5d2c9; --navy: #18354a; --teal: #007d79; --card: #fffdf8; --shadow: 0 18px 42px rgba(20, 43, 55, .14); }}
+    * {{ box-sizing: border-box; }} body {{ min-height: 100vh; margin: 0; color: var(--ink); font-family: Georgia, 'Times New Roman', serif; background-color: var(--paper); background-image: linear-gradient(rgba(24,53,74,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(24,53,74,.035) 1px, transparent 1px); background-size: 28px 28px; }} button, input, textarea {{ font: inherit; }} button {{ cursor: pointer; }}
+    .shell {{ width: min(1100px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 44px; }} .topbar {{ display: flex; justify-content: space-between; align-items: center; gap: 16px; border-bottom: 1px solid var(--line); padding-bottom: 18px; }} .brand {{ display: flex; align-items: center; gap: 11px; color: var(--navy); text-decoration: none; font-size: 1.05rem; font-weight: bold; }} .brand-mark {{ display: grid; place-items: center; width: 34px; height: 34px; border: 2px solid var(--teal); color: var(--teal); font-size: 1.4rem; line-height: 1; }} .text-button {{ padding: 9px 12px; border: 1px solid var(--line); color: var(--navy); background: rgba(255,255,255,.5); border-radius: 4px; text-decoration: none; }}
+    .study {{ display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 38px; align-items: start; padding-top: 40px; }} .eyebrow {{ margin: 0 0 8px; color: var(--teal); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }} h1 {{ margin: 0; color: var(--navy); font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1; }} .subtitle {{ margin: 12px 0 26px; max-width: 56ch; color: var(--muted); line-height: 1.55; }} .progress-row {{ display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 12px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }} .progress {{ height: 7px; overflow: hidden; background: #d7e1df; }} .progress > div {{ width: 0; height: 100%; background: var(--teal); transition: width .25s ease; }}
+    .scene {{ perspective: 1200px; margin-top: 22px; }} .flashcard {{ position: relative; min-height: 390px; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.2,.7,.2,1); outline: 0; }} .flashcard.is-flipped {{ transform: rotateY(180deg); }} .face {{ position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 30px; border: 1px solid #c8c3b8; background: var(--card); box-shadow: var(--shadow); backface-visibility: hidden; }} .face.back {{ color: white; background: var(--navy); transform: rotateY(180deg); }} .card-top {{ display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .75rem; letter-spacing: .04em; text-transform: uppercase; }} .back .card-top {{ color: #bcd5d4; }} .card-content {{ display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 24px; align-items: center; flex: 1; }} .card-content.solo {{ grid-template-columns: 1fr; }} .card-question {{ margin: 0; font-size: clamp(1.6rem, 3.2vw, 2.7rem); line-height: 1.08; overflow-wrap: anywhere; }} .card-answer {{ margin: 0; font-size: clamp(1.15rem, 2.25vw, 1.65rem); line-height: 1.45; overflow-wrap: anywhere; white-space: pre-wrap; }} .card-image {{ display: block; width: 150px; height: 150px; object-fit: cover; border: 5px solid #e1ece8; }} .hint {{ margin: 18px 0 0; color: var(--muted); font-size: .9rem; }} .back .hint {{ color: #c9d7dd; }}
+    .main-controls, .rating-controls {{ display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }} .control {{ min-width: 44px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 4px; color: var(--navy); background: rgba(255,255,255,.72); font-weight: bold; }} .control:hover {{ border-color: var(--teal); color: var(--teal); }} .control.primary {{ border-color: var(--teal); color: white; background: var(--teal); }} .rate {{ min-width: 110px; min-height: 42px; padding: 0 12px; border: 0; border-radius: 4px; color: #17252d; font-weight: bold; }} .rate.again {{ background: #f4b2a7; }} .rate.hard {{ background: #f5d88c; }} .rate.got-it {{ background: #9bd8c6; }}
+    .side {{ padding-top: 64px; }} .side h2 {{ margin: 0 0 11px; color: var(--navy); font-size: 1rem; }} .stat {{ display: flex; align-items: baseline; justify-content: space-between; padding: 11px 0; border-top: 1px solid var(--line); }} .stat strong {{ color: var(--teal); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.25rem; }} .side-actions {{ display: grid; gap: 9px; margin-top: 28px; }} .side-actions button {{ width: 100%; text-align: left; }}
+    dialog {{ width: min(560px, calc(100% - 28px)); padding: 0; border: 0; box-shadow: var(--shadow); background: var(--card); }} dialog::backdrop {{ background: rgba(24,53,74,.5); }} .modal {{ padding: 24px; }} .modal-header {{ display: flex; align-items: center; justify-content: space-between; gap: 12px; }} .modal h2 {{ margin: 0; color: var(--navy); }} .form-grid {{ display: grid; gap: 14px; margin-top: 20px; }} label {{ display: grid; gap: 6px; color: var(--navy); font-size: .9rem; font-weight: bold; }} input, textarea {{ width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 3px; background: white; color: var(--ink); }} textarea {{ min-height: 105px; resize: vertical; }} .modal-actions {{ display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }} .empty {{ display: none; padding: 32px; border: 1px dashed var(--line); color: var(--muted); text-align: center; }}
+    @media (max-width: 760px) {{ .shell {{ width: min(100% - 20px, 1100px); padding-top: 16px; }} .study {{ grid-template-columns: 1fr; gap: 25px; padding-top: 28px; }} .side {{ padding-top: 0; }} .side-actions {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }} .flashcard {{ min-height: 430px; }} .face {{ padding: 22px; }} .card-content {{ grid-template-columns: 1fr; }} .card-image {{ width: min(150px, 45vw); height: min(150px, 45vw); }} }}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar"><a class="brand" href="/flashcard"><span class="brand-mark">R</span>Recall Deck</a><a class="text-button" href="/sigil-deck">Open sigil deck</a></header>
+    <section class="study"><div><p class="eyebrow">Active recall study session</p><h1>Learn it. Hide it. Recall it.</h1><p class="subtitle">A focused digital flashcard routine: read the prompt, reveal only after your attempt, then rate how well it came back to you.</p><div id="studyArea"><div class="progress-row"><span id="position">Card 1 of 1</span><span id="deckLabel">Sigil deck</span></div><div class="progress"><div id="progressFill"></div></div><div class="scene"><article id="flashcard" class="flashcard" tabindex="0" aria-label="Flashcard. Press space to flip."><section class="face front"><div class="card-top"><span>Prompt</span><span id="frontSource"></span></div><div id="frontContent" class="card-content"><h2 id="frontText" class="card-question"></h2><img id="frontImage" class="card-image" alt=""></div><p class="hint">Try to answer before you reveal it.</p></section><section class="face back"><div class="card-top"><span>Answer</span><span>Recall Deck</span></div><div id="backContent" class="card-content"><p id="backText" class="card-answer"></p><img id="backImage" class="card-image" alt=""></div><p class="hint">How did that feel? Rate it, then move on.</p></section></article></div><div class="main-controls"><button id="previous" class="control" type="button">Previous</button><button id="flip" class="control primary" type="button">Reveal answer</button><button id="next" class="control" type="button">Next</button><button id="shuffle" class="control" type="button">Shuffle</button></div><div id="ratings" class="rating-controls" hidden><button class="rate again" data-rating="again" type="button">Again</button><button class="rate hard" data-rating="hard" type="button">Hard</button><button class="rate got-it" data-rating="got-it" type="button">Got it</button></div></div><div id="emptyState" class="empty">No cards yet. Add a card to start a study session.</div></div><aside class="side"><h2>Session</h2><div class="stat"><span>Reviewed</span><strong id="reviewed">0</strong></div><div class="stat"><span>Got it</span><strong id="mastered">0</strong></div><div class="stat"><span>In this deck</span><strong id="deckCount">0</strong></div><div class="side-actions"><button id="editCard" class="control" type="button">Edit current card</button><button id="deleteCard" class="control" type="button">Delete current card</button><button id="answerFirst" class="control" type="button">Start with answer</button><button id="addCard" class="control primary" type="button">Add personal card</button><button id="resetProgress" class="control" type="button">Reset session</button></div></aside></section>
+  </main>
+  <dialog id="cardDialog"><form id="cardForm" class="modal" method="dialog"><div class="modal-header"><h2 id="dialogTitle">Add a flashcard</h2><button id="closeDialog" class="control" type="button">Close</button></div><div class="form-grid"><label>Prompt<input name="front" required placeholder="Question, term, or cue"></label><label>Answer<textarea name="back" required placeholder="Definition, explanation, or answer"></textarea></label><label>Image URL (optional)<input name="imageUrl" type="url" placeholder="https://example.com/image.jpg"></label><label>Or choose an image (optional)<input name="imageFile" type="file" accept="image/*"></label></div><div class="modal-actions"><button class="control" type="button" id="cancelDialog">Cancel</button><button id="saveCard" class="control primary" type="submit">Add card</button></div></form></dialog>
+  <script id="seedCards" type="application/json">{cards_json}</script>
+  <script>
+    (() => {{
+      const storageKey = 'recall-deck-custom-cards', stateKey = 'recall-deck-session';
+      const seedCards = JSON.parse(document.getElementById('seedCards').textContent);
+      const getCustomCards = () => {{ try {{ return JSON.parse(localStorage.getItem(storageKey)) || []; }} catch {{ return []; }} }};
+      let cards = [...seedCards, ...getCustomCards()], index = 0, reviewed = 0, mastered = 0, answerFirst = false, editingId = null;
+      const flashcard = document.getElementById('flashcard'), frontText = document.getElementById('frontText'), backText = document.getElementById('backText'), frontImage = document.getElementById('frontImage'), backImage = document.getElementById('backImage'), ratings = document.getElementById('ratings'), dialog = document.getElementById('cardDialog');
+      const updateImage = (image, url, alt) => {{ image.hidden = !url; image.src = url || ''; image.alt = alt || ''; }};
+      const saveSession = () => localStorage.setItem(stateKey, JSON.stringify({{ reviewed, mastered }}));
+      const render = () => {{ const card = cards[index]; document.getElementById('deckCount').textContent = cards.length; document.getElementById('studyArea').hidden = !card; document.getElementById('emptyState').style.display = card ? 'none' : 'block'; if (!card) return; flashcard.classList.toggle('is-flipped', answerFirst); ratings.hidden = !answerFirst; document.getElementById('flip').textContent = answerFirst ? 'Show prompt' : 'Reveal answer'; frontText.textContent = card.front; backText.textContent = card.back; document.getElementById('frontSource').textContent = card.source || 'Personal card'; updateImage(frontImage, card.image, card.front); updateImage(backImage, card.image, card.front); document.getElementById('frontContent').classList.toggle('solo', !card.image); document.getElementById('backContent').classList.toggle('solo', !card.image); document.getElementById('position').textContent = `Card ${{index + 1}} of ${{cards.length}}`; document.getElementById('progressFill').style.width = `${{((index + 1) / cards.length) * 100}}%`; document.getElementById('deckLabel').textContent = card.source || 'Personal card'; }};
+      const flip = () => {{ if (!cards.length) return; const showingAnswer = flashcard.classList.toggle('is-flipped'); document.getElementById('flip').textContent = showingAnswer ? 'Show prompt' : 'Reveal answer'; ratings.hidden = !showingAnswer; }};
+      const move = amount => {{ if (!cards.length) return; index = (index + amount + cards.length) % cards.length; render(); document.getElementById('flip').textContent = 'Reveal answer'; }};
+      const restore = () => {{ try {{ const saved = JSON.parse(localStorage.getItem(stateKey)); reviewed = saved?.reviewed || 0; mastered = saved?.mastered || 0; }} catch {{}} document.getElementById('reviewed').textContent = reviewed; document.getElementById('mastered').textContent = mastered; }};
+      document.getElementById('flip').addEventListener('click', flip); flashcard.addEventListener('click', flip); document.getElementById('previous').addEventListener('click', () => move(-1)); document.getElementById('next').addEventListener('click', () => move(1)); document.getElementById('shuffle').addEventListener('click', () => {{ for (let cardIndex = cards.length - 1; cardIndex > 0; cardIndex--) {{ const pick = Math.floor(Math.random() * (cardIndex + 1)); [cards[cardIndex], cards[pick]] = [cards[pick], cards[cardIndex]]; }} index = 0; render(); }}); document.getElementById('answerFirst').addEventListener('click', () => {{ answerFirst = !answerFirst; document.getElementById('answerFirst').textContent = answerFirst ? 'Start with prompt' : 'Start with answer'; render(); }});
+      ratings.addEventListener('click', event => {{ const rating = event.target.dataset.rating; if (!rating) return; reviewed++; if (rating === 'got-it') mastered++; document.getElementById('reviewed').textContent = reviewed; document.getElementById('mastered').textContent = mastered; saveSession(); move(1); }}); document.getElementById('resetProgress').addEventListener('click', () => {{ reviewed = 0; mastered = 0; saveSession(); restore(); }}); document.getElementById('addCard').addEventListener('click', () => {{ editingId = null; document.getElementById('dialogTitle').textContent = 'Add a flashcard'; document.getElementById('saveCard').textContent = 'Add card'; document.getElementById('cardForm').reset(); dialog.showModal(); }}); document.getElementById('editCard').addEventListener('click', () => {{ const card = cards[index]; if (!card) return; if (card.source === 'Sigil deck') {{ window.location.href = `/sigil-deck/card/${{card.id}}`; return; }} editingId = card.id; const form = document.getElementById('cardForm'); form.elements.front.value = card.front; form.elements.back.value = card.back; form.elements.imageUrl.value = card.image || ''; document.getElementById('dialogTitle').textContent = 'Edit personal card'; document.getElementById('saveCard').textContent = 'Save changes'; dialog.showModal(); }}); document.getElementById('deleteCard').addEventListener('click', () => {{ const card = cards[index]; if (!card) return; if (card.source === 'Sigil deck') {{ window.location.href = `/sigil-deck/card/${{card.id}}`; return; }} if (!confirm('Delete this personal card?')) return; const custom = getCustomCards().filter(customCard => customCard.id !== card.id); localStorage.setItem(storageKey, JSON.stringify(custom)); cards = [...seedCards, ...custom]; index = Math.max(0, Math.min(index, cards.length - 1)); render(); }}); document.getElementById('closeDialog').addEventListener('click', () => dialog.close()); document.getElementById('cancelDialog').addEventListener('click', () => dialog.close());
+      document.getElementById('cardForm').addEventListener('submit', event => {{ event.preventDefault(); const form = new FormData(event.currentTarget), file = form.get('imageFile'); const save = image => {{ const custom = getCustomCards(), card = {{ id: editingId || `custom-${{Date.now()}}`, front: form.get('front').trim(), back: form.get('back').trim(), image, source: 'Personal card' }}; const cardIndex = custom.findIndex(customCard => customCard.id === editingId); if (cardIndex >= 0) custom[cardIndex] = card; else custom.push(card); localStorage.setItem(storageKey, JSON.stringify(custom)); cards = [...seedCards, ...custom]; index = cards.findIndex(currentCard => currentCard.id === card.id); editingId = null; dialog.close(); event.currentTarget.reset(); render(); }}; if (file?.size) {{ const reader = new FileReader(); reader.onload = () => save(reader.result); reader.readAsDataURL(file); }} else {{ save(form.get('imageUrl').trim()); }} }});
+      document.addEventListener('keydown', event => {{ if (dialog.open || event.target.matches('input, textarea')) return; if (event.key === ' ' || event.key === 'Enter') {{ event.preventDefault(); flip(); }} if (event.key === 'ArrowRight') move(1); if (event.key === 'ArrowLeft') move(-1); }}); restore(); render();
+    }})();
+  </script>
+</body>
+</html>"##,
+        cards_json = cards_json,
+    )
+}
+
 fn save_sigil_deck_entries(entries: &[SigilDeckEntry]) -> tide::Result<()> {
     sigil_deck_ensure_storage()?;
     let db = SigilDeckDb {
@@ -151,6 +220,71 @@ fn sigil_ext_from_format(format: image::ImageFormat) -> Option<&'static str> {
         _ => None,
     }
 }
+
+  fn sigil_normalize_image(data: &[u8]) -> tide::Result<(Vec<u8>, &'static str)> {
+    if data.is_empty() {
+      return Err(tide::Error::from_str(
+        tide::StatusCode::BadRequest,
+        "sigil image cannot be empty",
+      ));
+    }
+
+    let image = image::load_from_memory(data)
+      .map_err(|e| tide::Error::from_str(tide::StatusCode::BadRequest, e.to_string()))?;
+    let format = image::guess_format(data)
+      .map_err(|e| tide::Error::from_str(tide::StatusCode::BadRequest, e.to_string()))?;
+    let ext = sigil_ext_from_format(format)
+      .ok_or_else(|| tide::Error::from_str(tide::StatusCode::BadRequest, "unsupported image type"))?;
+    let (width, height) = image.dimensions();
+
+    if width <= SIGIL_DECK_MAX_IMAGE_SIDE && height <= SIGIL_DECK_MAX_IMAGE_SIDE {
+      return Ok((data.to_vec(), ext));
+    }
+
+    let resized = image.resize(
+      SIGIL_DECK_MAX_IMAGE_SIDE,
+      SIGIL_DECK_MAX_IMAGE_SIDE,
+      image::imageops::FilterType::Lanczos3,
+    );
+    let output_format = if format == image::ImageFormat::Gif {
+      image::ImageFormat::Png
+    } else {
+      format
+    };
+    let output_ext = sigil_ext_from_format(output_format)
+      .ok_or_else(|| tide::Error::from_str(tide::StatusCode::BadRequest, "unsupported image type"))?;
+    let mut output = std::io::Cursor::new(Vec::new());
+    resized
+      .write_to(&mut output, output_format)
+      .map_err(|e| tide::Error::from_str(tide::StatusCode::BadRequest, e.to_string()))?;
+    Ok((output.into_inner(), output_ext))
+  }
+
+  async fn download_sigil_image(image_url: &str) -> tide::Result<Vec<u8>> {
+    let parsed = url::Url::parse(image_url)
+      .map_err(|_| tide::Error::from_str(tide::StatusCode::BadRequest, "invalid image URL"))?;
+    if !matches!(parsed.scheme(), "http" | "https") || parsed.host_str().is_none() {
+      return Err(tide::Error::from_str(
+        tide::StatusCode::BadRequest,
+        "image URL must use http or https",
+      ));
+    }
+
+    let mut response = surf::get(parsed.as_str())
+      .await
+      .map_err(|e| tide::Error::from_str(tide::StatusCode::BadGateway, e.to_string()))?;
+    if !response.status().is_success() {
+      return Err(tide::Error::from_str(
+        tide::StatusCode::BadGateway,
+        format!("image URL returned {}", response.status()),
+      ));
+    }
+    let data = response
+      .body_bytes()
+      .await
+      .map_err(|e| tide::Error::from_str(tide::StatusCode::BadGateway, e.to_string()))?;
+    Ok(data)
+  }
 
 fn find_subslice(haystack: &[u8], needle: &[u8]) -> Option<usize> {
     if needle.is_empty() || haystack.len() < needle.len() {
@@ -472,7 +606,7 @@ fn render_sigil_deck_page(entries: &[SigilDeckEntry]) -> String {
       display: block;
       width: 100%;
       aspect-ratio: 4 / 5;
-      object-fit: cover;
+      object-fit: contain;
       background: var(--panel-strong);
     }}
 
@@ -510,8 +644,12 @@ fn render_sigil_deck_page(entries: &[SigilDeckEntry]) -> String {
       </div>
       <form class="upload" method="post" action="/sigil-deck/upload" enctype="multipart/form-data">
         <div class="field full">
-          <label for="image">Image</label>
-          <input id="image" type="file" name="image" accept="image/*" required>
+          <label for="image">Image file</label>
+          <input id="image" type="file" name="image" accept="image/*">
+        </div>
+        <div class="field full">
+          <label for="image_url">Or image URL</label>
+          <input id="image_url" type="url" name="image_url" placeholder="https://example.com/sigil.jpg">
         </div>
         <div class="field">
           <label for="title">Title</label>
@@ -574,7 +712,7 @@ fn render_sigil_card_page(entry: &SigilDeckEntry, deck_size: usize) -> String {
       background: var(--panel);
       box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
     }}
-    img {{ width: 100%; display: block; border-radius: 20px; aspect-ratio: 4 / 5; object-fit: cover; background: #1a1621; }}
+    img {{ width: 100%; display: block; border-radius: 20px; aspect-ratio: 4 / 5; object-fit: contain; background: #1a1621; }}
     h1 {{ margin: 16px 0 10px; font-size: clamp(1.8rem, 4vw, 3rem); }}
     p {{ color: var(--muted); line-height: 1.6; }}
     .meta {{ display: grid; gap: 10px; margin-top: 12px; }}
@@ -630,6 +768,10 @@ fn render_sigil_card_page(entry: &SigilDeckEntry, deck_size: usize) -> String {
           <label for="image">Replace image</label>
           <input id="image" type="file" name="image" accept="image/*">
         </div>
+        <div class="field">
+          <label for="image_url">Or replace from image URL</label>
+          <input id="image_url" type="url" name="image_url" placeholder="https://example.com/sigil.jpg">
+        </div>
         <button type="submit">Update Sigil</button>
       </form>
       <form class="delete" method="post" action="/sigil-deck/card/{id}/delete">
@@ -649,7 +791,7 @@ fn render_sigil_card_page(entry: &SigilDeckEntry, deck_size: usize) -> String {
 }
 
 use anyhow::Result;
-use image::DynamicImage;
+use image::{DynamicImage, GenericImageView};
 use std::io::Cursor;
 
 // filepath: /path/to/helpers.rs
@@ -1483,11 +1625,13 @@ WERE_FORMS = [
      app.at("/random2").get(|mut req: tide::Request<AppState>| async move {
 
 
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
     use rand::Rng;
     let mut rng = rand::thread_rng();
-    let random_value: u32 = rng.gen_range(0..4);
-    let output = random_value.to_string();
+    let output = match rng.gen_range(0..3) {
+      0 => "1/2",
+      1 => "1/1",
+      _ => "3/2",
+    };
 
      // Return the HTML response.
     let mut res = tide::Response::new(tide::StatusCode::Ok);
@@ -1497,10 +1641,19 @@ WERE_FORMS = [
     //Ok(output.into())
   });
 
+
     app.at("/sigil-deck").get(|_| async move {
       let entries = load_sigil_deck_entries()?;
       let mut res = tide::Response::new(tide::StatusCode::Ok);
       res.set_body(render_sigil_deck_page(&entries));
+      res.insert_header("Content-Type", "text/html; charset=utf-8");
+      Ok(res)
+    });
+
+    app.at("/flashcard").get(|_| async move {
+      let entries = load_sigil_deck_entries()?;
+      let mut res = tide::Response::new(tide::StatusCode::Ok);
+      res.set_body(render_flashcard_page(&entries));
       res.insert_header("Content-Type", "text/html; charset=utf-8");
       Ok(res)
     });
@@ -1526,16 +1679,16 @@ WERE_FORMS = [
         .get("description")
         .cloned()
         .unwrap_or_else(|| "No description provided yet.".to_string());
-      let Some(upload) = files.get("image").cloned().or_else(|| files.values().next().cloned()) else {
-        return Ok(tide::Response::new(tide::StatusCode::BadRequest));
+      let image_data = match fields.get("image_url").map(String::as_str).map(str::trim) {
+        Some(image_url) if !image_url.is_empty() => download_sigil_image(image_url).await?,
+        _ => {
+          let Some(upload) = files.get("image").cloned().or_else(|| files.values().next().cloned()) else {
+            return Ok(tide::Response::new(tide::StatusCode::BadRequest));
+          };
+          upload.data
+        }
       };
-
-      image::load_from_memory(&upload.data)
-        .map_err(|e| tide::Error::from_str(tide::StatusCode::BadRequest, e.to_string()))?;
-      let format = image::guess_format(&upload.data)
-        .map_err(|e| tide::Error::from_str(tide::StatusCode::BadRequest, e.to_string()))?;
-      let ext = sigil_ext_from_format(format)
-        .ok_or_else(|| tide::Error::from_str(tide::StatusCode::BadRequest, "unsupported image type"))?;
+      let (image_data, ext) = sigil_normalize_image(&image_data)?;
 
       sigil_deck_ensure_storage()?;
       let mut entries = load_sigil_deck_entries()?;
@@ -1547,7 +1700,7 @@ WERE_FORMS = [
         .saturating_add(1);
       let filename = format!("sigil_{}_{}.{}", next_id, Utc::now().timestamp_millis(), ext);
       let path = format!("{}/{}", SIGIL_DECK_UPLOAD_DIR, filename);
-      std::fs::write(&path, &upload.data)
+      std::fs::write(&path, &image_data)
         .map_err(|e| tide::Error::from_str(tide::StatusCode::InternalServerError, e.to_string()))?;
 
       entries.push(SigilDeckEntry {
@@ -1588,16 +1741,15 @@ WERE_FORMS = [
         .unwrap_or_else(|| entry.description.clone());
 
       let mut old_image_path = None;
-      if let Some(upload) = files.get("image").filter(|file| !file.data.is_empty()) {
-        image::load_from_memory(&upload.data)
-          .map_err(|e| tide::Error::from_str(tide::StatusCode::BadRequest, e.to_string()))?;
-        let format = image::guess_format(&upload.data)
-          .map_err(|e| tide::Error::from_str(tide::StatusCode::BadRequest, e.to_string()))?;
-        let ext = sigil_ext_from_format(format)
-          .ok_or_else(|| tide::Error::from_str(tide::StatusCode::BadRequest, "unsupported image type"))?;
+      let replacement_data = match fields.get("image_url").map(String::as_str).map(str::trim) {
+        Some(image_url) if !image_url.is_empty() => Some(download_sigil_image(image_url).await?),
+        _ => files.get("image").filter(|file| !file.data.is_empty()).map(|file| file.data.clone()),
+      };
+      if let Some(replacement_data) = replacement_data {
+        let (replacement_data, ext) = sigil_normalize_image(&replacement_data)?;
         let filename = format!("sigil_{}_{}.{}", id, Utc::now().timestamp_millis(), ext);
         let new_image_path = sigil_deck_upload_path(&filename)?;
-        std::fs::write(&new_image_path, &upload.data)
+        std::fs::write(&new_image_path, &replacement_data)
           .map_err(|e| tide::Error::from_str(tide::StatusCode::InternalServerError, e.to_string()))?;
         old_image_path = Some(sigil_deck_upload_path(&entry.image_file)?);
         entry.image_file = filename;

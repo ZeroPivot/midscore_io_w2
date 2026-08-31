@@ -162,6 +162,7 @@ These are mounted by `mount_ollama_routes(&mut app, OllamaRelayConfig::default()
 - `/incrementor_get`
 - `/incrementor`
 - `/analytics`
+- `/markov_metrics` (JSON conversation-flow and speaker-transition metrics)
 - `/chatlog`
 - `/schedule_ft`
 - `/read`

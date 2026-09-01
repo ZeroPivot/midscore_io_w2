@@ -5,8 +5,8 @@ string RELAY_URL = "https://stimky.info";
 integer CONTROL_CHANNEL = -77553311;
 integer LOG_PUBLIC_CHAT = TRUE;
 integer MAX_OWNER_MESSAGE_LENGTH = 230;
-integer MAX_TRANSITIONS_TO_SHOW = 20;
-integer MAX_SPEAKERS_TO_SHOW = 20;
+integer MAX_TRANSITIONS_TO_SHOW = 8;
+integer MAX_SPEAKERS_TO_SHOW = 8;
 integer REPORT_REQUEST_TIMEOUT_SECONDS = 45;
 
 key gOwner;
@@ -63,6 +63,26 @@ string json_value_or(string body, list path, string fallback)
         return fallback;
     }
     return value;
+}
+
+string truncate_text(string text, integer max_length)
+{
+    if (llStringLength(text) <= max_length) return text;
+    return llGetSubString(text, 0, max_length - 4) + "...";
+}
+
+string format_decimal(string value, integer decimal_places)
+{
+    integer decimal_index;
+    if (value == JSON_INVALID || value == JSON_NULL || value == "") return "n/a";
+    value = (string)((float)value);
+    decimal_index = llSubStringIndex(value, ".");
+    if (decimal_index == -1) return value;
+    if (decimal_places == 0)
+    {
+        return llGetSubString(value, 0, decimal_index - 1);
+    }
+    return llGetSubString(value, 0, decimal_index + decimal_places);
 }
 
 string make_log_entry(string message, key speaker_id, string speaker_name)
@@ -143,7 +163,7 @@ integer show_report(string body)
     string events = json_value_or(body, ["total_events"], "0");
     string speakers = json_value_or(body, ["unique_speakers"], "0");
     string transitions = json_value_or(body, ["transitions"], "0");
-    string switch_rate = json_value_or(body, ["speaker_switch_rate"], "0");
+    string switch_rate = format_decimal(json_value_or(body, ["speaker_switch_rate"], "0"), 2);
     string average_reply = json_value_or(body, ["average_reply_seconds"], "n/a");
     integer index = 0;
 
@@ -154,23 +174,23 @@ integer show_report(string body)
     }
     if (average_reply != "n/a")
     {
-        average_reply += "s";
+        average_reply = format_decimal(average_reply, 1) + "s";
     }
 
-    owner_say_chunks("Conversation flow " + score + "/100 | events=" + events
-        + " speakers=" + speakers + " transitions=" + transitions
-        + " switch rate=" + switch_rate + " avg reply=" + average_reply);
+    owner_say_chunks("FLOW " + score + "/100 | " + events + " messages | "
+        + speakers + " speakers | " + transitions + " transitions");
+    owner_say_chunks("Switch rate: " + switch_rate + " | Average reply: " + average_reply);
 
-    owner_say_chunks("Message uniqueness: distinct normalized messages / that speaker's messages.");
+    owner_say_chunks("UNIQUENESS (distinct messages / total)");
     while (index < MAX_SPEAKERS_TO_SHOW)
     {
         string speaker = llJsonGetValue(body, ["speaker_uniqueness", index, "speaker"]);
         string total = llJsonGetValue(body, ["speaker_uniqueness", index, "total_messages"]);
         string unique_count = llJsonGetValue(body, ["speaker_uniqueness", index, "unique_messages"]);
-        string unique_percent = llJsonGetValue(body, ["speaker_uniqueness", index, "unique_percent"]);
+        string unique_percent = format_decimal(llJsonGetValue(body, ["speaker_uniqueness", index, "unique_percent"]), 1);
         if (speaker != JSON_INVALID)
         {
-            owner_say_chunks(speaker + ": " + unique_percent + "% unique ("
+            owner_say_chunks(truncate_text(speaker, 36) + "  " + unique_percent + "% ("
                 + unique_count + "/" + total + ")");
         }
         index += 1;
@@ -182,10 +202,10 @@ integer show_report(string body)
         string from = llJsonGetValue(body, ["top_transitions", index, "from"]);
         string to = llJsonGetValue(body, ["top_transitions", index, "to"]);
         string count = llJsonGetValue(body, ["top_transitions", index, "count"]);
-        string probability = llJsonGetValue(body, ["top_transitions", index, "probability"]);
+        string probability = format_decimal(llJsonGetValue(body, ["top_transitions", index, "probability"]), 2);
         if (from == JSON_INVALID) return 0;
-        owner_say_chunks((string)(index + 1) + ". " + from + " -> " + to
-            + " | count=" + count + " probability=" + probability);
+        owner_say_chunks((string)(index + 1) + ". " + truncate_text(from, 28)
+            + " -> " + truncate_text(to, 28) + "  " + count + "x (" + probability + ")");
         index += 1;
     }
     return 0;

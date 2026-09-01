@@ -71,6 +71,34 @@ struct HistoryOutput {
     second_life_chat_log_path: String,
 }
 
+#[derive(Serialize)]
+struct MarkovTransition {
+    from: String,
+    to: String,
+    count: usize,
+    probability: f64,
+}
+
+#[derive(Serialize)]
+struct SpeakerUniqueness {
+    speaker: String,
+    total_messages: usize,
+    unique_messages: usize,
+    unique_percent: f64,
+}
+
+#[derive(Serialize)]
+struct MarkovMetricsOutput {
+    total_events: usize,
+    unique_speakers: usize,
+    transitions: usize,
+    speaker_switch_rate: f64,
+    average_reply_seconds: Option<f64>,
+    conversation_flow_score: u8,
+    top_transitions: Vec<MarkovTransition>,
+    speaker_uniqueness: Vec<SpeakerUniqueness>,
+}
+
 #[derive(Debug)]
 struct RelayContext {
     message: String,
@@ -191,6 +219,9 @@ pub fn mount_routes<State: Clone + Send + Sync + 'static>(
                         return Ok(text_response(tide::StatusCode::BadRequest, "empty body"));
                     }
 
+                    if let Some(parent) = cfg.second_life_chat_log_path.parent() {
+                        fs::create_dir_all(parent)?;
+                    }
                     let mut existing = fs::OpenOptions::new()
                         .create(true)
                         .append(true)
@@ -278,6 +309,21 @@ pub fn mount_routes<State: Clone + Send + Sync + 'static>(
                     let entries = parse_second_life_entries(&cfg.second_life_chat_log_path);
                     let report = analytics_report(&cfg.second_life_chat_log_path, &entries);
                     Ok(text_response(tide::StatusCode::Ok, &report))
+                }
+            });
+    }
+
+    {
+        let cfg = cfg.clone();
+        app.at("/markov_metrics")
+            .get(move |_req: tide::Request<State>| {
+                let cfg = cfg.clone();
+                async move {
+                    let entries = parse_second_life_entries(&cfg.second_life_chat_log_path);
+                    Ok(json_response(
+                        tide::StatusCode::Ok,
+                        markov_metrics(&entries),
+                    ))
                 }
             });
     }
@@ -790,6 +836,142 @@ fn timestamp_as_i64(v: &Value) -> Option<i64> {
     None
 }
 
+fn normalized_message(event: &Value) -> String {
+    event["message"]
+        .as_str()
+        .unwrap_or("")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_lowercase()
+}
+
+fn markov_metrics(entries: &[Value]) -> MarkovMetricsOutput {
+    const SESSION_GAP_SECONDS: i64 = 30 * 60;
+
+    let mut unique: HashMap<(String, i64, String), Value> = HashMap::new();
+    for entry in entries {
+        let Some(timestamp) = timestamp_as_i64(&entry["timestamp"]) else {
+            continue;
+        };
+        let key = (
+            entry["avatar_id"].as_str().unwrap_or("").to_string(),
+            timestamp,
+            entry["message"].as_str().unwrap_or("").to_string(),
+        );
+        unique.entry(key).or_insert_with(|| entry.clone());
+    }
+
+    let mut events = unique.into_values().collect::<Vec<_>>();
+    events.sort_by_key(|event| timestamp_as_i64(&event["timestamp"]).unwrap_or(0));
+
+    let speaker_for = |event: &Value| {
+        let name = event["avatar_name"].as_str().unwrap_or("").trim();
+        if name.is_empty() {
+            event["avatar_id"].as_str().unwrap_or("Unknown avatar").to_string()
+        } else {
+            name.to_string()
+        }
+    };
+
+    let mut speakers = HashSet::new();
+    let mut transition_counts: HashMap<(String, String), usize> = HashMap::new();
+    let mut outgoing_counts: HashMap<String, usize> = HashMap::new();
+    let mut messages_by_speaker: HashMap<String, Vec<String>> = HashMap::new();
+    let mut transitions = 0usize;
+    let mut speaker_switches = 0usize;
+    let mut reply_seconds = Vec::new();
+
+    for event in &events {
+        let speaker = speaker_for(event);
+        speakers.insert(speaker.clone());
+        messages_by_speaker
+            .entry(speaker)
+            .or_default()
+            .push(normalized_message(event));
+    }
+
+    for pair in events.windows(2) {
+        let from_time = timestamp_as_i64(&pair[0]["timestamp"]).unwrap_or(0);
+        let to_time = timestamp_as_i64(&pair[1]["timestamp"]).unwrap_or(0);
+        let gap = to_time - from_time;
+        if gap < 0 || gap > SESSION_GAP_SECONDS {
+            continue;
+        }
+
+        let from = speaker_for(&pair[0]);
+        let to = speaker_for(&pair[1]);
+        *transition_counts.entry((from.clone(), to.clone())).or_insert(0) += 1;
+        *outgoing_counts.entry(from.clone()).or_insert(0) += 1;
+        transitions += 1;
+        if from != to {
+            speaker_switches += 1;
+            reply_seconds.push(gap as f64);
+        }
+    }
+
+    let mut top_transitions = transition_counts
+        .into_iter()
+        .map(|((from, to), count)| MarkovTransition {
+            probability: count as f64 / outgoing_counts[&from] as f64,
+            from,
+            to,
+            count,
+        })
+        .collect::<Vec<_>>();
+    top_transitions.sort_by(|left, right| right.count.cmp(&left.count));
+    top_transitions.truncate(20);
+
+    let mut speaker_uniqueness = messages_by_speaker
+        .into_iter()
+        .map(|(speaker, messages)| {
+            let total_messages = messages.len();
+            let unique_messages = messages.into_iter().collect::<HashSet<_>>().len();
+            SpeakerUniqueness {
+                speaker,
+                total_messages,
+                unique_messages,
+                unique_percent: unique_messages as f64 / total_messages as f64 * 100.0,
+            }
+        })
+        .collect::<Vec<_>>();
+    speaker_uniqueness.sort_by(|left, right| right.total_messages.cmp(&left.total_messages));
+    speaker_uniqueness.truncate(20);
+
+    let speaker_switch_rate = if transitions == 0 {
+        0.0
+    } else {
+        speaker_switches as f64 / transitions as f64
+    };
+    let average_reply_seconds = if reply_seconds.is_empty() {
+        None
+    } else {
+        Some(reply_seconds.iter().sum::<f64>() / reply_seconds.len() as f64)
+    };
+    let participant_points = (speakers.len().min(4) as f64 / 4.0) * 25.0;
+    let switching_points = speaker_switch_rate * 50.0;
+    let pace_points = match average_reply_seconds {
+        Some(seconds) if seconds <= 60.0 => 25.0,
+        Some(seconds) if seconds <= 300.0 => 18.0,
+        Some(seconds) if seconds <= 900.0 => 8.0,
+        _ => 0.0,
+    };
+    let conversation_flow_score = (participant_points + switching_points + pace_points)
+        .round()
+        .clamp(0.0, 100.0) as u8;
+
+    MarkovMetricsOutput {
+        total_events: events.len(),
+        unique_speakers: speakers.len(),
+        transitions,
+        speaker_switch_rate,
+        average_reply_seconds,
+        conversation_flow_score,
+        top_transitions,
+        speaker_uniqueness,
+    }
+}
+
 fn analytics_report(path: &Path, entries: &[Value]) -> String {
     const WEEKDAYS: [&str; 7] = [
         "Monday",
@@ -1061,4 +1243,62 @@ fn schedule_report(entries: &[Value]) -> String {
         out.push_str(&format!("{}: {}\n", month, count));
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn markov_metrics_tracks_speaker_transitions_and_reply_time() {
+        let entries = vec![
+            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "hello", "timestamp": 100}),
+            json!({"avatar_id": "b", "avatar_name": "Bea", "message": "hi", "timestamp": 120}),
+            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "welcome", "timestamp": 150}),
+        ];
+
+        let metrics = markov_metrics(&entries);
+
+        assert_eq!(metrics.total_events, 3);
+        assert_eq!(metrics.unique_speakers, 2);
+        assert_eq!(metrics.transitions, 2);
+        assert_eq!(metrics.speaker_switch_rate, 1.0);
+        assert_eq!(metrics.average_reply_seconds, Some(25.0));
+        assert_eq!(metrics.top_transitions.len(), 2);
+        assert_eq!(metrics.top_transitions[0].probability, 1.0);
+        assert_eq!(metrics.speaker_uniqueness.len(), 2);
+        assert_eq!(metrics.speaker_uniqueness[0].unique_percent, 100.0);
+    }
+
+    #[test]
+    fn markov_metrics_does_not_cross_session_gaps() {
+        let entries = vec![
+            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "before", "timestamp": 100}),
+            json!({"avatar_id": "b", "avatar_name": "Bea", "message": "after", "timestamp": 1_901}),
+        ];
+
+        let metrics = markov_metrics(&entries);
+
+        assert_eq!(metrics.total_events, 2);
+        assert_eq!(metrics.transitions, 0);
+        assert_eq!(metrics.speaker_switch_rate, 0.0);
+        assert_eq!(metrics.average_reply_seconds, None);
+        assert!(metrics.top_transitions.is_empty());
+    }
+
+    #[test]
+    fn markov_metrics_reports_normalized_message_uniqueness_per_speaker() {
+        let entries = vec![
+            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "Hello   there", "timestamp": 100}),
+            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "hello there", "timestamp": 110}),
+            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "A new thought", "timestamp": 120}),
+        ];
+
+        let metrics = markov_metrics(&entries);
+
+        assert_eq!(metrics.speaker_uniqueness.len(), 1);
+        assert_eq!(metrics.speaker_uniqueness[0].total_messages, 3);
+        assert_eq!(metrics.speaker_uniqueness[0].unique_messages, 2);
+        assert!((metrics.speaker_uniqueness[0].unique_percent - 66.666_666).abs() < 0.001);
+    }
 }

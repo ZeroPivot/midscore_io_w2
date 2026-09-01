@@ -1,326 +1,322 @@
-// TiaDE Ollama Team Chatbot for Second Life
-//
-// Features:
-// - Sends chat prompts to the relay backend at /chat/:team
-// - Supports a configurable team name so conversations are grouped
-// - Responds in local/public chat or by whispering to the speaker
-// - Supports direct commands via a dedicated listen channel
-// - Supports history lookup via /history/:team
-// - Supports logging to /sl_logger
-//
-// Setup:
-// 1. Change SERVER_URL to your relay host (for example http://your-host:8080)
-// 2. Change TEAM_NAME to your preferred team slug
-// 3. Drop this script into a prim/object in Second Life
-// 4. Say on channel 8811: !ai help
-//
-// Example commands:
-//   !ai help
-//   !ai team myteam
-//   !ai mode local
-//   !ai mode whisper
-//   !ai say hello there
-//   !ai history
-//   !ai log test entry
-//   !ai status
+// TiaDE Ollama Team Chatbot for Second Life.
+// Public commands on channel 8811: !ai help, !ai say <text>, !ai history.
+// Owner-only commands: !ai team <name>, !ai mode local|whisper, !ai auto on|off,
+// !ai log <text>, !ai status.
 
-string SERVER_URL = "http://127.0.0.1:8080";
-string TEAM_NAME = "sl_team";
+string SERVER_URL = "https://stimky.info";
+string TEAM_NAME = "secondlife";
 string BOT_NAME = "TiaDE";
 integer COMMAND_CHANNEL = 8811;
 integer AUTO_REPLY = TRUE;
-integer REPLY_MODE = 0; // 0 = public local chat, 1 = whisper to speaker
+integer REPLY_MODE = 0; // 0 = public chat, 1 = direct reply to the speaker
+integer MAX_CHAT_MESSAGE_LENGTH = 230;
 
-integer REQUEST_IN_FLIGHT = FALSE;
-key LAST_REQUEST = NULL_KEY;
-string PENDING_TEXT = "";
-key PENDING_SENDER = NULL_KEY;
-string PENDING_SENDER_NAME = "";
-integer PENDING_REPLY_MODE = 0;
-integer PENDING_PUBLIC = 0;
-string LAST_ERROR = "";
+integer gRequestInFlight;
+key gLastRequest = NULL_KEY;
+string gRequestKind = "";
+key gPendingSender = NULL_KEY;
+integer gPendingReplyMode;
+integer gControlListenHandle;
+integer gPublicListenHandle;
+string gLastError = "";
 
-string firstWord(string input)
+string first_word(string input)
 {
-    integer idx = llSubStringIndex(input, " ");
-    if (idx < 0) return input;
-    return llGetSubString(input, 0, idx - 1);
+    integer index = llSubStringIndex(input, " ");
+    if (index < 0) return input;
+    return llGetSubString(input, 0, index - 1);
 }
 
-string restOf(string input)
+string rest_of(string input)
 {
-    integer idx = llSubStringIndex(input, " ");
-    if (idx < 0) return "";
-    return llGetSubString(input, idx + 1, -1);
+    integer index = llSubStringIndex(input, " ");
+    if (index < 0) return "";
+    return llStringTrim(llGetSubString(input, index + 1, -1), STRING_TRIM);
 }
 
-string speakText(string text)
+string reply_mode_name(integer mode)
 {
-    if (REPLY_MODE == 1) {
-        llOwnerSay(text);
-        return text;
+    if (mode == 1) return "whisper";
+    return "local";
+}
+
+integer owner_say_chunks(string text)
+{
+    integer start = 0;
+    integer length = llStringLength(text);
+
+    if (length == 0)
+    {
+        llOwnerSay("(empty response)");
+        return 0;
     }
-    llSay(0, text);
-    return text;
-}
-
-string speakToAvatar(string text, key avatar_id)
-{
-    if (REPLY_MODE == 1) {
-        llRegionSayTo(avatar_id, 0, text);
+    while (start < length)
+    {
+        llOwnerSay(llGetSubString(text, start, start + MAX_CHAT_MESSAGE_LENGTH - 1));
+        start += MAX_CHAT_MESSAGE_LENGTH;
     }
-    else {
-        llSay(0, text);
-    }
-    return text;
+    return 0;
 }
 
-string stripLeadingSpace(string input)
+integer reply_chunks(string text, key recipient, integer reply_mode)
 {
-    integer len = llStringLength(input);
-    while (len > 0 && llGetSubString(input, 0, 0) == " ") {
-        input = llGetSubString(input, 1, -1);
-        len = llStringLength(input);
-    }
-    return input;
-}
+    integer start = 0;
+    integer length = llStringLength(text);
 
-string buildChatPayload(string message)
-{
-    string payload = "{}";
-    payload = llJsonSetValue(payload, ["message"], message);
-    return payload;
-}
-
-sendChatRequest(string prompt, key sender_id, string sender_name, integer public_reply)
-{
-    if (REQUEST_IN_FLIGHT) {
-        LAST_ERROR = "Busy; previous request still in flight";
-        if (public_reply) {
-            llOwnerSay("Busy; previous request still in flight.");
+    if (length == 0) text = "(empty response)";
+    length = llStringLength(text);
+    while (start < length)
+    {
+        string chunk = llGetSubString(text, start, start + MAX_CHAT_MESSAGE_LENGTH - 1);
+        if (reply_mode == 1 && recipient != NULL_KEY)
+        {
+            llRegionSayTo(recipient, 0, chunk);
         }
-        return;
+        else
+        {
+            llSay(0, chunk);
+        }
+        start += MAX_CHAT_MESSAGE_LENGTH;
+    }
+    return 0;
+}
+
+string chat_payload(string message)
+{
+    return llJsonSetValue("{}", ["message"], message);
+}
+
+string log_entry(string message, key speaker_id, string speaker_name)
+{
+    vector position = llGetPos();
+    return llList2Json(JSON_OBJECT, [
+        "avatar_id", (string)speaker_id,
+        "avatar_name", speaker_name,
+        "captured_by", llKey2Name(llGetOwner()),
+        "message", message,
+        "sim_name", llGetRegionName(),
+        "timestamp", llGetUnixTime(),
+        "x_pos", position.x,
+        "y_pos", position.y,
+        "z_pos", position.z
+    ]);
+}
+
+integer begin_request(string kind, string url, list options, string body, key sender)
+{
+    if (gRequestInFlight)
+    {
+        gLastError = "A relay request is already in flight.";
+        llOwnerSay(gLastError);
+        return FALSE;
     }
 
-    string url = SERVER_URL + "/chat/" + llEscapeURL(TEAM_NAME);
-    string payload = buildChatPayload(prompt);
-
-    REQUEST_IN_FLIGHT = TRUE;
-    LAST_REQUEST = llHTTPRequest(url, [HTTP_METHOD, "POST", HTTP_MIMETYPE, "application/json"], payload);
-    PENDING_TEXT = prompt;
-    PENDING_SENDER = sender_id;
-    PENDING_SENDER_NAME = sender_name;
-    PENDING_REPLY_MODE = REPLY_MODE;
-    PENDING_PUBLIC = public_reply;
+    gRequestInFlight = TRUE;
+    gRequestKind = kind;
+    gPendingSender = sender;
+    gPendingReplyMode = REPLY_MODE;
+    gLastRequest = llHTTPRequest(url, options, body);
+    return TRUE;
 }
 
-sendHistoryRequest()
+integer send_chat_request(string prompt, key sender_id, string sender_name)
 {
-    if (REQUEST_IN_FLIGHT) {
-        LAST_ERROR = "Busy; previous request still in flight";
-        llOwnerSay("Busy; previous request still in flight.");
-        return;
+    string text = llStringTrim(prompt, STRING_TRIM);
+    if (text == "") return FALSE;
+    return begin_request(
+        "chat",
+        SERVER_URL + "/chat/" + llEscapeURL(TEAM_NAME),
+        [HTTP_METHOD, "POST", HTTP_MIMETYPE, "application/json", HTTP_VERIFY_CERT, TRUE],
+        chat_payload(sender_name + ": " + text),
+        sender_id
+    );
+}
+
+integer send_history_request()
+{
+    return begin_request(
+        "history",
+        SERVER_URL + "/history/" + llEscapeURL(TEAM_NAME),
+        [HTTP_METHOD, "GET", HTTP_VERIFY_CERT, TRUE],
+        "",
+        NULL_KEY
+    );
+}
+
+integer send_log_request(string entry, key sender_id, string sender_name)
+{
+    return begin_request(
+        "log",
+        SERVER_URL + "/sl_logger",
+        [HTTP_METHOD, "POST", HTTP_MIMETYPE, "text/plain", HTTP_VERIFY_CERT, TRUE],
+        log_entry(entry, sender_id, sender_name),
+        NULL_KEY
+    );
+}
+
+integer show_help()
+{
+    owner_say_chunks("Commands: !ai help | !ai say <text> | !ai history | !ai team <name> | !ai mode local|whisper | !ai auto on|off | !ai log <text> | !ai status");
+    return 0;
+}
+
+integer show_status()
+{
+    llOwnerSay("Ollama relay: server=" + SERVER_URL + " team=" + TEAM_NAME
+        + " reply=" + reply_mode_name(REPLY_MODE)
+        + " auto=" + (string)AUTO_REPLY
+        + " busy=" + (string)gRequestInFlight);
+    if (gLastError != "") llOwnerSay("Last error: " + gLastError);
+    return 0;
+}
+
+integer is_owner(key avatar_id)
+{
+    return avatar_id == llGetOwner();
+}
+
+integer handle_command(string message, string sender_name, key sender_id)
+{
+    string command = llToLower(first_word(message));
+    string argument = rest_of(message);
+
+    if (command == "" || command == "help" || command == "?")
+    {
+        show_help();
+        return 0;
     }
-
-    string url = SERVER_URL + "/history/" + llEscapeURL(TEAM_NAME);
-    REQUEST_IN_FLIGHT = TRUE;
-    LAST_REQUEST = llHTTPRequest(url, [HTTP_METHOD, "GET"], "");
-    PENDING_TEXT = "__history__";
-    PENDING_SENDER = NULL_KEY;
-    PENDING_SENDER_NAME = "";
-    PENDING_REPLY_MODE = 0;
-    PENDING_PUBLIC = 1;
-}
-
-sendLogRequest(string entry)
-{
-    if (REQUEST_IN_FLIGHT) {
-        LAST_ERROR = "Busy; previous request still in flight";
-        llOwnerSay("Busy; previous request still in flight.");
-        return;
+    if (command == "say")
+    {
+        if (!send_chat_request(argument, sender_id, sender_name))
+        {
+            if (argument == "") llOwnerSay("Usage: !ai say <message>");
+        }
+        return 0;
     }
-
-    string url = SERVER_URL + "/sl_logger";
-    REQUEST_IN_FLIGHT = TRUE;
-    LAST_REQUEST = llHTTPRequest(url, [HTTP_METHOD, "POST", HTTP_MIMETYPE, "text/plain"], entry);
-    PENDING_TEXT = "__log__";
-    PENDING_SENDER = NULL_KEY;
-    PENDING_SENDER_NAME = "";
-    PENDING_REPLY_MODE = 0;
-    PENDING_PUBLIC = 1;
-}
-
-showHelp()
-{
-    string help = "Ollama relay commands: !ai help | !ai team <name> | !ai mode local | !ai mode whisper | !ai say <text> | !ai history | !ai log <text> | !ai status";
-    llOwnerSay(help);
-}
-
-showStatus()
-{
-    string status = "Ollama relay: server=" + SERVER_URL + " team=" + TEAM_NAME + " reply=" + (REPLY_MODE == 0 ? "local" : "whisper") + " auto_reply=" + (AUTO_REPLY ? "on" : "off");
-    llOwnerSay(status);
-}
-
-handleCommand(string message, string sender_name, key sender_id)
-{
-    string cmd = llToLower(firstWord(message));
-    string arg = stripLeadingSpace(restOf(message));
-
-    if (cmd == "help" || cmd == "?" || message == "!ai") {
-        showHelp();
-        return;
+    if (command == "history")
+    {
+        send_history_request();
+        return 0;
     }
-
-    if (cmd == "team") {
-        if (llStringLength(arg) > 0) {
-            TEAM_NAME = arg;
+    if (!is_owner(sender_id))
+    {
+        llOwnerSay("That command is owner-only.");
+        return 0;
+    }
+    if (command == "team")
+    {
+        if (argument == "") llOwnerSay("Current team: " + TEAM_NAME);
+        else
+        {
+            TEAM_NAME = argument;
             llOwnerSay("Team set to " + TEAM_NAME);
         }
-        else {
-            llOwnerSay("Current team: " + TEAM_NAME);
-        }
-        return;
+        return 0;
     }
-
-    if (cmd == "mode") {
-        if (llToLower(arg) == "whisper") {
-            REPLY_MODE = 1;
-            llOwnerSay("Reply mode set to whisper.");
+    if (command == "mode")
+    {
+        if (llToLower(argument) == "whisper") REPLY_MODE = 1;
+        else if (llToLower(argument) == "local") REPLY_MODE = 0;
+        else
+        {
+            llOwnerSay("Usage: !ai mode local|whisper");
+            return 0;
         }
-        else {
-            REPLY_MODE = 0;
-            llOwnerSay("Reply mode set to local/public.");
-        }
-        return;
+        llOwnerSay("Reply mode set to " + reply_mode_name(REPLY_MODE) + ".");
+        return 0;
     }
-
-    if (cmd == "say") {
-        if (llStringLength(arg) > 0) {
-            sendChatRequest(arg, sender_id, sender_name, 1);
+    if (command == "auto")
+    {
+        if (llToLower(argument) == "on") AUTO_REPLY = TRUE;
+        else if (llToLower(argument) == "off") AUTO_REPLY = FALSE;
+        else
+        {
+            llOwnerSay("Usage: !ai auto on|off");
+            return 0;
         }
-        else {
-            llOwnerSay("Usage: !ai say <message>");
-        }
-        return;
+        llOwnerSay("Auto-reply " + (string)AUTO_REPLY + ".");
+        return 0;
     }
-
-    if (cmd == "history") {
-        sendHistoryRequest();
-        return;
+    if (command == "log")
+    {
+        if (argument == "") llOwnerSay("Usage: !ai log <text>");
+        else send_log_request(argument, sender_id, sender_name);
+        return 0;
     }
-
-    if (cmd == "log") {
-        if (llStringLength(arg) > 0) {
-            sendLogRequest(arg);
-        }
-        else {
-            llOwnerSay("Usage: !ai log <text>");
-        }
-        return;
+    if (command == "status")
+    {
+        show_status();
+        return 0;
     }
-
-    if (cmd == "status") {
-        showStatus();
-        return;
-    }
-
-    if (cmd == "auto") {
-        if (llToLower(arg) == "off") {
-            AUTO_REPLY = FALSE;
-            llOwnerSay("Auto-reply disabled.");
-        }
-        else {
-            AUTO_REPLY = TRUE;
-            llOwnerSay("Auto-reply enabled.");
-        }
-        return;
-    }
-
-    llOwnerSay("Unknown command. Try !ai help.");
+    llOwnerSay("Unknown command. Use !ai help.");
+    return 0;
 }
 
-handleUserMessage(string message, string sender_name, key sender_id)
+integer handle_public_message(string message, string sender_name, key sender_id)
 {
-    if (llStringLength(message) < 1) return;
-    if (llGetSubString(message, 0, 0) == "/") return;
-    if (message == "!ai") return;
-    if (llGetSubString(message, 0, 2) == "!ai") return;
-    if (sender_id == llGetOwner()) return;
-
-    string prompt = sender_name + ": " + message;
-    sendChatRequest(prompt, sender_id, sender_name, 1);
+    if (message == "" || sender_id == llGetOwner() || sender_id == llGetKey()) return 0;
+    if (llGetSubString(message, 0, 0) == "/" || llGetSubString(message, 0, 2) == "!ai") return 0;
+    send_chat_request(message, sender_id, sender_name);
+    return 0;
 }
 
 default
 {
     state_entry()
     {
-        llListen(COMMAND_CHANNEL, "", "", "");
-        llListen(0, "", "", "");
-        llOwnerSay("Ollama team chatbot ready. Channel " + (string)COMMAND_CHANNEL + " | team " + TEAM_NAME + " | use !ai help");
+        gControlListenHandle = llListen(COMMAND_CHANNEL, "", NULL_KEY, "");
+        gPublicListenHandle = llListen(0, "", NULL_KEY, "");
+        llOwnerSay("Ollama team chatbot ready. Use !ai help on channel " + (string)COMMAND_CHANNEL + ".");
     }
 
     listen(integer channel, string name, key id, string message)
     {
-        if (channel == COMMAND_CHANNEL) {
-            if (llGetSubString(message, 0, 2) != "!ai") return;
-            handleCommand(llGetSubString(message, 4, -1), name, id);
+        if (channel == COMMAND_CHANNEL)
+        {
+            if (llToLower(llGetSubString(message, 0, 2)) != "!ai") return;
+            handle_command(rest_of(message), name, id);
             return;
         }
-
-        if (channel == 0 && AUTO_REPLY) {
-            handleUserMessage(message, name, id);
+        if (channel == 0 && AUTO_REPLY)
+        {
+            handle_public_message(message, name, id);
         }
     }
 
-    touch_start(integer num_detected)
+    changed(integer change)
     {
-        llOwnerSay("Tap me to use the chatbot. Commands go on channel " + (string)COMMAND_CHANNEL + " with !ai help.");
+        if (change & CHANGED_OWNER) llResetScript();
     }
 
     http_response(key request_id, integer status, list metadata, string body)
     {
-        if (request_id != LAST_REQUEST) return;
+        string response_text;
+        if (request_id != gLastRequest) return;
+        gRequestInFlight = FALSE;
 
-        REQUEST_IN_FLIGHT = FALSE;
-
-        if (status != 200) {
-            LAST_ERROR = "HTTP status " + (string)status + " body=" + body;
-            llOwnerSay("Relay request failed: " + LAST_ERROR);
+        if (status != 200)
+        {
+            response_text = llJsonGetValue(body, ["error"]);
+            if (response_text == JSON_INVALID) response_text = body;
+            gLastError = "HTTP " + (string)status + ": " + response_text;
+            owner_say_chunks("Relay request failed: " + gLastError);
             return;
         }
-
-        if (PENDING_TEXT == "__history__") {
-            string history = llJsonGetValue(body, ["history"]);
-            if (history == JSON_INVALID) {
-                llOwnerSay("No history was returned.");
-            }
-            else {
-                llOwnerSay("History for team " + TEAM_NAME + ":\n" + history);
-            }
+        if (gRequestKind == "history")
+        {
+            response_text = llJsonGetValue(body, ["history"]);
+            if (response_text == JSON_INVALID) response_text = "No history was returned.";
+            owner_say_chunks("History for " + TEAM_NAME + ":\n" + response_text);
             return;
         }
-
-        if (PENDING_TEXT == "__log__") {
+        if (gRequestKind == "log")
+        {
             llOwnerSay("Log entry accepted by relay.");
             return;
         }
 
-        string response_text = llJsonGetValue(body, ["response"]);
-        if (response_text == JSON_INVALID) {
-            response_text = llJsonGetValue(body, ["error"]);
-        }
-        if (response_text == JSON_INVALID) {
-            response_text = "The relay did not return a usable response.";
-        }
-
-        string reply = BOT_NAME + ": " + response_text;
-        if (PENDING_SENDER != NULL_KEY && PENDING_REPLY_MODE == 1) {
-            llRegionSayTo(PENDING_SENDER, 0, reply);
-        }
-        else {
-            llSay(0, reply);
-        }
+        response_text = llJsonGetValue(body, ["response"]);
+        if (response_text == JSON_INVALID) response_text = "The relay did not return a usable response.";
+        reply_chunks(BOT_NAME + ": " + response_text, gPendingSender, gPendingReplyMode);
     }
 }

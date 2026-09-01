@@ -75,10 +75,10 @@ pub static FEATURES_LOWERCASE: [&str; 1] = ["threading"];
 pub static FEATURES_LOWERCASE_STR: &str = "threading";
 #[doc=r#"The output of `rustc -V`"#]
 #[allow(dead_code)]
-pub static RUSTC_VERSION: &str = "rustc 1.100.0-nightly (c54751567 2026-08-22)";
+pub static RUSTC_VERSION: &str = "rustc 1.100.0-nightly (0dfb098f3 2026-08-31)";
 #[doc=r#"The output of `rustdoc -V`; empty string if `rustdoc -V` failed to execute"#]
 #[allow(dead_code)]
-pub static RUSTDOC_VERSION: &str = "rustdoc 1.100.0-nightly (c54751567 2026-08-22)";
+pub static RUSTDOC_VERSION: &str = "rustdoc 1.100.0-nightly (0dfb098f3 2026-08-31)";
 #[doc=r#"The target architecture, given by `CARGO_CFG_TARGET_ARCH`."#]
 #[allow(dead_code)]
 pub static CFG_TARGET_ARCH: &str = "x86_64";

@@ -1,17 +1,20 @@
 // Second Life chat logger and complete Markov metrics viewer.
 // Owner commands on /-77553311: report, status, logging on, logging off.
 
-string RELAY_URL = "https://stimky.info/markov_metrics";
+string RELAY_URL = "https://stimky.info";
 integer CONTROL_CHANNEL = -77553311;
 integer LOG_PUBLIC_CHAT = TRUE;
 integer MAX_OWNER_MESSAGE_LENGTH = 230;
 integer MAX_TRANSITIONS_TO_SHOW = 20;
+integer MAX_SPEAKERS_TO_SHOW = 20;
+integer REPORT_REQUEST_TIMEOUT_SECONDS = 45;
 
 key gOwner;
 integer gControlListenHandle;
 integer gPublicListenHandle;
 list gPendingLogRequests;
 list gPendingReportRequests;
+integer gReportRequestedAt;
 integer gRequestsSent;
 integer gLogsAccepted;
 integer gFailures;
@@ -50,6 +53,16 @@ integer owner_say_chunks(string text)
         start += MAX_OWNER_MESSAGE_LENGTH;
     }
     return 0;
+}
+
+string json_value_or(string body, list path, string fallback)
+{
+    string value = llJsonGetValue(body, path);
+    if (value == JSON_INVALID || value == JSON_NULL || value == "")
+    {
+        return fallback;
+    }
+    return value;
 }
 
 string make_log_entry(string message, key speaker_id, string speaker_name)
@@ -91,7 +104,7 @@ integer log_message(string message, key speaker_id, string speaker_name)
     }
     request_id = llHTTPRequest(
         RELAY_URL + "/sl_logger",
-        [HTTP_METHOD, "POST", HTTP_MIMETYPE, "text/plain", HTTP_VERIFY_CERT, TRUE],
+        [HTTP_METHOD, "POST", HTTP_MIMETYPE, "application/json", HTTP_VERIFY_CERT, TRUE],
         make_log_entry(message, speaker_id, speaker_name)
     );
     gPendingLogRequests += [request_id];
@@ -107,7 +120,9 @@ integer request_report()
         ""
     );
     gPendingReportRequests += [request_id];
+    gReportRequestedAt = llGetUnixTime();
     gRequestsSent += 1;
+    llOwnerSay("Requesting conversation-flow metrics...");
     return 0;
 }
 
@@ -117,30 +132,27 @@ integer show_status()
         + " sent=" + (string)gRequestsSent
         + " accepted=" + (string)gLogsAccepted
         + " pending logs=" + (string)llGetListLength(gPendingLogRequests)
+        + " pending reports=" + (string)llGetListLength(gPendingReportRequests)
         + " failures=" + (string)gFailures);
     return 0;
 }
 
 integer show_report(string body)
 {
-    string score = llJsonGetValue(body, ["conversation_flow_score"]);
-    string events = llJsonGetValue(body, ["total_events"]);
-    string speakers = llJsonGetValue(body, ["unique_speakers"]);
-    string transitions = llJsonGetValue(body, ["transitions"]);
-    string switch_rate = llJsonGetValue(body, ["speaker_switch_rate"]);
-    string average_reply = llJsonGetValue(body, ["average_reply_seconds"]);
+    string score = json_value_or(body, ["conversation_flow_score"], "0");
+    string events = json_value_or(body, ["total_events"], "0");
+    string speakers = json_value_or(body, ["unique_speakers"], "0");
+    string transitions = json_value_or(body, ["transitions"], "0");
+    string switch_rate = json_value_or(body, ["speaker_switch_rate"], "0");
+    string average_reply = json_value_or(body, ["average_reply_seconds"], "n/a");
     integer index = 0;
 
-    if (score == JSON_INVALID)
+    if (llJsonValueType(body, []) != JSON_OBJECT)
     {
         owner_say_chunks("Markov metrics returned invalid JSON: " + body);
         return 0;
     }
-    if (average_reply == JSON_NULL)
-    {
-        average_reply = "n/a";
-    }
-    else
+    if (average_reply != "n/a")
     {
         average_reply += "s";
     }
@@ -149,6 +161,22 @@ integer show_report(string body)
         + " speakers=" + speakers + " transitions=" + transitions
         + " switch rate=" + switch_rate + " avg reply=" + average_reply);
 
+    owner_say_chunks("Message uniqueness: distinct normalized messages / that speaker's messages.");
+    while (index < MAX_SPEAKERS_TO_SHOW)
+    {
+        string speaker = llJsonGetValue(body, ["speaker_uniqueness", index, "speaker"]);
+        string total = llJsonGetValue(body, ["speaker_uniqueness", index, "total_messages"]);
+        string unique_count = llJsonGetValue(body, ["speaker_uniqueness", index, "unique_messages"]);
+        string unique_percent = llJsonGetValue(body, ["speaker_uniqueness", index, "unique_percent"]);
+        if (speaker != JSON_INVALID)
+        {
+            owner_say_chunks(speaker + ": " + unique_percent + "% unique ("
+                + unique_count + "/" + total + ")");
+        }
+        index += 1;
+    }
+
+    index = 0;
     while (index < MAX_TRANSITIONS_TO_SHOW)
     {
         string from = llJsonGetValue(body, ["top_transitions", index, "from"]);
@@ -170,6 +198,7 @@ default
         gOwner = llGetOwner();
         gControlListenHandle = llListen(CONTROL_CHANNEL, "", gOwner, "");
         start_public_listening();
+        llSetTimerEvent(5.0);
         llOwnerSay("Chat metrics ready. Use /" + (string)CONTROL_CHANNEL
             + " report, status, logging on, or logging off.");
     }
@@ -179,7 +208,17 @@ default
         if (channel == CONTROL_CHANNEL && id == gOwner)
         {
             message = llToLower(llStringTrim(message, STRING_TRIM));
-            if (message == "report") request_report();
+            if (message == "report")
+            {
+                if (llGetListLength(gPendingReportRequests) > 0)
+                {
+                    llOwnerSay("A metrics request is already in progress.");
+                }
+                else
+                {
+                    request_report();
+                }
+            }
             else if (message == "status") show_status();
             else if (message == "logging on") { LOG_PUBLIC_CHAT = TRUE; start_public_listening(); }
             else if (message == "logging off") { LOG_PUBLIC_CHAT = FALSE; start_public_listening(); }
@@ -197,6 +236,18 @@ default
         if (change & CHANGED_OWNER) llResetScript();
     }
 
+    timer()
+    {
+        if (llGetListLength(gPendingReportRequests) > 0
+            && llGetUnixTime() - gReportRequestedAt >= REPORT_REQUEST_TIMEOUT_SECONDS)
+        {
+            gPendingReportRequests = [];
+            gFailures += 1;
+            llOwnerSay("Markov metrics request timed out after "
+                + (string)REPORT_REQUEST_TIMEOUT_SECONDS + " seconds.");
+        }
+    }
+
     http_response(key request_id, integer status, list metadata, string body)
     {
         if (list_contains_key(gPendingReportRequests, request_id))
@@ -205,7 +256,8 @@ default
             if (status != 200)
             {
                 gFailures += 1;
-                llOwnerSay("Markov metrics request failed: HTTP " + (string)status);
+                owner_say_chunks("Markov metrics request failed: HTTP "
+                    + (string)status + " | " + body);
                 return;
             }
             show_report(body);

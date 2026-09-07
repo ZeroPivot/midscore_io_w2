@@ -1,24 +1,25 @@
-use chrono::{Datelike, FixedOffset, Timelike, Utc};
+use partitioned_array_rust::{LineDb, LineDbConfig};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
+
+const RELAY_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Clone, Debug)]
 pub struct RelayConfig {
     pub ollama_http_address: String,
     pub ollama_model_name: String,
     pub team_log_dir: PathBuf,
-    pub second_life_chat_log_path: PathBuf,
-    pub incrementor_path: PathBuf,
     pub team_history_char_limit: usize,
     pub team_history_entry_limit: usize,
-    pub second_life_chat_context_enabled: bool,
-    pub second_life_chat_log_line_limit: usize,
-    pub second_life_chat_log_char_limit: usize,
+    pub team_history_storage_limit: usize,
+    pub max_chat_message_chars: usize,
+    pub max_team_prompt_chars: usize,
+    pub max_game_state_chars: usize,
+    pub team_prompt_token: Option<String>,
 }
 
 impl Default for RelayConfig {
@@ -32,17 +33,15 @@ impl Default for RelayConfig {
             ollama_http_address,
             ollama_model_name,
             team_log_dir: PathBuf::from("/root/midscore_io/logs/ollama_teams"),
-            second_life_chat_log_path: PathBuf::from(
-                "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt",
-            ),
-            incrementor_path: PathBuf::from(
-                "/root/midscore_io/tiade-maeepers-saerver-all/target/release/incrementor.txt",
-            ),
             team_history_char_limit: 2_000,
             team_history_entry_limit: 8,
-            second_life_chat_context_enabled: false,
-            second_life_chat_log_line_limit: 25,
-            second_life_chat_log_char_limit: 8_000,
+            team_history_storage_limit: 500,
+            max_chat_message_chars: 8_000,
+            max_team_prompt_chars: 8_000,
+            max_game_state_chars: 32_000,
+            team_prompt_token: std::env::var("OLLAMA_TEAM_PROMPT_TOKEN")
+                .ok()
+                .filter(|token| !token.trim().is_empty()),
         }
     }
 }
@@ -52,6 +51,24 @@ struct ChatInput {
     message: String,
 }
 
+#[derive(Deserialize)]
+struct GameInput {
+    message: String,
+    game_prompt: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct GameTurnInput {
+    action: String,
+    game_prompt: Option<String>,
+    state: Option<Value>,
+}
+
+#[derive(Deserialize)]
+struct TeamPromptInput {
+    prompt: String,
+}
+
 #[derive(Serialize)]
 struct ChatOutput {
     response: String,
@@ -59,50 +76,78 @@ struct ChatOutput {
     model: String,
     fallback_used: bool,
     history_chars: usize,
-    second_life_chat_context_enabled: bool,
-    second_life_chat_log_path: String,
+}
+
+#[derive(Serialize)]
+struct GameOutput {
+    response: String,
+    team: String,
+    player: String,
+    model: String,
+    fallback_used: bool,
+    history_chars: usize,
+    game_prompt_applied: bool,
+}
+
+#[derive(Serialize)]
+struct GameTurnOutput {
+    response: String,
+    directive: Value,
+    state: Value,
+    team: String,
+    player: String,
+    model: String,
+    fallback_used: bool,
+}
+
+#[derive(Serialize)]
+struct GameStateOutput {
+    state: Value,
+    team: String,
+    player: String,
 }
 
 #[derive(Serialize)]
 struct HistoryOutput {
     history: String,
     team: String,
-    second_life_chat_context_enabled: bool,
-    second_life_chat_log_path: String,
 }
 
 #[derive(Serialize)]
-struct MarkovTransition {
-    from: String,
-    to: String,
-    count: usize,
-    probability: f64,
+struct HealthOutput {
+    status: &'static str,
+    version: &'static str,
+    ollama_http_address: String,
+    configured_model: String,
+    available_models: Vec<String>,
 }
 
 #[derive(Serialize)]
-struct SpeakerUniqueness {
-    speaker: String,
-    total_messages: usize,
-    unique_messages: usize,
-    unique_percent: f64,
+struct RouteInfo {
+    method: &'static str,
+    path: &'static str,
+    description: &'static str,
+    authorization: Option<&'static str>,
 }
 
 #[derive(Serialize)]
-struct MarkovMetricsOutput {
-    total_events: usize,
-    unique_speakers: usize,
-    transitions: usize,
-    speaker_switch_rate: f64,
-    average_reply_seconds: Option<f64>,
-    conversation_flow_score: u8,
-    top_transitions: Vec<MarkovTransition>,
-    speaker_uniqueness: Vec<SpeakerUniqueness>,
+struct RouteCatalogOutput {
+    service: &'static str,
+    version: &'static str,
+    routes: Vec<RouteInfo>,
 }
 
-#[derive(Debug)]
-struct RelayContext {
-    message: String,
-    metadata: Vec<String>,
+#[derive(Serialize)]
+struct TeamPromptOutput {
+    team: String,
+    prompt: String,
+    prompt_chars: usize,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct TeamLogEntry {
+    user: String,
+    reply: String,
 }
 
 pub fn mount_routes<State: Clone + Send + Sync + 'static>(
@@ -110,18 +155,24 @@ pub fn mount_routes<State: Clone + Send + Sync + 'static>(
     config: RelayConfig,
 ) -> tide::Result<()> {
     fs::create_dir_all(&config.team_log_dir)?;
-    if let Some(parent) = config.incrementor_path.parent() {
-        fs::create_dir_all(parent)?;
-    }
     let cfg = Arc::new(config);
+    let team_store = Arc::new(Mutex::new(open_team_store(&cfg)?));
+
+    app.at("/ollama")
+        .options(|_| async { Ok(cors_preflight_response()) })
+        .get(|_| async { Ok(json_response(tide::StatusCode::Ok, route_catalog())) });
 
     {
         let cfg = cfg.clone();
+        let team_store = team_store.clone();
         app.at("/chat/:team")
+            .options(|_| async { Ok(cors_preflight_response()) })
             .post(move |mut req: tide::Request<State>| {
                 let cfg = cfg.clone();
+                let team_store = team_store.clone();
                 async move {
                     let team = req.param("team")?.to_string();
+                    validate_team(&team)?;
                     let body = req.body_string().await?;
                     let payload: ChatInput = serde_json::from_str(&body).map_err(|e| {
                         tide::Error::from_str(
@@ -132,6 +183,12 @@ pub fn mount_routes<State: Clone + Send + Sync + 'static>(
                     let message = payload.message.trim();
                     if message.is_empty() {
                         return Ok(json_error(tide::StatusCode::BadRequest, "message is required"));
+                    }
+                    if message.chars().count() > cfg.max_chat_message_chars {
+                        return Ok(json_error(
+                            tide::StatusCode::PayloadTooLarge,
+                            "message exceeds the configured size limit",
+                        ));
                     }
 
                     let (model_name, available_models) = resolve_model_name(&cfg).await?;
@@ -151,7 +208,7 @@ pub fn mount_routes<State: Clone + Send + Sync + 'static>(
                         }
                     };
 
-                    let messages = build_messages(&cfg, &team, message);
+                    let messages = build_messages(&team_store, &cfg, &team, message)?;
                     let chat_payload = json!({
                         "model": model_name,
                         "stream": false,
@@ -163,9 +220,7 @@ pub fn mount_routes<State: Clone + Send + Sync + 'static>(
                     let mut fallback_used = false;
 
                     if no_text_reply(&reply) {
-                        let relay_context = parse_relay_message(message);
-                        let fallback =
-                            generate_fallback(&cfg, &model_name, &relay_context.message).await?;
+                        let fallback = generate_fallback(&cfg, &model_name, message).await?;
                         let fallback_reply = extract_reply(&fallback);
                         if !no_text_reply(&fallback_reply) {
                             reply = fallback_reply;
@@ -173,16 +228,14 @@ pub fn mount_routes<State: Clone + Send + Sync + 'static>(
                         }
                     }
 
-                    append_team_log(&cfg, &team, message, &reply)?;
-                    let history_chars = team_history(&cfg, &team).len();
+                    append_team_log(&team_store, &cfg, &team, message, &reply)?;
+                    let history_chars = team_history(&team_store, &cfg, &team)?.len();
                     let out = ChatOutput {
                         response: reply,
                         team,
                         model: model_name,
                         fallback_used,
                         history_chars,
-                        second_life_chat_context_enabled: cfg.second_life_chat_context_enabled,
-                        second_life_chat_log_path: cfg.second_life_chat_log_path.to_string_lossy().into_owned(),
                     };
 
                     Ok(json_response(tide::StatusCode::Ok, out))
@@ -192,137 +245,278 @@ pub fn mount_routes<State: Clone + Send + Sync + 'static>(
 
     {
         let cfg = cfg.clone();
-        app.at("/history/:team")
-            .get(move |req: tide::Request<State>| {
-                let cfg = cfg.clone();
-                async move {
-                    let team = req.param("team")?.to_string();
-                    let out = HistoryOutput {
-                        history: team_history(&cfg, &team),
-                        team,
-                        second_life_chat_context_enabled: cfg.second_life_chat_context_enabled,
-                        second_life_chat_log_path: cfg.second_life_chat_log_path.to_string_lossy().into_owned(),
-                    };
-                    Ok(json_response(tide::StatusCode::Ok, out))
-                }
-            });
-    }
-
-    {
-        let cfg = cfg.clone();
-        app.at("/sl_logger")
+        let team_store = team_store.clone();
+        app.at("/game/:team/:player/turn")
+            .options(|_| async { Ok(cors_preflight_response()) })
             .post(move |mut req: tide::Request<State>| {
                 let cfg = cfg.clone();
+                let team_store = team_store.clone();
                 async move {
-                    let body = req.body_string().await.unwrap_or_default();
-                    if body.trim().is_empty() {
-                        return Ok(text_response(tide::StatusCode::BadRequest, "empty body"));
+                    let team = req.param("team")?.to_string();
+                    let player = req.param("player")?.to_string();
+                    validate_team(&team)?;
+                    validate_player(&player)?;
+                    let body = req.body_string().await?;
+                    let input: GameTurnInput = serde_json::from_str(&body).map_err(|error| {
+                        tide::Error::from_str(tide::StatusCode::BadRequest, format!("invalid JSON payload: {error}"))
+                    })?;
+                    let action = input.action.trim();
+                    if action.is_empty() {
+                        return Ok(json_error(tide::StatusCode::BadRequest, "action is required"));
+                    }
+                    if action.chars().count() > cfg.max_chat_message_chars {
+                        return Ok(json_error(tide::StatusCode::PayloadTooLarge, "action exceeds the configured size limit"));
+                    }
+                    let game_prompt = input.game_prompt.unwrap_or_default().trim().to_string();
+                    if game_prompt.chars().count() > cfg.max_team_prompt_chars {
+                        return Ok(json_error(tide::StatusCode::PayloadTooLarge, "game_prompt exceeds the configured size limit"));
+                    }
+                    let current_state = input.state.unwrap_or(game_state(&team_store, &team, &player)?);
+                    if !current_state.is_object() {
+                        return Ok(json_error(tide::StatusCode::BadRequest, "state must be a JSON object"));
+                    }
+                    if let Err(error) = save_game_state(&team_store, &cfg, &team, &player, &current_state) {
+                        return Ok(json_error(error.status(), &error.to_string()));
                     }
 
-                    if let Some(parent) = cfg.second_life_chat_log_path.parent() {
-                        fs::create_dir_all(parent)?;
+                    let (model_name, available_models) = resolve_model_name(&cfg).await?;
+                    let Some(model_name) = model_name else {
+                        return Ok(json_response(tide::StatusCode::ServiceUnavailable, json!({
+                            "error": "no Ollama models are installed",
+                            "configured_model": cfg.ollama_model_name,
+                            "available_models": available_models,
+                        })));
+                    };
+                    let history_key = game_history_key(&team, &player);
+                    let messages = build_game_turn_messages(
+                        &team_store, &cfg, &team, &history_key, &player, action, &game_prompt, &current_state,
+                    )?;
+                    let result = post_json(&cfg, "/api/chat", json!({
+                        "model": model_name,
+                        "stream": false,
+                        "format": "json",
+                        "messages": messages,
+                    })).await?;
+                    let mut response = extract_reply(&result);
+                    let mut fallback_used = false;
+                    if no_text_reply(&response) {
+                        let fallback = generate_fallback(&cfg, &model_name, action).await?;
+                        let fallback_reply = extract_reply(&fallback);
+                        if !no_text_reply(&fallback_reply) {
+                            response = fallback_reply;
+                            fallback_used = true;
+                        }
                     }
-                    let mut existing = fs::OpenOptions::new()
-                        .create(true)
-                        .append(true)
-                        .open(&cfg.second_life_chat_log_path)?;
-                    use std::io::Write;
-                    existing.write_all(body.as_bytes())?;
-                    existing.write_all(b"\n")?;
+                    let mut directive = game_directive(&response, &current_state);
+                    let next_state = directive
+                        .get("state")
+                        .filter(|state| state.is_object())
+                        .cloned()
+                        .unwrap_or(current_state);
+                    directive["state"] = next_state.clone();
+                    save_game_state(&team_store, &cfg, &team, &player, &next_state)?;
+                    append_team_log(&team_store, &cfg, &history_key, action, &response)?;
 
-                    Ok(text_response(
-                        tide::StatusCode::Ok,
-                        "Log entry received and written to file successfully.",
-                    ))
+                    Ok(json_response(tide::StatusCode::Ok, GameTurnOutput {
+                        response,
+                        directive,
+                        state: next_state,
+                        team,
+                        player,
+                        model: model_name,
+                        fallback_used,
+                    }))
+                }
+            });
+    }
+
+    {
+        let team_store = team_store.clone();
+        app.at("/game/:team/:player/state")
+            .options(|_| async { Ok(cors_preflight_response()) })
+            .get(move |req: tide::Request<State>| {
+                let team_store = team_store.clone();
+                async move {
+                    let team = req.param("team")?.to_string();
+                    let player = req.param("player")?.to_string();
+                    validate_team(&team)?;
+                    validate_player(&player)?;
+                    Ok(json_response(tide::StatusCode::Ok, GameStateOutput {
+                        state: game_state(&team_store, &team, &player)?,
+                        team,
+                        player,
+                    }))
+                }
+            });
+    }
+
+    {
+        let team_store = team_store.clone();
+        app.at("/game/:team/:player/reset")
+            .options(|_| async { Ok(cors_preflight_response()) })
+            .post(move |req: tide::Request<State>| {
+                let team_store = team_store.clone();
+                async move {
+                    let team = req.param("team")?.to_string();
+                    let player = req.param("player")?.to_string();
+                    validate_team(&team)?;
+                    validate_player(&player)?;
+                    reset_game_session(&team_store, &team, &player)?;
+                    Ok(json_response(tide::StatusCode::Ok, GameStateOutput {
+                        state: json!({}),
+                        team,
+                        player,
+                    }))
                 }
             });
     }
 
     {
         let cfg = cfg.clone();
-        app.at("/_ethereal_life_sl_logger_get_")
-            .get(move |_req: tide::Request<State>| {
+        let team_store = team_store.clone();
+        app.at("/game/:team/:player")
+            .options(|_| async { Ok(cors_preflight_response()) })
+            .post(move |mut req: tide::Request<State>| {
                 let cfg = cfg.clone();
+                let team_store = team_store.clone();
                 async move {
-                    let raw = fs::read_to_string(&cfg.second_life_chat_log_path).unwrap_or_default();
-                    Ok(text_response(tide::StatusCode::Ok, &raw))
-                }
-            });
-    }
+                    let team = req.param("team")?.to_string();
+                    let player = req.param("player")?.to_string();
+                    validate_team(&team)?;
+                    validate_player(&player)?;
 
-    {
-        let cfg = cfg.clone();
-        app.at("/_ethereal_life_sl_logger_show_")
-            .get(move |_req: tide::Request<State>| {
-                let cfg = cfg.clone();
-                async move {
-                    let raw = fs::read_to_string(&cfg.second_life_chat_log_path).unwrap_or_default();
-                    let encoded = serde_json::to_string(&raw).unwrap_or_else(|_| "\"\"".to_string());
-                    Ok(text_response(tide::StatusCode::Ok, &encoded))
-                }
-            });
-    }
-
-    {
-        let cfg = cfg.clone();
-        app.at("/incrementor_get")
-            .get(move |_req: tide::Request<State>| {
-                let cfg = cfg.clone();
-                async move {
-                    let value = fs::read_to_string(&cfg.incrementor_path)
-                        .unwrap_or_else(|_| "0".to_string())
-                        .trim()
-                        .parse::<i64>()
-                        .unwrap_or(0);
-                    Ok(text_response(tide::StatusCode::Ok, &value.to_string()))
-                }
-            });
-    }
-
-    {
-        let cfg = cfg.clone();
-        app.at("/incrementor")
-            .get(move |_req: tide::Request<State>| {
-                let cfg = cfg.clone();
-                async move {
-                    if let Some(parent) = cfg.incrementor_path.parent() {
-                        fs::create_dir_all(parent)?;
+                    let body = req.body_string().await?;
+                    let input: GameInput = serde_json::from_str(&body).map_err(|error| {
+                        tide::Error::from_str(
+                            tide::StatusCode::BadRequest,
+                            format!("invalid JSON payload: {error}"),
+                        )
+                    })?;
+                    let message = input.message.trim();
+                    if message.is_empty() {
+                        return Ok(json_error(tide::StatusCode::BadRequest, "message is required"));
                     }
-                    let current = fs::read_to_string(&cfg.incrementor_path)
-                        .unwrap_or_else(|_| "0".to_string())
-                        .trim()
-                        .parse::<i64>()
-                        .unwrap_or(0);
-                    let updated = current + 1;
-                    fs::write(&cfg.incrementor_path, updated.to_string())?;
-                    Ok(text_response(tide::StatusCode::Ok, &updated.to_string()))
+                    if message.chars().count() > cfg.max_chat_message_chars {
+                        return Ok(json_error(
+                            tide::StatusCode::PayloadTooLarge,
+                            "message exceeds the configured size limit",
+                        ));
+                    }
+                    let game_prompt = input.game_prompt.unwrap_or_default().trim().to_string();
+                    if game_prompt.chars().count() > cfg.max_team_prompt_chars {
+                        return Ok(json_error(
+                            tide::StatusCode::PayloadTooLarge,
+                            "game_prompt exceeds the configured size limit",
+                        ));
+                    }
+
+                    let (model_name, available_models) = resolve_model_name(&cfg).await?;
+                    let model_name = match model_name {
+                        Some(model) => model,
+                        None => {
+                            return Ok(json_response(tide::StatusCode::ServiceUnavailable, json!({
+                                "error": "no Ollama models are installed",
+                                "configured_model": cfg.ollama_model_name,
+                                "available_models": available_models,
+                            })));
+                        }
+                    };
+
+                    let history_key = game_history_key(&team, &player);
+                    let messages = build_game_messages(
+                        &team_store,
+                        &cfg,
+                        &team,
+                        &history_key,
+                        &player,
+                        message,
+                        &game_prompt,
+                    )?;
+                    let result = post_json(&cfg, "/api/chat", json!({
+                        "model": model_name,
+                        "stream": false,
+                        "messages": messages,
+                    })).await?;
+                    let mut reply = extract_reply(&result);
+                    let mut fallback_used = false;
+                    if no_text_reply(&reply) {
+                        let fallback = generate_fallback(&cfg, &model_name, message).await?;
+                        let fallback_reply = extract_reply(&fallback);
+                        if !no_text_reply(&fallback_reply) {
+                            reply = fallback_reply;
+                            fallback_used = true;
+                        }
+                    }
+
+                    append_team_log(&team_store, &cfg, &history_key, message, &reply)?;
+                    let history_chars = team_history(&team_store, &cfg, &history_key)?.len();
+                    Ok(json_response(tide::StatusCode::Ok, GameOutput {
+                        response: reply,
+                        team,
+                        player,
+                        model: model_name,
+                        fallback_used,
+                        history_chars,
+                        game_prompt_applied: !game_prompt.is_empty(),
+                    }))
                 }
             });
     }
 
     {
         let cfg = cfg.clone();
-        app.at("/analytics")
-            .get(move |_req: tide::Request<State>| {
-                let cfg = cfg.clone();
+        let team_store = team_store.clone();
+        let get_cfg = cfg.clone();
+        let get_team_store = team_store.clone();
+        app.at("/teams/:team/prompt")
+            .options(|_| async { Ok(cors_preflight_response()) })
+            .get(move |req: tide::Request<State>| {
+                let cfg = get_cfg.clone();
+                let team_store = get_team_store.clone();
                 async move {
-                    let entries = parse_second_life_entries(&cfg.second_life_chat_log_path);
-                    let report = analytics_report(&cfg.second_life_chat_log_path, &entries);
-                    Ok(text_response(tide::StatusCode::Ok, &report))
-                }
-            });
-    }
+                    let team = req.param("team")?.to_string();
+                    validate_team(&team)?;
+                    if let Some(response) = team_prompt_authorization_error(&req, &cfg) {
+                        return Ok(response);
+                    }
 
-    {
-        let cfg = cfg.clone();
-        app.at("/markov_metrics")
-            .get(move |_req: tide::Request<State>| {
-                let cfg = cfg.clone();
-                async move {
-                    let entries = parse_second_life_entries(&cfg.second_life_chat_log_path);
+                    let prompt = team_prompt(&team_store, &team)?.unwrap_or_default();
+                    let prompt_chars = prompt.chars().count();
                     Ok(json_response(
                         tide::StatusCode::Ok,
-                        markov_metrics(&entries),
+                        TeamPromptOutput { team, prompt, prompt_chars },
+                    ))
+                }
+            })
+            .post(move |mut req: tide::Request<State>| {
+                let cfg = cfg.clone();
+                let team_store = team_store.clone();
+                async move {
+                    let team = req.param("team")?.to_string();
+                    validate_team(&team)?;
+                    if let Some(response) = team_prompt_authorization_error(&req, &cfg) {
+                        return Ok(response);
+                    }
+
+                    let body = req.body_string().await?;
+                    let input: TeamPromptInput = serde_json::from_str(&body).map_err(|error| {
+                        tide::Error::from_str(
+                            tide::StatusCode::BadRequest,
+                            format!("invalid JSON payload: {error}"),
+                        )
+                    })?;
+                    if input.prompt.chars().count() > cfg.max_team_prompt_chars {
+                        return Ok(json_error(
+                            tide::StatusCode::PayloadTooLarge,
+                            "prompt exceeds the configured size limit",
+                        ));
+                    }
+
+                    let prompt = input.prompt.trim().to_string();
+                    let prompt_chars = save_team_prompt(&team_store, &team, &prompt)?;
+                    Ok(json_response(
+                        tide::StatusCode::Ok,
+                        TeamPromptOutput { team, prompt, prompt_chars },
                     ))
                 }
             });
@@ -330,39 +524,51 @@ pub fn mount_routes<State: Clone + Send + Sync + 'static>(
 
     {
         let cfg = cfg.clone();
-        app.at("/chatlog")
-            .get(move |_req: tide::Request<State>| {
+        let team_store = team_store.clone();
+        app.at("/history/:team")
+            .options(|_| async { Ok(cors_preflight_response()) })
+            .get(move |req: tide::Request<State>| {
                 let cfg = cfg.clone();
+                let team_store = team_store.clone();
                 async move {
-                    let entries = parse_second_life_entries(&cfg.second_life_chat_log_path);
-                    let view = chatlog_view(&entries);
-                    Ok(text_response(tide::StatusCode::Ok, &view))
+                    let team = req.param("team")?.to_string();
+                    validate_team(&team)?;
+                    let out = HistoryOutput {
+                        history: team_history(&team_store, &cfg, &team)?,
+                        team,
+                    };
+                    Ok(json_response(tide::StatusCode::Ok, out))
                 }
             });
     }
 
     {
         let cfg = cfg.clone();
-        app.at("/schedule_ft")
+        app.at("/ollama/health")
+            .options(|_| async { Ok(cors_preflight_response()) })
             .get(move |_req: tide::Request<State>| {
                 let cfg = cfg.clone();
                 async move {
-                    let entries = parse_second_life_entries(&cfg.second_life_chat_log_path);
-                    let report = schedule_report(&entries);
-                    Ok(text_response(tide::StatusCode::Ok, &report))
-                }
-            });
-    }
-
-    {
-        let cfg = cfg.clone();
-        app.at("/read")
-            .get(move |_req: tide::Request<State>| {
-                let cfg = cfg.clone();
-                async move {
-                    let entries = parse_second_life_entries(&cfg.second_life_chat_log_path);
-                    let report = analytics_report(&cfg.second_life_chat_log_path, &entries);
-                    Ok(text_response(tide::StatusCode::Ok, &report))
+                    match available_models(&cfg).await {
+                        Ok(available_models) => Ok(json_response(
+                            tide::StatusCode::Ok,
+                            HealthOutput {
+                                status: "ok",
+                                version: RELAY_VERSION,
+                                ollama_http_address: cfg.ollama_http_address.clone(),
+                                configured_model: cfg.ollama_model_name.clone(),
+                                available_models,
+                            },
+                        )),
+                        Err(error) => Ok(json_response(
+                            tide::StatusCode::ServiceUnavailable,
+                            json!({
+                                "status": "unavailable",
+                                "version": RELAY_VERSION,
+                                "error": error.to_string(),
+                            }),
+                        )),
+                    }
                 }
             });
     }
@@ -373,16 +579,91 @@ pub fn mount_routes<State: Clone + Send + Sync + 'static>(
 fn json_response<T: Serialize>(status: tide::StatusCode, data: T) -> tide::Response {
     let mut res = tide::Response::new(status);
     res.set_content_type(tide::http::mime::JSON);
+    add_cors_headers(&mut res);
     let body = serde_json::to_string(&data).unwrap_or_else(|_| "{}".to_string());
     res.set_body(body);
     res
 }
 
-fn text_response(status: tide::StatusCode, body: &str) -> tide::Response {
-    let mut res = tide::Response::new(status);
-    res.set_content_type("text/plain; charset=utf-8");
-    res.set_body(body.to_string());
-    res
+fn add_cors_headers(response: &mut tide::Response) {
+    response.insert_header("Access-Control-Allow-Origin", "*");
+    response.insert_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    response.insert_header("Access-Control-Allow-Headers", "Authorization, Content-Type");
+}
+
+fn cors_preflight_response() -> tide::Response {
+    let mut response = tide::Response::new(tide::StatusCode::NoContent);
+    add_cors_headers(&mut response);
+    response
+}
+
+fn route_catalog() -> RouteCatalogOutput {
+    RouteCatalogOutput {
+        service: "ollama-team-relay",
+        version: RELAY_VERSION,
+        routes: vec![
+            RouteInfo {
+                method: "GET",
+                path: "/ollama",
+                description: "Lists all generic Ollama relay routes.",
+                authorization: None,
+            },
+            RouteInfo {
+                method: "GET",
+                path: "/ollama/health",
+                description: "Reports Ollama upstream availability and installed models.",
+                authorization: None,
+            },
+            RouteInfo {
+                method: "POST",
+                path: "/chat/:team",
+                description: "Sends a JSON message to a team's Ollama conversation.",
+                authorization: None,
+            },
+            RouteInfo {
+                method: "POST",
+                path: "/game/:team/:player",
+                description: "Sends game input with isolated player history and an optional request-scoped game prompt.",
+                authorization: None,
+            },
+            RouteInfo {
+                method: "POST",
+                path: "/game/:team/:player/turn",
+                description: "Runs a model-directed game turn and persists its complete next game state.",
+                authorization: None,
+            },
+            RouteInfo {
+                method: "GET",
+                path: "/game/:team/:player/state",
+                description: "Returns the persisted game state for one player.",
+                authorization: None,
+            },
+            RouteInfo {
+                method: "POST",
+                path: "/game/:team/:player/reset",
+                description: "Clears one player's game state and game conversation history.",
+                authorization: None,
+            },
+            RouteInfo {
+                method: "GET",
+                path: "/history/:team",
+                description: "Returns recent persisted conversation history for a team.",
+                authorization: None,
+            },
+            RouteInfo {
+                method: "GET",
+                path: "/teams/:team/prompt",
+                description: "Reads a team's saved system prompt.",
+                authorization: Some("Bearer OLLAMA_TEAM_PROMPT_TOKEN"),
+            },
+            RouteInfo {
+                method: "POST",
+                path: "/teams/:team/prompt",
+                description: "Creates, updates, or clears a team's saved system prompt.",
+                authorization: Some("Bearer OLLAMA_TEAM_PROMPT_TOKEN"),
+            },
+        ],
+    }
 }
 
 fn json_error(status: tide::StatusCode, message: &str) -> tide::Response {
@@ -402,8 +683,81 @@ fn safe_team_name(team: &str) -> String {
         .collect()
 }
 
-fn team_log_path(cfg: &RelayConfig, team: &str) -> PathBuf {
-    cfg.team_log_dir.join(format!("{}.log", safe_team_name(team)))
+fn validate_team(team: &str) -> tide::Result<()> {
+    validate_identifier(team, "team")
+}
+
+fn validate_player(player: &str) -> tide::Result<()> {
+    validate_identifier(player, "player")
+}
+
+fn validate_identifier(value: &str, label: &str) -> tide::Result<()> {
+    if value.is_empty() || value == "." || value == ".." || safe_team_name(value) != value {
+        return Err(tide::Error::from_str(
+            tide::StatusCode::BadRequest,
+            format!("{label} must contain only letters, numbers, dots, hyphens, or underscores"),
+        ));
+    }
+    Ok(())
+}
+
+fn game_history_key(team: &str, player: &str) -> String {
+    format!("game_{}_player_{}", team, player)
+}
+
+fn game_state_key(team: &str, player: &str) -> String {
+    format!("game_{}_player_{}_state", safe_team_name(team), safe_team_name(player))
+}
+
+fn team_prompt_authorization_error<State>(
+    req: &tide::Request<State>,
+    cfg: &RelayConfig,
+) -> Option<tide::Response> {
+    let Some(expected_token) = cfg.team_prompt_token.as_deref() else {
+        return Some(json_error(
+            tide::StatusCode::ServiceUnavailable,
+            "team prompt management is disabled",
+        ));
+    };
+    let authorization = req
+        .header("Authorization")
+        .and_then(|values| values.get(0))
+        .map(|value| value.as_str());
+    let expected_bearer = format!("Bearer {expected_token}");
+    if authorization == Some(expected_bearer.as_str()) {
+        None
+    } else {
+        Some(json_error(tide::StatusCode::Unauthorized, "invalid bearer token"))
+    }
+}
+
+fn team_store_name(team: &str) -> String {
+    format!("team_{}", safe_team_name(team))
+}
+
+fn team_prompt_store_name(team: &str) -> String {
+    format!("prompt_{}", safe_team_name(team))
+}
+
+fn open_team_store(cfg: &RelayConfig) -> tide::Result<LineDb> {
+    let store_root = cfg.team_log_dir.join("line_db");
+    let database_list = store_root.join("db").join("db_list.txt");
+    LineDb::new(
+        &store_root,
+        "db",
+        &database_list.to_string_lossy(),
+        LineDbConfig::default(),
+    )
+    .map_err(|error| tide::Error::from_str(tide::StatusCode::InternalServerError, error.to_string()))
+}
+
+fn team_store_lock(store: &Mutex<LineDb>) -> tide::Result<std::sync::MutexGuard<'_, LineDb>> {
+    store.lock().map_err(|_| {
+        tide::Error::from_str(
+            tide::StatusCode::InternalServerError,
+            "team history store is unavailable",
+        )
+    })
 }
 
 fn trim_text(text: &str, char_limit: usize) -> String {
@@ -418,81 +772,85 @@ fn trim_text(text: &str, char_limit: usize) -> String {
     chars[chars.len() - char_limit..].iter().collect()
 }
 
-fn parse_relay_message(message: &str) -> RelayContext {
-    let text = message.trim();
-    if !text.starts_with("[Second Life Team Relay]") {
-        return RelayContext {
-            message: text.to_string(),
-            metadata: vec![],
-        };
-    }
-
-    let lines: Vec<&str> = text.lines().collect();
-    let index = lines.iter().position(|line| *line == "Message:");
-    let Some(idx) = index else {
-        return RelayContext {
-            message: text.to_string(),
-            metadata: vec![],
-        };
-    };
-
-    let metadata = lines[0..idx].iter().map(|s| s.to_string()).collect::<Vec<_>>();
-    let actual = lines[(idx + 1)..].join("\n").trim().to_string();
-
-    RelayContext {
-        message: if actual.is_empty() {
-            text.to_string()
-        } else {
-            actual
-        },
-        metadata,
-    }
-}
-
-fn parse_log_entry(entry: &str) -> Option<(String, String)> {
-    let ai_idx = entry.find("\nAI:")?;
-    let (user_part, ai_part) = entry.split_at(ai_idx);
-    let ai_text = ai_part
-        .trim_start_matches("\nAI:")
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ");
-    if ai_text.is_empty() {
-        return None;
-    }
-
-    let user_text = if let Some(idx) = user_part.find("Message:\n") {
-        let msg = &user_part[(idx + "Message:\n".len())..];
-        msg.split_whitespace().collect::<Vec<_>>().join(" ")
-    } else if let Some(line) = user_part
-        .lines()
-        .find(|line| line.starts_with("USER:"))
-        .map(|line| line.trim_start_matches("USER:").trim())
+fn load_team_entries(db: &mut LineDb, team: &str) -> tide::Result<Vec<TeamLogEntry>> {
+    let store_name = team_store_name(team);
+    if let Some(entries) = db
+        .load_json_value::<Vec<TeamLogEntry>>(&store_name)
+        .map_err(|error| tide::Error::from_str(tide::StatusCode::InternalServerError, error.to_string()))?
     {
-        line.split_whitespace().collect::<Vec<_>>().join(" ")
-    } else {
-        String::new()
-    };
-
-    Some((user_text, ai_text))
+        return Ok(entries);
+    }
+    Ok(Vec::new())
 }
 
-fn team_history(cfg: &RelayConfig, team: &str) -> String {
-    let path = team_log_path(cfg, team);
-    let Ok(raw) = fs::read_to_string(path) else {
-        return String::new();
-    };
+fn team_entries(store: &Mutex<LineDb>, team: &str) -> tide::Result<Vec<TeamLogEntry>> {
+    let mut db = team_store_lock(store)?;
+    load_team_entries(&mut db, team)
+}
 
-    let entries = raw
-        .split("\n\n")
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .filter_map(parse_log_entry)
-        .map(|(user, ai)| {
-            if user.is_empty() {
-                format!("AI: {}", ai)
+fn team_prompt(store: &Mutex<LineDb>, team: &str) -> tide::Result<Option<String>> {
+    let mut db = team_store_lock(store)?;
+    let prompt = db
+        .load_json_value::<String>(&team_prompt_store_name(team))
+        .map_err(|error| tide::Error::from_str(tide::StatusCode::InternalServerError, error.to_string()))?;
+    Ok(prompt.filter(|value| !value.is_empty()))
+}
+
+fn save_team_prompt(store: &Mutex<LineDb>, team: &str, prompt: &str) -> tide::Result<usize> {
+    let mut db = team_store_lock(store)?;
+    db.save_json_value(&team_prompt_store_name(team), &prompt)
+        .map_err(|error| tide::Error::from_str(tide::StatusCode::InternalServerError, error.to_string()))?;
+    Ok(prompt.chars().count())
+}
+
+fn game_state(store: &Mutex<LineDb>, team: &str, player: &str) -> tide::Result<Value> {
+    let mut db = team_store_lock(store)?;
+    Ok(db
+        .load_json_value::<Value>(&game_state_key(team, player))
+        .map_err(|error| tide::Error::from_str(tide::StatusCode::InternalServerError, error.to_string()))?
+        .unwrap_or_else(|| json!({})))
+}
+
+fn save_game_state(
+    store: &Mutex<LineDb>,
+    cfg: &RelayConfig,
+    team: &str,
+    player: &str,
+    state: &Value,
+) -> tide::Result<()> {
+    let state_chars = serde_json::to_string(state)
+        .map_err(|error| tide::Error::from_str(tide::StatusCode::BadRequest, error.to_string()))?
+        .chars()
+        .count();
+    if state_chars > cfg.max_game_state_chars {
+        return Err(tide::Error::from_str(
+            tide::StatusCode::PayloadTooLarge,
+            "state exceeds the configured size limit",
+        ));
+    }
+    let mut db = team_store_lock(store)?;
+    db.save_json_value(&game_state_key(team, player), state)
+        .map_err(|error| tide::Error::from_str(tide::StatusCode::InternalServerError, error.to_string()))
+}
+
+fn reset_game_session(store: &Mutex<LineDb>, team: &str, player: &str) -> tide::Result<()> {
+    let history_key = game_history_key(team, player);
+    let mut db = team_store_lock(store)?;
+    db.save_json_value(&team_store_name(&history_key), &Vec::<TeamLogEntry>::new())
+        .map_err(|error| tide::Error::from_str(tide::StatusCode::InternalServerError, error.to_string()))?;
+    db.save_json_value(&game_state_key(team, player), &json!({}))
+        .map_err(|error| tide::Error::from_str(tide::StatusCode::InternalServerError, error.to_string()))
+}
+
+fn team_history(store: &Mutex<LineDb>, cfg: &RelayConfig, team: &str) -> tide::Result<String> {
+    let entries = team_entries(store, team)?;
+    let entries = entries
+        .into_iter()
+        .map(|entry| {
+            if entry.user.is_empty() {
+                format!("AI: {}", entry.reply)
             } else {
-                format!("USER: {}\nAI: {}", user, ai)
+                format!("USER: {}\nAI: {}", entry.user, entry.reply)
             }
         })
         .collect::<Vec<_>>();
@@ -507,79 +865,53 @@ fn team_history(cfg: &RelayConfig, team: &str) -> String {
         .collect::<Vec<_>>()
         .join("\n\n");
 
-    trim_text(&recent, cfg.team_history_char_limit)
-}
-
-fn second_life_log_context(cfg: &RelayConfig) -> String {
-    let path = &cfg.second_life_chat_log_path;
-    if !Path::new(path).exists() {
-        return "Second Life chat log is currently unavailable.".to_string();
-    }
-
-    let Ok(raw) = fs::read_to_string(path) else {
-        return "Second Life chat log could not be read.".to_string();
-    };
-
-    let lines = raw.lines().collect::<Vec<_>>();
-    let start = lines.len().saturating_sub(cfg.second_life_chat_log_line_limit);
-    let joined = lines[start..].join("\n");
-    let text = trim_text(&joined, cfg.second_life_chat_log_char_limit);
-    if text.is_empty() {
-        "Second Life chat log is currently empty.".to_string()
-    } else {
-        text
-    }
+    Ok(trim_text(&recent, cfg.team_history_char_limit))
 }
 
 fn append_team_log(
+    store: &Mutex<LineDb>,
     cfg: &RelayConfig,
     team: &str,
     user_message: &str,
     reply: &str,
 ) -> tide::Result<()> {
-    let ctx = parse_relay_message(user_message);
-    let compact_user = ctx.message.split_whitespace().collect::<Vec<_>>().join(" ");
-    let compact_reply = reply.split_whitespace().collect::<Vec<_>>().join(" ");
+    let mut db = team_store_lock(store)?;
+    let mut entries = load_team_entries(&mut db, team)?;
+    entries.push(TeamLogEntry {
+        user: user_message.split_whitespace().collect::<Vec<_>>().join(" "),
+        reply: reply.split_whitespace().collect::<Vec<_>>().join(" "),
+    });
+    let storage_limit = cfg.team_history_storage_limit.max(1);
+    let excess_entries = entries.len().saturating_sub(storage_limit);
+    if excess_entries > 0 {
+        entries.drain(..excess_entries);
+    }
 
-    let mut content = String::new();
-    content.push_str("USER: ");
-    content.push_str(&compact_user);
-    content.push('\n');
-    content.push_str("AI: ");
-    content.push_str(&compact_reply);
-    content.push_str("\n\n");
-
-    let path = team_log_path(cfg, team);
-    fs::create_dir_all(&cfg.team_log_dir)?;
-    use std::io::Write;
-    let mut file = fs::OpenOptions::new().create(true).append(true).open(path)?;
-    file.write_all(content.as_bytes())?;
+    db.save_json_value(&team_store_name(team), &entries)
+        .map_err(|error| tide::Error::from_str(tide::StatusCode::InternalServerError, error.to_string()))?;
     Ok(())
 }
 
-fn build_messages(cfg: &RelayConfig, team: &str, message: &str) -> Vec<Value> {
-    let history = team_history(cfg, team);
-    let ctx = parse_relay_message(message);
+fn build_messages(
+    store: &Mutex<LineDb>,
+    cfg: &RelayConfig,
+    team: &str,
+    message: &str,
+) -> tide::Result<Vec<Value>> {
+    let history = team_history(store, cfg, team)?;
 
     let mut messages = vec![json!({
         "role": "system",
         "content": format!(
-            "You are assisting team {}. Reply to the user's actual message only. Do not repeat metadata, do not explain the transport wrapper, and do not answer system/context lines. Keep replies concise, plain text, and useful for an in-world relay. And always refer to all the data you have available, because this is teamed and there is data set.",
+            "You are assisting team {}. Reply to the user's message directly. Keep replies concise, plain text, and useful.",
             team
         )
     })];
 
-    if !ctx.metadata.is_empty() {
+    if let Some(prompt) = team_prompt(store, team)? {
         messages.push(json!({
             "role": "system",
-            "content": format!("Second Life relay metadata:\n{}", ctx.metadata.join("\n"))
-        }));
-    }
-
-    if cfg.second_life_chat_context_enabled {
-        messages.push(json!({
-            "role": "system",
-            "content": format!("Second Life chat log snapshot:\n{}", second_life_log_context(cfg))
+            "content": prompt,
         }));
     }
 
@@ -592,10 +924,87 @@ fn build_messages(cfg: &RelayConfig, team: &str, message: &str) -> Vec<Value> {
 
     messages.push(json!({
         "role": "user",
-        "content": ctx.message
+        "content": message
     }));
 
-    messages
+    Ok(messages)
+}
+
+fn build_game_messages(
+    store: &Mutex<LineDb>,
+    cfg: &RelayConfig,
+    team: &str,
+    history_key: &str,
+    player: &str,
+    message: &str,
+    game_prompt: &str,
+) -> tide::Result<Vec<Value>> {
+    let history = team_history(store, cfg, history_key)?;
+    let mut messages = vec![json!({
+        "role": "system",
+        "content": format!(
+            "You are the game assistant for team {team} and player {player}. Respond to the player's current game input. Keep responses useful, concise, and suitable for direct use by the game."
+        )
+    })];
+
+    if let Some(prompt) = team_prompt(store, team)? {
+        messages.push(json!({ "role": "system", "content": prompt }));
+    }
+    if !game_prompt.is_empty() {
+        messages.push(json!({ "role": "system", "content": game_prompt }));
+    }
+    if !history.is_empty() {
+        messages.push(json!({
+            "role": "system",
+            "content": format!("Player conversation history:\n{history}")
+        }));
+    }
+    messages.push(json!({ "role": "user", "content": message }));
+    Ok(messages)
+}
+
+fn build_game_turn_messages(
+    store: &Mutex<LineDb>,
+    cfg: &RelayConfig,
+    team: &str,
+    history_key: &str,
+    player: &str,
+    action: &str,
+    game_prompt: &str,
+    state: &Value,
+) -> tide::Result<Vec<Value>> {
+    let mut messages = build_game_messages(
+        store, cfg, team, history_key, player, action, game_prompt,
+    )?;
+    messages.insert(1, json!({
+        "role": "system",
+        "content": format!(
+            "You direct the next game turn. Return only valid JSON with narrative (string), state (the complete next state object), choices (array of objects with id and label), and game_over (boolean). Current state: {}",
+            serde_json::to_string(state).unwrap_or_else(|_| "{}".to_string())
+        )
+    }));
+    Ok(messages)
+}
+
+fn game_directive(reply: &str, current_state: &Value) -> Value {
+    let text = reply.trim();
+    let candidate = text
+        .strip_prefix("```json")
+        .or_else(|| text.strip_prefix("```"))
+        .unwrap_or(text)
+        .trim_end_matches("```")
+        .trim();
+    serde_json::from_str::<Value>(candidate)
+        .ok()
+        .filter(Value::is_object)
+        .unwrap_or_else(|| {
+            json!({
+                "narrative": text,
+                "state": current_state,
+                "choices": [],
+                "game_over": false,
+            })
+        })
 }
 
 async fn get_json(cfg: &RelayConfig, path: &str) -> tide::Result<Value> {
@@ -758,547 +1167,231 @@ async fn generate_fallback(
     .await
 }
 
-fn rubyish_to_json(input: &str) -> String {
-    input
-        .replace("\\.", ".")
-        .replace("\\\"", "\"")
-        .replace("{avatar_id:", "{\"avatar_id\":")
-        .replace(", avatar_id:", ", \"avatar_id\":")
-        .replace("avatar_name:", "\"avatar_name\":")
-        .replace("captured_by:", "\"captured_by\":")
-        .replace("message:", "\"message\":")
-        .replace("sim_name:", "\"sim_name\":")
-        .replace("timestamp:", "\"timestamp\":")
-        .replace("x_pos:", "\"x_pos\":")
-        .replace("y_pos:", "\"y_pos\":")
-        .replace("z_pos:", "\"z_pos\":")
-}
-
-fn extract_entries(value: Value, out: &mut Vec<Value>) {
-    match value {
-        Value::Array(arr) => {
-            for item in arr {
-                if item.is_object() {
-                    out.push(item);
-                }
-            }
-        }
-        Value::Object(_) => out.push(value),
-        _ => {}
-    }
-}
-
-fn parse_second_life_entries(path: &Path) -> Vec<Value> {
-    let raw = fs::read_to_string(path).unwrap_or_default();
-    let mut entries = Vec::new();
-
-    for line in raw.lines() {
-        let line = line.trim();
-        if line.is_empty() {
-            continue;
-        }
-
-        if let Ok(val) = serde_json::from_str::<Value>(line) {
-            extract_entries(val, &mut entries);
-            continue;
-        }
-
-        let converted = rubyish_to_json(line);
-        if let Ok(val) = serde_json::from_str::<Value>(&converted) {
-            extract_entries(val, &mut entries);
-        }
-    }
-
-    if entries.is_empty() && !raw.trim().is_empty() {
-        if let Ok(val) = serde_json::from_str::<Value>(&raw) {
-            extract_entries(val, &mut entries);
-        } else {
-            let converted = rubyish_to_json(&raw);
-            if let Ok(val) = serde_json::from_str::<Value>(&converted) {
-                extract_entries(val, &mut entries);
-            }
-        }
-    }
-
-    entries
-}
-
-fn timestamp_as_i64(v: &Value) -> Option<i64> {
-    if let Some(i) = v.as_i64() {
-        return Some(i);
-    }
-    if let Some(f) = v.as_f64() {
-        return Some(f as i64);
-    }
-    if let Some(s) = v.as_str() {
-        return s.trim().parse::<i64>().ok();
-    }
-    None
-}
-
-fn normalized_message(event: &Value) -> String {
-    event["message"]
-        .as_str()
-        .unwrap_or("")
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
-        .to_lowercase()
-}
-
-fn markov_metrics(entries: &[Value]) -> MarkovMetricsOutput {
-    const SESSION_GAP_SECONDS: i64 = 30 * 60;
-
-    let mut unique: HashMap<(String, i64, String), Value> = HashMap::new();
-    for entry in entries {
-        let Some(timestamp) = timestamp_as_i64(&entry["timestamp"]) else {
-            continue;
-        };
-        let key = (
-            entry["avatar_id"].as_str().unwrap_or("").to_string(),
-            timestamp,
-            entry["message"].as_str().unwrap_or("").to_string(),
-        );
-        unique.entry(key).or_insert_with(|| entry.clone());
-    }
-
-    let mut events = unique.into_values().collect::<Vec<_>>();
-    events.sort_by_key(|event| timestamp_as_i64(&event["timestamp"]).unwrap_or(0));
-
-    let speaker_for = |event: &Value| {
-        let name = event["avatar_name"].as_str().unwrap_or("").trim();
-        if name.is_empty() {
-            event["avatar_id"].as_str().unwrap_or("Unknown avatar").to_string()
-        } else {
-            name.to_string()
-        }
-    };
-
-    let mut speakers = HashSet::new();
-    let mut transition_counts: HashMap<(String, String), usize> = HashMap::new();
-    let mut outgoing_counts: HashMap<String, usize> = HashMap::new();
-    let mut messages_by_speaker: HashMap<String, Vec<String>> = HashMap::new();
-    let mut transitions = 0usize;
-    let mut speaker_switches = 0usize;
-    let mut reply_seconds = Vec::new();
-
-    for event in &events {
-        let speaker = speaker_for(event);
-        speakers.insert(speaker.clone());
-        messages_by_speaker
-            .entry(speaker)
-            .or_default()
-            .push(normalized_message(event));
-    }
-
-    for pair in events.windows(2) {
-        let from_time = timestamp_as_i64(&pair[0]["timestamp"]).unwrap_or(0);
-        let to_time = timestamp_as_i64(&pair[1]["timestamp"]).unwrap_or(0);
-        let gap = to_time - from_time;
-        if gap < 0 || gap > SESSION_GAP_SECONDS {
-            continue;
-        }
-
-        let from = speaker_for(&pair[0]);
-        let to = speaker_for(&pair[1]);
-        *transition_counts.entry((from.clone(), to.clone())).or_insert(0) += 1;
-        *outgoing_counts.entry(from.clone()).or_insert(0) += 1;
-        transitions += 1;
-        if from != to {
-            speaker_switches += 1;
-            reply_seconds.push(gap as f64);
-        }
-    }
-
-    let mut top_transitions = transition_counts
-        .into_iter()
-        .map(|((from, to), count)| MarkovTransition {
-            probability: count as f64 / outgoing_counts[&from] as f64,
-            from,
-            to,
-            count,
-        })
-        .collect::<Vec<_>>();
-    top_transitions.sort_by(|left, right| right.count.cmp(&left.count));
-    top_transitions.truncate(20);
-
-    let mut speaker_uniqueness = messages_by_speaker
-        .into_iter()
-        .map(|(speaker, messages)| {
-            let total_messages = messages.len();
-            let unique_messages = messages.into_iter().collect::<HashSet<_>>().len();
-            SpeakerUniqueness {
-                speaker,
-                total_messages,
-                unique_messages,
-                unique_percent: unique_messages as f64 / total_messages as f64 * 100.0,
-            }
-        })
-        .collect::<Vec<_>>();
-    speaker_uniqueness.sort_by(|left, right| right.total_messages.cmp(&left.total_messages));
-    speaker_uniqueness.truncate(20);
-
-    let speaker_switch_rate = if transitions == 0 {
-        0.0
-    } else {
-        speaker_switches as f64 / transitions as f64
-    };
-    let average_reply_seconds = if reply_seconds.is_empty() {
-        None
-    } else {
-        Some(reply_seconds.iter().sum::<f64>() / reply_seconds.len() as f64)
-    };
-    let participant_points = (speakers.len().min(4) as f64 / 4.0) * 25.0;
-    let switching_points = speaker_switch_rate * 50.0;
-    let pace_points = match average_reply_seconds {
-        Some(seconds) if seconds <= 60.0 => 25.0,
-        Some(seconds) if seconds <= 300.0 => 18.0,
-        Some(seconds) if seconds <= 900.0 => 8.0,
-        _ => 0.0,
-    };
-    let conversation_flow_score = (participant_points + switching_points + pace_points)
-        .round()
-        .clamp(0.0, 100.0) as u8;
-
-    MarkovMetricsOutput {
-        total_events: events.len(),
-        unique_speakers: speakers.len(),
-        transitions,
-        speaker_switch_rate,
-        average_reply_seconds,
-        conversation_flow_score,
-        top_transitions,
-        speaker_uniqueness,
-    }
-}
-
-fn analytics_report(path: &Path, entries: &[Value]) -> String {
-    const WEEKDAYS: [&str; 7] = [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-    ];
-    const MONTHS: [&str; 12] = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-    ];
-
-    let mut unique: HashMap<(String, i64, String), Value> = HashMap::new();
-    for entry in entries {
-        let ts = match timestamp_as_i64(&entry["timestamp"]) {
-            Some(ts) => ts,
-            None => continue,
-        };
-        let key = (
-            entry["avatar_id"].as_str().unwrap_or("").to_string(),
-            ts,
-            entry["message"].as_str().unwrap_or("").to_string(),
-        );
-        unique.entry(key).or_insert_with(|| entry.clone());
-    }
-
-    let events: Vec<Value> = unique.into_values().collect();
-
-    let mut weekday_freq = [0usize; 7];
-    let mut hour_freq = [0usize; 24];
-    let mut month_freq = [0usize; 12];
-    let mut year_freq: BTreeMap<i32, usize> = BTreeMap::new();
-    let mut month_year_freq: BTreeMap<String, usize> = BTreeMap::new();
-    let mut day_of_month_freq = [0usize; 32];
-
-    let mut avatars: HashSet<String> = HashSet::new();
-    let mut messages: HashSet<String> = HashSet::new();
-    let mut earliest: Option<chrono::DateTime<FixedOffset>> = None;
-    let mut latest: Option<chrono::DateTime<FixedOffset>> = None;
-
-    let pst = FixedOffset::west_opt(7 * 3600).expect("valid offset");
-
-    for e in &events {
-        let avatar = e["avatar_id"].as_str().unwrap_or("").trim();
-        if !avatar.is_empty() {
-            avatars.insert(avatar.to_string());
-        }
-
-        let msg = e["message"].as_str().unwrap_or("").trim();
-        if !msg.is_empty() {
-            messages.insert(msg.to_string());
-        }
-
-        let ts = match timestamp_as_i64(&e["timestamp"]) {
-            Some(ts) if ts > 0 => ts,
-            _ => continue,
-        };
-
-        let Some(dt_utc) = chrono::DateTime::from_timestamp(ts, 0) else {
-            continue;
-        };
-        let dt = dt_utc.with_timezone(&pst);
-
-        if earliest.map(|v| dt < v).unwrap_or(true) {
-            earliest = Some(dt);
-        }
-        if latest.map(|v| dt > v).unwrap_or(true) {
-            latest = Some(dt);
-        }
-
-        let weekday_idx = dt.weekday().num_days_from_monday() as usize;
-        weekday_freq[weekday_idx] += 1;
-        hour_freq[dt.hour() as usize] += 1;
-        month_freq[dt.month0() as usize] += 1;
-        *year_freq.entry(dt.year()).or_insert(0) += 1;
-        *month_year_freq
-            .entry(dt.format("%Y-%m").to_string())
-            .or_insert(0) += 1;
-        day_of_month_freq[dt.day() as usize] += 1;
-    }
-
-    let mut out = String::new();
-    out.push_str("Second Life chat frequency report (PST)\n");
-    out.push_str(&format!("Source file: {}\n", path.to_string_lossy()));
-    out.push_str(&format!("Raw parsed entries: {}\n", entries.len()));
-    out.push_str(&format!("Total unique events: {}\n", events.len()));
-    out.push_str(&format!("Unique avatar IDs: {}\n", avatars.len()));
-    out.push_str(&format!("Unique message bodies: {}\n", messages.len()));
-    out.push_str(&format!(
-        "First event (PST): {}\n",
-        earliest
-            .map(|dt| dt.format("%Y-%m-%d %H:%M:%S %Z").to_string())
-            .unwrap_or_else(|| "N/A".to_string())
-    ));
-    out.push_str(&format!(
-        "Last event (PST):  {}\n",
-        latest
-            .map(|dt| dt.format("%Y-%m-%d %H:%M:%S %Z").to_string())
-            .unwrap_or_else(|| "N/A".to_string())
-    ));
-
-    out.push_str("\n=== Message Frequency by Day of Week (Monday-Sunday) ===\n");
-    for (i, day) in WEEKDAYS.iter().enumerate() {
-        out.push_str(&format!("{:<9} : {}\n", day, weekday_freq[i]));
-    }
-
-    out.push_str("\n=== Message Frequency by Hour (PST, 24h) ===\n");
-    for (h, count) in hour_freq.iter().enumerate() {
-        out.push_str(&format!("{:02}:00-{:02}:59 : {}\n", h, h, count));
-    }
-
-    out.push_str("\n=== Message Frequency by Month ===\n");
-    for (i, month) in MONTHS.iter().enumerate() {
-        out.push_str(&format!("{:<9} : {}\n", month, month_freq[i]));
-    }
-
-    out.push_str("\n=== Message Frequency by Year ===\n");
-    if year_freq.is_empty() {
-        out.push_str("No valid timestamped events found.\n");
-    } else {
-        for (year, count) in &year_freq {
-            out.push_str(&format!("{} : {}\n", year, count));
-        }
-    }
-
-    out.push_str("\n=== Message Frequency by Month-Year (YYYY-MM) ===\n");
-    if month_year_freq.is_empty() {
-        out.push_str("No valid timestamped events found.\n");
-    } else {
-        for (ym, count) in &month_year_freq {
-            out.push_str(&format!("{} : {}\n", ym, count));
-        }
-    }
-
-    out.push_str("\n=== Message Frequency by Day of Month (1-31) ===\n");
-    for day in 1..=31 {
-        out.push_str(&format!("{:02} : {}\n", day, day_of_month_freq[day]));
-    }
-
-    out
-}
-
-fn chatlog_view(entries: &[Value]) -> String {
-    let mut unique: HashMap<String, Value> = HashMap::new();
-    for entry in entries {
-        let key = format!(
-            "{}|{}|{}",
-            entry["avatar_id"].as_str().unwrap_or(""),
-            timestamp_as_i64(&entry["timestamp"]).unwrap_or(0),
-            entry["message"].as_str().unwrap_or(""),
-        );
-        unique.entry(key).or_insert_with(|| entry.clone());
-    }
-
-    let mut events = unique.into_values().collect::<Vec<_>>();
-    events.sort_by_key(|e| timestamp_as_i64(&e["timestamp"]).unwrap_or(0));
-
-    let pst = FixedOffset::west_opt(8 * 3600).expect("valid offset");
-    let mut grouped: BTreeMap<String, Vec<Value>> = BTreeMap::new();
-
-    for e in &events {
-        let ts = timestamp_as_i64(&e["timestamp"]).unwrap_or(0);
-        let Some(dt_utc) = chrono::DateTime::from_timestamp(ts, 0) else {
-            continue;
-        };
-        let dt = dt_utc.with_timezone(&pst);
-        let key = dt.format("%A, %B %d, %Y").to_string();
-        grouped.entry(key).or_default().push(e.clone());
-    }
-
-    let sep = "-".repeat(80);
-    let now_pst = Utc::now().with_timezone(&pst);
-    let mut out = String::new();
-    out.push_str(&format!("{}\n", sep));
-    out.push_str("  SECOND LIFE CHAT LOG VIEWER\n");
-    out.push_str(&format!(
-        "  Total Messages: {} | Generated: {}\n",
-        events.len(),
-        now_pst.format("%m/%d/%Y %I:%M:%S %p PST")
-    ));
-    out.push_str(&format!("{}\n\n", sep));
-
-    for (date, day_events) in &grouped {
-        out.push_str(&format!("  [ {} ] - {} message(s)\n", date, day_events.len()));
-        out.push_str(&format!("  {}\n\n", "~".repeat(76)));
-
-        for (i, e) in day_events.iter().enumerate() {
-            let ts = timestamp_as_i64(&e["timestamp"]).unwrap_or(0);
-            let dt = chrono::DateTime::from_timestamp(ts, 0)
-                .map(|v| v.with_timezone(&pst))
-                .unwrap_or_else(|| chrono::DateTime::<FixedOffset>::from(Utc::now().with_timezone(&pst)));
-            let time_str = dt.format("%I:%M:%S %p").to_string();
-            let name = e["avatar_name"].as_str().unwrap_or("(unknown)");
-            let name = if name.is_empty() { "(unknown)" } else { name };
-            let msg = e["message"].as_str().unwrap_or("");
-            let sim = e["sim_name"].as_str().unwrap_or("");
-            let captured = e["captured_by"].as_str().unwrap_or("");
-            let avatar_id = e["avatar_id"].as_str().unwrap_or("");
-
-            out.push_str(&format!("  #{}  {} PST\n", i + 1, time_str));
-            out.push_str(&format!("  From:        {}\n", name));
-            out.push_str(&format!("  Avatar ID:   {}\n", avatar_id));
-            out.push_str(&format!("  Message:     {}\n", msg));
-            out.push_str(&format!("  Region:      {}\n", sim));
-            out.push_str(&format!(
-                "  Position:    ({}, {}, {})\n",
-                e["x_pos"].as_f64().unwrap_or(0.0),
-                e["y_pos"].as_f64().unwrap_or(0.0),
-                e["z_pos"].as_f64().unwrap_or(0.0)
-            ));
-            out.push_str(&format!("  Captured By: {}\n", captured));
-            out.push_str(&format!("  Timestamp:   {}\n", ts));
-            out.push_str(&format!("  {}\n", "-".repeat(40)));
-        }
-        out.push('\n');
-    }
-
-    out.push_str(&format!("{}\n", sep));
-    out.push_str(&format!("  END OF LOG - {} total entries\n", events.len()));
-    out.push_str(&format!("{}\n", sep));
-    out
-}
-
-fn schedule_report(entries: &[Value]) -> String {
-    let mut hour_counts = [0usize; 24];
-    let mut day_counts: BTreeMap<String, usize> = BTreeMap::new();
-    let mut month_counts: BTreeMap<String, usize> = BTreeMap::new();
-
-    for e in entries {
-        let Some(ts) = timestamp_as_i64(&e["timestamp"]) else {
-            continue;
-        };
-        if ts <= 0 {
-            continue;
-        }
-        let Some(dt) = chrono::DateTime::from_timestamp(ts, 0) else {
-            continue;
-        };
-        let dt = dt.with_timezone(&FixedOffset::west_opt(8 * 3600).expect("valid offset"));
-        hour_counts[dt.hour() as usize] += 1;
-        *day_counts.entry(dt.format("%A").to_string()).or_insert(0) += 1;
-        *month_counts.entry(dt.format("%B").to_string()).or_insert(0) += 1;
-    }
-
-    let mut out = String::new();
-    out.push_str("=== Frequency by Hour (0-23) ===\n");
-    for (hour, count) in hour_counts.iter().enumerate() {
-        out.push_str(&format!("{}: {}\n", hour, count));
-    }
-    out.push_str("\n=== Frequency by Day of Week ===\n");
-    for (day, count) in day_counts {
-        out.push_str(&format!("{}: {}\n", day, count));
-    }
-    out.push_str("\n=== Frequency by Month ===\n");
-    for (month, count) in month_counts {
-        out.push_str(&format!("{}: {}\n", month, count));
-    }
-    out
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
 
     #[test]
-    fn markov_metrics_tracks_speaker_transitions_and_reply_time() {
-        let entries = vec![
-            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "hello", "timestamp": 100}),
-            json!({"avatar_id": "b", "avatar_name": "Bea", "message": "hi", "timestamp": 120}),
-            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "welcome", "timestamp": 150}),
-        ];
+    fn team_history_persists_in_partitioned_array_store() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock is after Unix epoch")
+            .as_nanos();
+        let store_path = std::env::temp_dir().join(format!("tiade-ollama-relay-{unique}"));
+        let mut config = RelayConfig::default();
+        config.team_log_dir = store_path.clone();
+        config.team_history_storage_limit = 2;
 
-        let metrics = markov_metrics(&entries);
+        let store = Mutex::new(open_team_store(&config).expect("open initial LineDb"));
+        append_team_log(&store, &config, "alpha", "first message", "first reply")
+            .expect("persist first team entry");
+        append_team_log(&store, &config, "alpha", "hello\nthere", "general kenobi")
+            .expect("persist second team entry");
+        append_team_log(&store, &config, "alpha", "third message", "third reply")
+            .expect("persist third team entry");
 
-        assert_eq!(metrics.total_events, 3);
-        assert_eq!(metrics.unique_speakers, 2);
-        assert_eq!(metrics.transitions, 2);
-        assert_eq!(metrics.speaker_switch_rate, 1.0);
-        assert_eq!(metrics.average_reply_seconds, Some(25.0));
-        assert_eq!(metrics.top_transitions.len(), 2);
-        assert_eq!(metrics.top_transitions[0].probability, 1.0);
-        assert_eq!(metrics.speaker_uniqueness.len(), 2);
-        assert_eq!(metrics.speaker_uniqueness[0].unique_percent, 100.0);
+        let reopened = Mutex::new(open_team_store(&config).expect("reopen LineDb"));
+        let history = team_history(&reopened, &config, "alpha").expect("read team history");
+        assert_eq!(
+            history,
+            "USER: hello there\nAI: general kenobi\n\nUSER: third message\nAI: third reply"
+        );
+
+        std::fs::remove_dir_all(store_path).expect("remove temporary LineDb");
     }
 
     #[test]
-    fn markov_metrics_does_not_cross_session_gaps() {
-        let entries = vec![
-            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "before", "timestamp": 100}),
-            json!({"avatar_id": "b", "avatar_name": "Bea", "message": "after", "timestamp": 1_901}),
-        ];
+    fn team_prompt_persists_and_is_injected_as_a_system_message() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock is after Unix epoch")
+            .as_nanos();
+        let store_path = std::env::temp_dir().join(format!("tiade-ollama-prompt-{unique}"));
+        let mut config = RelayConfig::default();
+        config.team_log_dir = store_path.clone();
 
-        let metrics = markov_metrics(&entries);
+        let store = Mutex::new(open_team_store(&config).expect("open initial LineDb"));
+        save_team_prompt(&store, "alpha", "Answer as a concise technical editor.")
+            .expect("persist team prompt");
 
-        assert_eq!(metrics.total_events, 2);
-        assert_eq!(metrics.transitions, 0);
-        assert_eq!(metrics.speaker_switch_rate, 0.0);
-        assert_eq!(metrics.average_reply_seconds, None);
-        assert!(metrics.top_transitions.is_empty());
+        let reopened = Mutex::new(open_team_store(&config).expect("reopen LineDb"));
+        assert_eq!(
+            team_prompt(&reopened, "alpha").expect("load team prompt"),
+            Some("Answer as a concise technical editor.".to_string())
+        );
+        let messages = build_messages(&reopened, &config, "alpha", "Review this.")
+            .expect("build Ollama messages");
+        assert_eq!(
+            messages[1]["content"].as_str(),
+            Some("Answer as a concise technical editor.")
+        );
+
+        save_team_prompt(&reopened, "alpha", "").expect("clear team prompt");
+        assert_eq!(team_prompt(&reopened, "alpha").expect("load cleared prompt"), None);
+        std::fs::remove_dir_all(store_path).expect("remove temporary LineDb");
     }
 
     #[test]
-    fn markov_metrics_reports_normalized_message_uniqueness_per_speaker() {
-        let entries = vec![
-            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "Hello   there", "timestamp": 100}),
-            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "hello there", "timestamp": 110}),
-            json!({"avatar_id": "a", "avatar_name": "Ari", "message": "A new thought", "timestamp": 120}),
-        ];
+    fn game_messages_layer_team_and_game_prompts_per_player() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock is after Unix epoch")
+            .as_nanos();
+        let store_path = std::env::temp_dir().join(format!("tiade-ollama-game-{unique}"));
+        let mut config = RelayConfig::default();
+        config.team_log_dir = store_path.clone();
+        let store = Mutex::new(open_team_store(&config).expect("open LineDb"));
 
-        let metrics = markov_metrics(&entries);
+        save_team_prompt(&store, "arcade", "Keep the campaign tone hopeful.")
+            .expect("save team prompt");
+        append_team_log(
+            &store,
+            &config,
+            &game_history_key("arcade", "player-one"),
+            "I inspect the gate.",
+            "The gate is locked.",
+        )
+        .expect("save player-one history");
+        let messages = build_game_messages(
+            &store,
+            &config,
+            "arcade",
+            &game_history_key("arcade", "player-one"),
+            "player-one",
+            "I try the key.",
+            "The player has a brass key and one torch.",
+        )
+        .expect("build game messages");
 
-        assert_eq!(metrics.speaker_uniqueness.len(), 1);
-        assert_eq!(metrics.speaker_uniqueness[0].total_messages, 3);
-        assert_eq!(metrics.speaker_uniqueness[0].unique_messages, 2);
-        assert!((metrics.speaker_uniqueness[0].unique_percent - 66.666_666).abs() < 0.001);
+        assert_eq!(messages[1]["content"].as_str(), Some("Keep the campaign tone hopeful."));
+        assert_eq!(messages[2]["content"].as_str(), Some("The player has a brass key and one torch."));
+        assert!(messages[3]["content"].as_str().unwrap_or_default().contains("I inspect the gate."));
+        assert_eq!(messages[4]["content"].as_str(), Some("I try the key."));
+        assert!(team_history(&store, &config, &game_history_key("arcade", "player-two"))
+            .expect("read player-two history")
+            .is_empty());
+
+        std::fs::remove_dir_all(store_path).expect("remove temporary LineDb");
     }
+
+    #[test]
+    fn game_state_persists_per_player_and_reset_clears_it() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock is after Unix epoch")
+            .as_nanos();
+        let store_path = std::env::temp_dir().join(format!("tiade-ollama-game-state-{unique}"));
+        let mut config = RelayConfig::default();
+        config.team_log_dir = store_path.clone();
+        let store = Mutex::new(open_team_store(&config).expect("open LineDb"));
+        let saved_state = json!({"scene": "north-gate", "inventory": ["brass-key"]});
+
+        save_game_state(&store, &config, "arcade", "player-one", &saved_state)
+            .expect("save player state");
+        let reopened = Mutex::new(open_team_store(&config).expect("reopen LineDb"));
+        assert_eq!(
+            game_state(&reopened, "arcade", "player-one").expect("load player state"),
+            saved_state
+        );
+        assert_eq!(
+            game_state(&reopened, "arcade", "player-two").expect("load isolated player state"),
+            json!({})
+        );
+
+        reset_game_session(&reopened, "arcade", "player-one").expect("reset player session");
+        assert_eq!(
+            game_state(&reopened, "arcade", "player-one").expect("load reset state"),
+            json!({})
+        );
+        std::fs::remove_dir_all(store_path).expect("remove temporary LineDb");
+    }
+
+    #[test]
+    fn team_names_must_be_safe_and_non_empty() {
+        assert!(validate_team("alpha-team_2.0").is_ok());
+        assert!(validate_team("").is_err());
+        assert!(validate_team("../other").is_err());
+        assert!(validate_team("two words").is_err());
+    }
+
+    #[test]
+    fn cors_preflight_allows_browser_api_requests() {
+        let response = cors_preflight_response();
+
+        assert_eq!(response.status(), tide::StatusCode::NoContent);
+        assert_eq!(
+            response
+                .header("Access-Control-Allow-Origin")
+                .and_then(|values| values.get(0))
+                .map(|value| value.as_str()),
+            Some("*")
+        );
+        assert_eq!(
+            response
+                .header("Access-Control-Allow-Headers")
+                .and_then(|values| values.get(0))
+                .map(|value| value.as_str()),
+            Some("Authorization, Content-Type")
+        );
+    }
+
+    #[test]
+    fn general_route_catalog_lists_the_generic_ollama_api() {
+        let catalog = route_catalog();
+        let routes = catalog
+            .routes
+            .iter()
+            .map(|route| (route.method, route.path))
+            .collect::<Vec<_>>();
+
+        assert_eq!(catalog.version, RELAY_VERSION);
+        assert!(routes.contains(&("GET", "/ollama")));
+        assert!(routes.contains(&("GET", "/ollama/health")));
+        assert!(routes.contains(&("POST", "/chat/:team")));
+        assert!(routes.contains(&("POST", "/game/:team/:player")));
+        assert!(routes.contains(&("POST", "/game/:team/:player/turn")));
+        assert!(routes.contains(&("GET", "/game/:team/:player/state")));
+        assert!(routes.contains(&("POST", "/game/:team/:player/reset")));
+        assert!(routes.contains(&("GET", "/history/:team")));
+        assert!(routes.contains(&("GET", "/teams/:team/prompt")));
+        assert!(routes.contains(&("POST", "/teams/:team/prompt")));
+    }
+
+    #[test]
+    fn general_route_serves_the_catalog_to_http_clients() {
+        async_std::task::block_on(async {
+            let unique = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("system clock is after Unix epoch")
+                .as_nanos();
+            let store_path = std::env::temp_dir().join(format!("tiade-ollama-route-{unique}"));
+            let mut config = RelayConfig::default();
+            config.team_log_dir = store_path.clone();
+
+            let mut app: tide::Server<()> = tide::new();
+            mount_routes(&mut app, config).expect("mount relay routes");
+            let request = tide::http::Request::new(
+                tide::http::Method::Get,
+                tide::http::Url::parse("http://localhost/ollama").expect("parse URL"),
+            );
+            let mut response: tide::Response = app.respond(request).await.expect("serve route");
+
+            assert_eq!(response.status(), tide::StatusCode::Ok);
+            assert_eq!(
+                response
+                    .header("Access-Control-Allow-Origin")
+                    .and_then(|values| values.get(0))
+                    .map(|value| value.as_str()),
+                Some("*")
+            );
+            let body = response.take_body().into_string().await.expect("read catalog body");
+            let catalog: Value = serde_json::from_str(&body).expect("decode catalog JSON");
+            assert_eq!(catalog["service"], "ollama-team-relay");
+            assert!(catalog["routes"].as_array().expect("route array").len() >= 7);
+
+            std::fs::remove_dir_all(store_path).expect("remove temporary LineDb");
+        });
+    }
+
 }

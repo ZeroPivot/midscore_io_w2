@@ -27,6 +27,10 @@ State table mapping uses file stem naming:
 - Blog store path -> `blog_store`
 - Gallery store path -> `gallery_store`
 
+The Ollama 2.0 relay uses `LineDb` for team conversation history, team prompts, and isolated game-player histories:
+- Store root: `/root/midscore_io/logs/ollama_teams/line_db`
+- History is retained to the newest 500 entries per team by default.
+
 ## Admin Endpoints
 
 - `GET /admin/login?password=...`
@@ -87,7 +91,6 @@ Integration note:
 | GET | `/blog/:user/delete` | `src/roda_tide_rewrite.rs` | public/private by profile | Delete/lock listing page |
 | GET | `/blog/:user/delete/:id` | `src/roda_tide_rewrite.rs` | owner session | Toggle lock then redirect |
 | GET | `/blog/:user/list` | `src/roda_tide_rewrite.rs` | public/private by profile | Post list |
-| GET, POST | `/blog/:user/new` | `src/roda_tide_rewrite.rs` | owner session | New post page and save |
 | GET | `/blog/:user/private_toggle` | `src/roda_tide_rewrite.rs` | owner session | Toggle private view |
 | GET | `/blog/:user/view` | `src/roda_tide_rewrite.rs` | public/private by profile | Main blog index |
 | GET | `/blog/:user/view/:id` | `src/roda_tide_rewrite.rs` | public/private by profile | Post view (`?format=json` supported) |
@@ -98,7 +101,6 @@ Integration note:
 | Method | Path | Source | Auth | Notes |
 |---|---|---|---|---|
 | GET | `/gallery` | `src/roda_tide_rewrite.rs` | public | Gallery home/user list |
-| GET, POST | `/gallery/secondlifeapi` | `src/roda_tide_rewrite.rs` | public | GET HTML, POST JSON echo/status |
 | GET, POST | `/gallery/upload/url` | `src/roda_tide_rewrite.rs` | public | URL upload page and submit |
 | GET, POST | `/gallery/upload` | `src/roda_tide_rewrite.rs` | public | Raw body or multipart file/url upload |
 | GET | `/gallery/view/:user/latest` | `src/roda_tide_rewrite.rs` | public | Redirects to latest page index |
@@ -154,24 +156,118 @@ Integration note:
 
 These are mounted by `mount_ollama_routes(&mut app, OllamaRelayConfig::default())`:
 
-- `/chat/:team`
-- `/history/:team`
-- `/sl_logger`
-- `/_ethereal_life_sl_logger_get_`
-- `/_ethereal_life_sl_logger_show_`
-- `/incrementor_get`
-- `/incrementor`
-- `/analytics`
-- `/markov_metrics` (JSON conversation-flow and speaker-transition metrics)
-- `/chatlog`
-- `/schedule_ft`
-- `/read`
+- `GET /ollama` (general route catalog)
+- `POST /chat/:team` with `{"message":"..."}`
+- `POST /game/:team/:player` with `{"message":"...","game_prompt":"..."}`
+- `POST /game/:team/:player/turn` with `{"action":"...","game_prompt":"...","state":{}}`
+- `GET /game/:team/:player/state`
+- `POST /game/:team/:player/reset`
+- `GET /history/:team`
+- `GET /ollama/health`
+- `GET /teams/:team/prompt`
+- `POST /teams/:team/prompt` with `{"prompt":"..."}`
+
+### Team Prompts
+
+Set `OLLAMA_TEAM_PROMPT_TOKEN` before starting the server to enable prompt management. A saved prompt is applied as a system message only to the matching team. An empty prompt clears the saved team prompt.
+
+Read the prompt with `GET /teams/:team/prompt` and the same bearer token.
+
+```bash
+export OLLAMA_TEAM_PROMPT_TOKEN='set-a-long-random-token-here'
+curl -X POST https://your-host/teams/research/prompt \
+	-H "Authorization: Bearer $OLLAMA_TEAM_PROMPT_TOKEN" \
+	-H 'Content-Type: application/json' \
+	-d '{"prompt":"Answer as a concise research assistant."}'
+```
+
+### JavaScript Clients
+
+The relay sends permissive CORS headers and accepts `OPTIONS` preflight requests for chat, game, history, health, and team-prompt routes.
+
+Call `GET /ollama` to discover the generic Ollama route catalog, including methods and authorization requirements.
+
+For conversational game I/O, `POST /game/:team/:player` isolates history by player. For model-directed play, `POST /game/:team/:player/turn` persists a JSON state object per player and requires Ollama to return a JSON directive containing `narrative`, the complete next `state`, `choices`, and `game_over`. The saved team prompt is applied first; the optional `game_prompt` is applied only to that request, letting the game provide current rules or scene context.
+
+```js
+const response = await fetch('https://your-host/chat/research', {
+	method: 'POST',
+	headers: { 'Content-Type': 'application/json' },
+	body: JSON.stringify({ message: 'Summarize today\'s findings.' }),
+});
+const { response: reply } = await response.json();
+```
+
+### WebAssembly Client
+
+`wasm_client` compiles to a browser ES module and is served by the existing static-assets route. Run `./start-with-wasm.sh` to install the Rust WebAssembly target and `wasm-bindgen-cli` on first use, build both artifacts, and start the release server.
+
+```js
+import init, { chat, game_turn } from '/assets/wasm/ollama_game_client.js';
+
+await init();
+const reply = await game_turn(
+	window.location.origin,
+	'arcade',
+	'player-42',
+	'I open the north door.',
+	'Inventory: lantern, silver key.'
+);
+console.log(reply);
+```
+
+The generated module exports `routes`, `health`, `chat`, `game_turn`, and `history`. The relay route list is also available in [OLLAMA_ROUTES.txt](OLLAMA_ROUTES.txt).
+
+### Ruby Raylib and Magnus Client
+
+[ruby_client/ollama_game_client.rb](ruby_client/ollama_game_client.rb) is dependency-free Ruby using `Net::HTTP` and `JSON`, so it can run in a raylib-ruby game loop or in Ruby evaluated through Magnus. [ruby_client/raylib_game_loop_example.rb](ruby_client/raylib_game_loop_example.rb) shows a `GameDirector` that retains rendering, input, physics, and validation in Ruby while consuming Ollama's structured turn directives as data.
+
+At server startup, `src/main.rs` loads this same client into the embedded Magnus VM. Ruby evaluated through that VM can instantiate `OllamaGameClient::Client` directly; no Ruby load-path setup or duplicated HTTP bridge is required.
+
+```ruby
+require_relative "ruby_client/ollama_game_client"
+
+client = OllamaGameClient::Client.new(
+	server_url: "https://your-host",
+	team: "arcade",
+	player: "player-42"
+)
+turn = client.turn(action: "open the north door", game_prompt: "Fantasy dungeon. Keep choices concise.")
+puts turn.fetch("directive").fetch("narrative")
+```
+
+```js
+const response = await fetch('https://your-host/game/arcade/player-42', {
+	method: 'POST',
+	headers: { 'Content-Type': 'application/json' },
+	body: JSON.stringify({
+		message: 'I open the north door.',
+		game_prompt: 'Player inventory: lantern, silver key. Return concise JSON-ready prose.',
+	}),
+});
+const { response: reply } = await response.json();
+```
 
 ## Run
 
 ```bash
 cargo run
 ```
+
+For the TLS production server, build and start the release binary:
+
+```bash
+cargo build --release
+./start.sh
+```
+
+To build and serve the browser WebAssembly client with the server instead:
+
+```bash
+./start-with-wasm.sh
+```
+
+Use `./stop-server.sh` to send the managed process `SIGTERM`.
 
 ## Verify
 

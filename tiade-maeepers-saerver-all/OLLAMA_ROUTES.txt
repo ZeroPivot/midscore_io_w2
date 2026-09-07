@@ -1,0 +1,42 @@
+Ollama Team Relay 3.0 Routes
+
+GET  /ollama
+  JSON API catalog.
+
+GET  /ollama/health
+  Ollama upstream status and installed model list.
+
+POST /chat/:team
+  JSON: {"message":"..."}
+  Team-scoped chat history.
+
+POST /game/:team/:player
+  JSON: {"message":"...","game_prompt":"optional current game state or rules"}
+  Player-isolated game conversation history.
+
+POST /game/:team/:player/turn
+  JSON: {"action":"...","game_prompt":"optional rules or scene context","state":{}}
+  Ollama returns a JSON directive with narrative, complete next state, choices, and game_over.
+  Omitting state resumes the player's persisted state.
+
+GET  /game/:team/:player/state
+  Returns the player's persisted game state.
+
+POST /game/:team/:player/reset
+  Clears the player's game state and isolated game history.
+
+GET  /history/:team
+  Recent team chat history.
+
+GET  /teams/:team/prompt
+  Requires: Authorization: Bearer OLLAMA_TEAM_PROMPT_TOKEN
+  Reads the saved team system prompt.
+
+POST /teams/:team/prompt
+  Requires: Authorization: Bearer OLLAMA_TEAM_PROMPT_TOKEN
+  JSON: {"prompt":"..."}
+  Creates, updates, or clears the saved team system prompt.
+
+Browser WASM module after ./start-with-wasm.sh:
+  /assets/wasm/ollama_game_client.js
+  /assets/wasm/ollama_game_client_bg.wasm

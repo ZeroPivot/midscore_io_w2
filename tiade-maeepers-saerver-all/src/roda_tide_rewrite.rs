@@ -200,10 +200,10 @@ fn get_cookie(req: &Request<AppState>, name: &str) -> Option<String> {
 }
 
 fn safe_join(base: &str, rel: &str) -> Option<String> {
-    if rel.is_empty() || rel.contains("..") || rel.contains('\\') || rel.starts_with('/') {
+    let clean = rel.trim_start_matches('/').trim_start_matches("./");
+    if clean.is_empty() || clean.contains("..") || clean.contains('\\') {
         return None;
     }
-    let clean = rel.trim_start_matches("./");
     Some(format!("{}/{}", base.trim_end_matches('/'), clean))
 }
 
@@ -222,6 +222,8 @@ fn mime_for_path(path: &str) -> &'static str {
         "image/bmp"
     } else if path.ends_with(".svg") {
         "image/svg+xml"
+    } else if path.ends_with(".html") {
+        "text/html; charset=utf-8"
     } else if path.ends_with(".wasm") {
         "application/wasm"
     } else {

@@ -158,9 +158,28 @@ pub fn mount_routes<State: Clone + Send + Sync + 'static>(
     let cfg = Arc::new(config);
     let team_store = Arc::new(Mutex::new(open_team_store(&cfg)?));
 
-    app.at("/ollama")
-        .options(|_| async { Ok(cors_preflight_response()) })
-        .get(|_| async { Ok(json_response(tide::StatusCode::Ok, route_catalog())) });
+    {
+        let cfg = cfg.clone();
+        app.at("/ollama")
+            .options(|_| async { Ok(cors_preflight_response()) })
+            .get(|_| async { Ok(json_response(tide::StatusCode::Ok, route_catalog())) })
+            .post(move |mut req: tide::Request<State>| {
+                let cfg = cfg.clone();
+                async move {
+                    let body = req.body_string().await?;
+                    let payload: Value = serde_json::from_str(&body).map_err(|error| {
+                        tide::Error::from_str(
+                            tide::StatusCode::BadRequest,
+                            format!("invalid JSON payload: {error}"),
+                        )
+                    })?;
+                    let payload = standard_chat_request(payload, &cfg.ollama_model_name)
+                        .map_err(|error| tide::Error::from_str(tide::StatusCode::BadRequest, error))?;
+                    let response = post_json(&cfg, "/api/chat", payload).await?;
+                    Ok(json_response(tide::StatusCode::Ok, response))
+                }
+            });
+    }
 
     {
         let cfg = cfg.clone();
@@ -609,6 +628,12 @@ fn route_catalog() -> RouteCatalogOutput {
                 authorization: None,
             },
             RouteInfo {
+                method: "POST",
+                path: "/ollama",
+                description: "Sends a standard non-streaming Ollama /api/chat request.",
+                authorization: None,
+            },
+            RouteInfo {
                 method: "GET",
                 path: "/ollama/health",
                 description: "Reports Ollama upstream availability and installed models.",
@@ -668,6 +693,27 @@ fn route_catalog() -> RouteCatalogOutput {
 
 fn json_error(status: tide::StatusCode, message: &str) -> tide::Response {
     json_response(status, json!({ "error": message }))
+}
+
+fn standard_chat_request(mut payload: Value, default_model: &str) -> Result<Value, String> {
+    let Some(request) = payload.as_object_mut() else {
+        return Err("request must be a JSON object".to_string());
+    };
+    if !request.get("messages").is_some_and(Value::is_array) {
+        return Err("messages must be a JSON array".to_string());
+    }
+    if request.get("stream").and_then(Value::as_bool) == Some(true) {
+        return Err("streaming is not supported on POST /ollama; set stream to false".to_string());
+    }
+    request.insert("stream".to_string(), Value::Bool(false));
+    match request.get("model") {
+        Some(Value::String(model)) if !model.trim().is_empty() => {}
+        Some(_) => return Err("model must be a non-empty string".to_string()),
+        None => {
+            request.insert("model".to_string(), Value::String(default_model.to_string()));
+        }
+    }
+    Ok(payload)
 }
 
 fn safe_team_name(team: &str) -> String {
@@ -1347,6 +1393,7 @@ mod tests {
 
         assert_eq!(catalog.version, RELAY_VERSION);
         assert!(routes.contains(&("GET", "/ollama")));
+        assert!(routes.contains(&("POST", "/ollama")));
         assert!(routes.contains(&("GET", "/ollama/health")));
         assert!(routes.contains(&("POST", "/chat/:team")));
         assert!(routes.contains(&("POST", "/game/:team/:player")));
@@ -1356,6 +1403,22 @@ mod tests {
         assert!(routes.contains(&("GET", "/history/:team")));
         assert!(routes.contains(&("GET", "/teams/:team/prompt")));
         assert!(routes.contains(&("POST", "/teams/:team/prompt")));
+    }
+
+    #[test]
+    fn standard_ollama_route_defaults_model_and_rejects_streaming() {
+        let request = standard_chat_request(json!({
+            "messages": [{ "role": "user", "content": "Hello" }],
+        }), "game-model:latest")
+        .expect("normalize standard Ollama request");
+
+        assert_eq!(request["model"], "game-model:latest");
+        assert_eq!(request["stream"], false);
+        assert!(standard_chat_request(json!({
+            "messages": [],
+            "stream": true,
+        }), "game-model:latest")
+        .is_err());
     }
 
     #[test]

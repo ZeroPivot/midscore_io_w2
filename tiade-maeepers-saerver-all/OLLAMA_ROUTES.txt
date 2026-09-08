@@ -6,6 +6,17 @@ Base URL is the HTTPS origin of this server, for example:
 
   const baseUrl = window.location.origin;
 
+Browser workbench:
+
+  GET /assets/ollama-console.html
+
+Open https://your-host/assets/ollama-console.html to compose and send standard
+non-streaming POST /ollama requests from the browser.
+
+The server listens on standard HTTPS port 443 by default, so browser routes are
+available without a port suffix: https://your-host/ollama and
+https://your-host/game/your-team/your-player/turn.
+
 All relay responses are JSON. POST requests must use:
 
   Content-Type: application/json
@@ -26,6 +37,23 @@ GET  /ollama
   const catalog = await fetch(`${baseUrl}/ollama`).then((response) => response.json());
 
   Response: { service, version, routes: [{ method, path, description, authorization }] }
+
+POST /ollama
+  Standard non-streaming Ollama chat access. This forwards an Ollama-compatible
+  request to the configured upstream /api/chat endpoint and returns its JSON
+  response unchanged. model defaults to OLLAMA_MODEL when omitted.
+
+  const reply = await fetch(`${baseUrl}/ollama`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'llama2-uncensored:latest',
+      messages: [{ role: 'user', content: 'Hello.' }],
+      stream: false,
+    }),
+  }).then((response) => response.json());
+
+  stream: true is not supported on this buffered HTTPS route. Use stream: false.
 
 GET  /ollama/health
   Ollama upstream status and installed model list. Returns 200 when upstream is
@@ -149,6 +177,12 @@ Server Configuration
 OLLAMA_HTTP_ADDRESS        Ollama upstream URL; default http://localhost:11434
 OLLAMA_MODEL               Preferred model; default llama2-uncensored:latest
 OLLAMA_TEAM_PROMPT_TOKEN   Enables authenticated team-prompt management
+MSSL_ADDRESS               TLS listener; default 0.0.0.0:443
+MSSL_CERT_PATH             PEM certificate; default Let's Encrypt fullchain path
+MSSL_KEY_PATH              PEM private key; default Let's Encrypt private-key path
+
+For local unprivileged TLS development, set MSSL_ADDRESS to a non-privileged
+port such as 0.0.0.0:8443. Browser clients must then include :8443 in baseUrl.
 
 Persistence
 -----------

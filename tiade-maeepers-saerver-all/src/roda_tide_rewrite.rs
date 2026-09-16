@@ -222,6 +222,8 @@ fn mime_for_path(path: &str) -> &'static str {
         "image/bmp"
     } else if path.ends_with(".svg") {
         "image/svg+xml"
+    } else if path.ends_with(".wasm") {
+        "application/wasm"
     } else {
         "application/octet-stream"
     }
@@ -367,11 +369,6 @@ fn gallery_home_page_html(users: &[String]) -> String {
         items
     );
     page_shell("Gallery", &body, "", "")
-}
-
-fn secondlife_api_page_html() -> String {
-    let body = "<section class=\"card\"><h2>SecondLife API Bridge</h2><p>This endpoint accepts POST payloads and returns status for in-world tooling compatibility.</p></section>";
-    page_shell("SecondLife API", body, "", "")
 }
 
 fn blog_signup_page_html() -> String {
@@ -1717,15 +1714,6 @@ pub fn mount_roda_compat_routes(app: &mut tide::Server<AppState>) {
             let mut users: Vec<String> = store.users.keys().cloned().collect();
             users.sort();
             html_response(gallery_home_page_html(&users))
-        });
-
-    app.at("/gallery/secondlifeapi")
-        .get(|_| async { html_response(secondlife_api_page_html()) });
-
-    app.at("/gallery/secondlifeapi")
-        .post(|mut req: Request<AppState>| async move {
-            let body = req.body_string().await.unwrap_or_default();
-            json_response(StatusCode::Ok, json!({"ok": true, "source": "tide", "body": body}))
         });
 
     app.at("/gallery/upload/url")

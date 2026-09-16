@@ -29,8 +29,11 @@ fn execute_ruby_code(ruby_code: &str) {
     }
 }
 
-async fn init_ruby_vm() {
-    Ruby::init(|_ruby| Ok(())).unwrap();
+fn init_ruby_vm() -> Result<(), String> {
+  Ruby::init(|ruby| {
+    ruby.eval::<magnus::Value>(include_str!("../ruby_client/ollama_game_client.rb"))?;
+    Ok(())
+  })
 }
 
 // Helper: Create a JSON response.
@@ -908,10 +911,7 @@ async fn main() -> tide::Result<()> {
                             Ok(output) => Ok(output),
                             Err(e) => {
                                 eprintln!("Error reading Ruby output: {}", e);
-                                Err(magnus::Error::new(
-                                    magnus::exception::runtime_error(),
-                                    format!("Error reading Ruby output: {}", e),
-                                ))
+                            Err(format!("Error reading Ruby output: {}", e))
                             }
                         };
 
@@ -986,8 +986,10 @@ async fn main() -> tide::Result<()> {
     app.with(LogRoute);
     mount_ollama_routes(&mut app, OllamaRelayConfig::default())?;
 
-    // Initialize the Ruby interpreter
-    let _ruby = init_ruby_vm().await;
+    // Initialize the embedded Ruby VM and load the shared game relay client.
+    init_ruby_vm().map_err(|error| {
+      tide::Error::from_str(tide::StatusCode::InternalServerError, error)
+    })?;
 
     use std::sync::Arc;
 

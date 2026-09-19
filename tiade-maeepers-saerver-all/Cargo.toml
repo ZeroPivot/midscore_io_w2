@@ -30,6 +30,7 @@ tokio =  { version = "1.44.1", features = ["full"] }
 tokio-native-tls = "0.3.1"
 url = { version = "2.5.4", features = ["serde"] }
 uuid = { version = "1.11.0", features = ["v4"] }
+serde_yaml = "0.9.34"
 
 [profile.dev]
 opt-level = 3

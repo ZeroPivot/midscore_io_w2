@@ -17624,3 +17624,25 @@ Spawning server on address: 0.0.0.0:443
 Server is starting on address: 0.0.0.0:443
 Received POST body: {"avatar_id":"d5ff3724-1164-47bc-84b5-ae4be5514595","avatar_name":"ArityWolf Resident","captured_by":"aritywolf","message":"test","sim_name":"Ivory Tower Library of Primitives Sandbox","timestamp":1789829909,"x_pos":79.333700,"y_pos":170.475000,"z_pos":26.050780},{"avatar_id":"d5ff3724-1164-47bc-84b5-ae4be5514595","avatar_name":"ArityWolf Resident","captured_by":"aritywolf","message":"test","sim_name":"Ivory Tower Library of Primitives Sandbox","timestamp":1789829993,"x_pos":79.333700,"y_pos":170.475000,"z_pos":26.068630}
 Route '/sl_logger' handled with status: 200
+Received POST body: 
+Route '/sl_logger' handled with status: 200
+Received POST body: {"avatar_id":"a95f4a08-4b17-411e-8f79-8dc03f623263","avatar_name":"StanleyLambchop Resident","captured_by":"aritywolf","message":"hi guys","sim_name":"Ivory Tower Library of Primitives Sandbox","timestamp":1789830359,"x_pos":79.333700,"y_pos":170.475000,"z_pos":26.068630},{"avatar_id":"a95f4a08-4b17-411e-8f79-8dc03f623263","avatar_name":"StanleyLambchop Resident","captured_by":"aritywolf","message":"I\\'m feeling flat","sim_name":"Ivory Tower Library of Primitives Sandbox","timestamp":1789830385,"x_pos":79.333700,"y_pos":170.475000,"z_pos":26.068630}
+Route '/sl_logger' handled with status: 200
+Route '/' handled with status: 302
+Route '/gallery' handled with status: 200
+Received POST body: {"avatar_id":"4661b637-b6eb-40d8-925a-d1b78c2ce414","avatar_name":"KintariusPyromancer Resident","captured_by":"aritywolf","message":"ok","sim_name":"Ivory Tower Library of Primitives Sandbox","timestamp":1789831299,"x_pos":79.333700,"y_pos":170.475000,"z_pos":26.068630},{"avatar_id":"4661b637-b6eb-40d8-925a-d1b78c2ce414","avatar_name":"KintariusPyromancer Resident","captured_by":"aritywolf","message":"we\\'re just drawing and scripting","sim_name":"Ivory Tower Library of Primitives Sandbox","timestamp":1789831377,"x_pos":79.333700,"y_pos":170.475000,"z_pos":26.068630}
+Route '/sl_logger' handled with status: 200
+Route '/' handled with status: 302
+Received POST body: {"avatar_id":"0dc9a7a2-2dbd-2221-de5b-1fb69bfc6370","avatar_name":"Actors' N Bracelet v2.0","captured_by":"aritywolf","message":"\\[*t\\]\\[*h\\]!~e* * !*f~u*l*l*l\\[* \\]*s*s\\[*p\\]!~i*r~i~i!*t!* *s\\[*y\\]\\[*s\\]*t\\[~e\\]*m*m* * ~i*s* * *h\\[~e\\]\\[*r\\]~e~e","sim_name":"Ivory Tower Library of Primitives Table","timestamp":1789831485,"x_pos":67.494200,"y_pos":172.456900,"z_pos":26.088470},{"avatar_id":"662c67eb-83eb-d377-4e47-6a63e103eb37","avatar_name":"Actors' N Bracelet v2.0","captured_by":"aritywolf","message":"!*t!*h~e* *f*f\\[~u\\]!*l*l*l* * *s*p~i*r*r\\[~i\\]*t\\[* \\]*s*s\\[*y\\]\\[*s\\]\\[*t\\]~e~e*m*m* * ~i~i*s*s!* *h~e~e!*r!~e","sim_name":"Ivory Tower Library of Primitives Table","timestamp":1789831485,"x_pos":67.494200,"y_pos":172.456900,"z_pos":26.088470}
+Route '/sl_logger' handled with status: 200
+Received POST body: {"avatar_id":"0dc9a7a2-2dbd-2221-de5b-1fb69bfc6370","avatar_name":"Actors' N Bracelet v2.0","captured_by":"aritywolf","message":"!*\\[!#**t*t*\\]*\\]*\\[*\\[\\[#*\\]*h*\\]*\\]#!#!!*~~e~e#** * #*#** * \\[#!\\]#*#*!*f*~~u#*#*!*l#*#**l*l!#*!*l*\\[#*\\[* \\]*\\]!#**s#**s*s\\[*\\[\\]#*\\[*p\\]\\[*\\]\\]\\[#!\\]!*~\\[~i\\]#*!*r*~*~!~i*~*~!~i!#!#*#*\\[*t\\]\\[#!\\]#*#** !#**s*s*\\[#*!*y\\[*\\]\\]*\\[*\\[#*#**s*s!*\\]#**t*t*\\[\\[*~\\]\\[~e\\]!*\\]\\[#*\\]*m*m\\[#*\\]\\[*m\\]#*#*!* #*#** !*~!~i#*!*s\\[#*\\]\\[* \\]#*\\[* \\]\\[#*\\]*h*h*\\[*~!~e*\\]*\\]\\[*\\[\\]\\[#*\\]*r*\\]*\\]\\[*~\\]\\[~e\\]*~~e~e","sim_name":"Ivory Tower Library of Primitives Table","timestamp":1789831487,"x_pos":67.494200,"y_pos":172.456900,"z_pos":26.088470},{"avatar_id":"662c67eb-83eb-d377-4e47-6a63e103eb37","avatar_name":"Actors' N Bracelet v2.0","captured_by":"aritywolf","message":"\\[#!\\]!#*\\[*t\\]#!#!#*#**h*~*~!~e#** #*!*f#*#*!*f*\\[*\\[!*~~u*\\]*\\]#!\\[#*\\]*l#*!*l!#**l#*#** * !#*!* #*!*s!#*\\[*p\\]*~\\[~i\\]#*#**r*r!#*!*r*\\[*\\[!*~!~i!*\\]#**t*t\\[*\\[\\]#** !*\\]\\[#*\\]\\[*s\\]#*#*!*s\\[*\\[\\]#**y*y*\\]\\[*\\[\\]\\[#*\\]\\[*s\\]\\[*\\]\\]\\[*\\[\\]!#*!*t*\\]\\[*~\\]!~e*~~e#**m#**m#*#*!* !#** *~\\[~i\\]!*~~i~i#*#**s#*!*s\\[#!\\]!#*\\[* \\]!#**h!*~!~e!*~~e~e!#!#*!*r#!*~~e","sim_name":"Ivory Tower Library of Primitives Table","timestamp":1789831488,"x_pos":67.494200,"y_pos":172.456900,"z_pos":26.088470}
+Route '/sl_logger' handled with status: 200
+Route '/' handled with status: 302
+Route '/gallery' handled with status: 200
+Route '/favicon.ico' handled with status: 404
+Route '/robots.txt' handled with status: 404
+Route '/sitemap.xml' handled with status: 404
+Route '/config.json' handled with status: 404
+Route '/' handled with status: 302
+Route '/gallery' handled with status: 200
+Route '/' handled with status: 302

@@ -864,6 +864,8 @@ struct AppState;
 
 #[async_std::main]
 async fn main() -> tide::Result<()> {
+      let state = AppState { /* init fields if any */ };
+    let mut app = tide::with_state(state);
     // Spawn a background thread to listen for CLI input.
     std::thread::spawn(|| {
         let stdin = io::stdin();
@@ -1273,7 +1275,7 @@ async fn main() -> tide::Result<()> {
             Ok(res)
         });
 
-
+/*
         app.at("/sl_logger").post(|mut req: tide::Request<AppState>| async move {
     // Catch all POST variables into a hashmap and print them
     let body = req.body_string().await.unwrap_or_default();
@@ -1338,6 +1340,54 @@ async fn main() -> tide::Result<()> {
     Ok(res)
     //Ok(output.into())
   });
+*/
+
+
+
+
+use std::fs::{create_dir_all};
+use std::io::Write;
+use std::path::Path;
+
+   app.at("/sl_logger").post(|mut req: Request<AppState>| async move {
+        // Read POST body
+        let body = req.body_string().await.unwrap_or_default();
+        println!("Received POST body: {}", body);
+
+        // Log file path (adjust to a writable path for your process)
+        let log_path = "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
+
+        // Ensure parent directory exists
+        if let Some(parent) = Path::new(log_path).parent() {
+            create_dir_all(parent).map_err(|e| {
+                eprintln!("Failed to create directory {}: {}", parent.display(), e);
+                tide::Error::new(StatusCode::InternalServerError, e)
+            })?;
+        }
+
+        // Append to file (create if missing)
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(log_path)
+            .map_err(|e| {
+                eprintln!("Failed to open log file {}: {}", log_path, e);
+                tide::Error::new(StatusCode::InternalServerError, e)
+            })?;
+
+        writeln!(file, "{}", body).map_err(|e| {
+            eprintln!("Failed to write to log file: {}", e);
+            tide::Error::new(StatusCode::InternalServerError, e)
+        })?;
+
+        // Respond
+        let mut res = Response::new(StatusCode::Ok);
+        res.set_body("Log entry received and written to file successfully.");
+        res.insert_header("Content-Type", "text/plain; charset=utf-8");
+        Ok(res)
+    });
+
+
 
        app.at("/analytics")
         .get(|_req: tide::Request<AppState>| async move {

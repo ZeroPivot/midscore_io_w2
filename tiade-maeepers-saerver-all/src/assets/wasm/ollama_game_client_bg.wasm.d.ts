@@ -6,8 +6,8 @@ export const game_turn: (a: number, b: number, c: number, d: number, e: number, 
 export const health: (a: number, b: number) => any;
 export const history: (a: number, b: number, c: number, d: number) => any;
 export const routes: (a: number, b: number) => any;
-export const wasm_bindgen_b3ac00472ceaef78___convert__closures_____invoke___js_sys_8a2cad72ffa124a9___Function_fn_wasm_bindgen_b3ac00472ceaef78___JsValue_____wasm_bindgen_b3ac00472ceaef78___sys__Undefined___js_sys_8a2cad72ffa124a9___Function_fn_wasm_bindgen_b3ac00472ceaef78___JsValue_____wasm_bindgen_b3ac00472ceaef78___sys__Undefined_______true_: (a: number, b: number, c: any, d: any) => void;
-export const wasm_bindgen_b3ac00472ceaef78___convert__closures_____invoke___wasm_bindgen_b3ac00472ceaef78___JsValue__core_2f68d491536bd501___result__Result_____wasm_bindgen_b3ac00472ceaef78___JsError___true_: (a: number, b: number, c: any) => [number, number];
+export const wasm_bindgen_2ff123f37c49c771___convert__closures_____invoke___js_sys_94a6d686842b266b___Function_fn_wasm_bindgen_2ff123f37c49c771___JsValue_____wasm_bindgen_2ff123f37c49c771___sys__Undefined___js_sys_94a6d686842b266b___Function_fn_wasm_bindgen_2ff123f37c49c771___JsValue_____wasm_bindgen_2ff123f37c49c771___sys__Undefined_______true_: (a: number, b: number, c: any, d: any) => void;
+export const wasm_bindgen_2ff123f37c49c771___convert__closures_____invoke___wasm_bindgen_2ff123f37c49c771___JsValue__core_802f26927f88550e___result__Result_____wasm_bindgen_2ff123f37c49c771___JsError___true_: (a: number, b: number, c: any) => [number, number];
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
 export const __wbindgen_exn_store: (a: number) => void;

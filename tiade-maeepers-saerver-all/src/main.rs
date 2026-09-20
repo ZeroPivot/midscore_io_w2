@@ -883,8 +883,12 @@ struct LogEntrySl {
 
 #[async_std::main]
 async fn main() -> tide::Result<()> {
-      let state = AppState { /* init fields if any */ };
-    let mut app = tide::with_state(state);
+    
+    // Main HTTPS server - handling all defined routes
+let mut app = tide::with_state(AppState {
+    queue: Mutex::new(Vec::new()),
+    results: Mutex::new(Vec::new()),
+});
     // Spawn a background thread to listen for CLI input.
     std::thread::spawn(|| {
         let stdin = io::stdin();
@@ -994,8 +998,60 @@ async fn main() -> tide::Result<()> {
     //Ok(())
     //
 
-    // Main HTTPS server - handling all defined routes
-    let mut app = tide::with_state(AppState {});
+    use std::cell::RefCell;
+
+// --------------------------------------------------------
+// Data types
+// --------------------------------------------------------
+
+#[derive(Clone, Serialize, Deserialize)]
+struct QueuedCommand {
+    id: u64,
+    command: String,
+    stack: Vec<String>,
+    memory: Vec<(String, String)>,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+struct CompletedResult {
+    id: u64,
+    stack: Vec<String>,
+    memory: Vec<(String, String)>,
+    output: String,
+    error: String,
+}
+
+// --------------------------------------------------------
+// AppState (Tide server state)
+// --------------------------------------------------------
+
+
+struct AppState {
+    queue: Mutex<Vec<QueuedCommand>>,
+    results: Mutex<Vec<CompletedResult>>,
+}
+
+impl Default for AppState {
+    fn default() -> Self {
+        Self {
+            queue: Mutex::new(Vec::new()),
+            results: Mutex::new(Vec::new()),
+        }
+    }
+}
+
+impl Clone for AppState {
+    fn clone(&self) -> Self {
+        let queue = self.queue.lock().unwrap().clone();
+        let results = self.results.lock().unwrap().clone();
+        Self {
+            queue: Mutex::new(queue),
+            results: Mutex::new(results),
+        }
+    }
+}
+
+ 
 
     // Custom middleware to log which route is being handled
     struct LogRoute;
@@ -1042,7 +1098,7 @@ async fn main() -> tide::Result<()> {
         content: String,
     }
 
-
+    
     
 
 
@@ -3016,7 +3072,7 @@ WERE_FORMS = [
         Ok("File deleted")
     });
 
-    roda_tide_rewrite::mount_roda_compat_routes(&mut app);
+    //roda_tide_rewrite::mount_roda_compat_routes(&mut app);
   
 
     // Listen on all interfaces over standard HTTPS (TLS) port by default.

@@ -157,6 +157,7 @@ Integration note:
 These are mounted by `mount_ollama_routes(&mut app, OllamaRelayConfig::default())`:
 
 - `GET /ollama` (general route catalog)
+- `POST /ollama` with Ollama-compatible `{"model":"...","messages":[...],"stream":false}`
 - `POST /chat/:team` with `{"message":"..."}`
 - `POST /game/:team/:player` with `{"message":"...","game_prompt":"..."}`
 - `POST /game/:team/:player/turn` with `{"action":"...","game_prompt":"...","state":{}}`

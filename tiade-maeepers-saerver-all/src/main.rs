@@ -7,6 +7,8 @@ use std::io::{self, BufRead};
 use tide::utils::After;
 use tide_rustls::TlsListener;
 
+mod roda_tide_rewrite;
+
 use chrono::Utc;
 use tiade_ollama_relay::{RelayConfig as OllamaRelayConfig, mount_routes as mount_ollama_routes};
 
@@ -806,6 +808,11 @@ use serde::Serialize;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 
+
+
+
+
+
 pub fn create_blog_post(title: &str, content: &str) -> Result<()> {
     // This is a simple example writing to a file.
     let filename = format!("posts/{}.md", title.replace(" ", "_"));
@@ -825,6 +832,8 @@ use std::io::BufReader;
 use std::io::BufWriter;
 use std::io::Read;
 use std::path::Path;
+
+
 
 struct LogRoute;
 #[tide::utils::async_trait]
@@ -855,6 +864,8 @@ struct AppState;
 
 #[async_std::main]
 async fn main() -> tide::Result<()> {
+      let state = AppState { /* init fields if any */ };
+    let mut app = tide::with_state(state);
     // Spawn a background thread to listen for CLI input.
     std::thread::spawn(|| {
         let stdin = io::stdin();
@@ -1012,6 +1023,10 @@ async fn main() -> tide::Result<()> {
         content: String,
     }
 
+
+    
+
+
     app.at("/praexy-saerver")
         .post(|mut req: tide::Request<AppState>| async move {
             let form_data: PraexyForm = req.body_form().await.unwrap_or(PraexyForm {
@@ -1019,6 +1034,435 @@ async fn main() -> tide::Result<()> {
             });
             Ok(format!("Received content:\n{}", form_data.content))
         });
+
+
+   app.at("/analytics").get(|_req: tide::Request<AppState>| async move {
+    use chrono::{Datelike, FixedOffset, Timelike, Utc, NaiveDateTime};
+    use serde_json::Value;
+    use std::collections::{BTreeMap, HashMap, HashSet};
+
+    const PATH: &str =
+        "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
+
+    const WEEKDAYS: [&str; 7] = [
+        "Monday", "Tuesday", "Wednesday", "Thursday",
+        "Friday", "Saturday", "Sunday",
+    ];
+
+    const MONTHS: [&str; 12] = [
+        "January", "February", "March", "April",
+        "May", "June", "July", "August",
+        "September", "October", "November", "December",
+    ];
+
+    // ---------------------------------------------------------------------
+    // YAML → JSON parser for LSL logs
+    // ---------------------------------------------------------------------
+    fn parse_lsl_yaml(line: &str) -> Option<Value> {
+        if let Ok(val_yaml) = serde_yaml::from_str::<serde_yaml::Value>(line) {
+            let val_json = serde_json::to_value(val_yaml).ok()?;
+            if val_json.is_object() || val_json.is_array() {
+                return Some(val_json);
+            }
+        }
+        None
+    }
+
+    fn parse_json(line: &str) -> Option<Value> {
+        serde_json::from_str::<Value>(line).ok()
+    }
+
+    // ---------------------------------------------------------------------
+    // Read raw log file
+    // ---------------------------------------------------------------------
+    let raw = std::fs::read_to_string(PATH).unwrap_or_default();
+    let mut entries: Vec<Value> = Vec::new();
+
+    for line in raw.lines() {
+        let line = line.trim();
+        if line.is_empty() {
+            continue;
+        }
+
+        // 1. YAML (LSL logs parse as YAML)
+        if let Some(val) = parse_lsl_yaml(line) {
+            match val {
+                Value::Array(arr) => {
+                    for item in arr {
+                        if item.is_object() {
+                            entries.push(item);
+                        }
+                    }
+                }
+                Value::Object(_) => entries.push(val),
+                _ => {}
+            }
+            continue;
+        }
+
+        // 2. JSON fallback
+        if let Some(val) = parse_json(line) {
+            match val {
+                Value::Array(arr) => {
+                    for item in arr {
+                        if item.is_object() {
+                            entries.push(item);
+                        }
+                    }
+                }
+                Value::Object(_) => entries.push(val),
+                _ => {}
+            }
+            continue;
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // Deduplicate events
+    // ---------------------------------------------------------------------
+    fn ts(v: &Value) -> Option<i64> {
+        if let Some(i) = v.as_i64() {
+            return Some(i);
+        }
+        if let Some(f) = v.as_f64() {
+            return Some(f as i64);
+        }
+        if let Some(s) = v.as_str() {
+            return s.parse::<i64>().ok();
+        }
+        None
+    }
+
+    let mut unique: HashMap<(String, i64, String), Value> = HashMap::new();
+
+    for e in &entries {
+        let timestamp = match ts(&e["timestamp"]) {
+            Some(t) => t,
+            None => continue,
+        };
+
+        let key = (
+            e["avatar_id"].as_str().unwrap_or("").to_string(),
+            timestamp,
+            e["message"].as_str().unwrap_or("").to_string(),
+        );
+
+        unique.entry(key).or_insert_with(|| e.clone());
+    }
+
+    let events: Vec<Value> = unique.into_values().collect();
+
+    // ---------------------------------------------------------------------
+    // Frequency counters
+    // ---------------------------------------------------------------------
+    let mut weekday_freq = [0usize; 7];
+    let mut hour_freq = [0usize; 24];
+    let mut month_freq = [0usize; 12];
+    let mut year_freq: BTreeMap<i32, usize> = BTreeMap::new();
+    let mut month_year_freq: BTreeMap<String, usize> = BTreeMap::new();
+    let mut day_of_month_freq = [0usize; 32];
+
+    let mut avatars: HashSet<String> = HashSet::new();
+    let mut messages: HashSet<String> = HashSet::new();
+
+    let mut earliest: Option<chrono::DateTime<FixedOffset>> = None;
+    let mut latest: Option<chrono::DateTime<FixedOffset>> = None;
+
+    let pst = FixedOffset::west_opt(7 * 3600).unwrap();
+
+    for e in &events {
+        let avatar = e["avatar_id"].as_str().unwrap_or("").trim();
+        if !avatar.is_empty() {
+            avatars.insert(avatar.to_string());
+        }
+
+        let msg = e["message"].as_str().unwrap_or("").trim();
+        if !msg.is_empty() {
+            messages.insert(msg.to_string());
+        }
+
+        let ts = match ts(&e["timestamp"]) {
+            Some(ts) if ts > 0 => ts,
+            _ => continue,
+        };
+
+        let dt_utc = match NaiveDateTime::from_timestamp_opt(ts, 0) {
+            Some(ndt) => chrono::DateTime::<Utc>::from_utc(ndt, Utc),
+            None => continue,
+        };
+
+        let dt = dt_utc.with_timezone(&pst);
+
+        if earliest.map(|v| dt < v).unwrap_or(true) {
+            earliest = Some(dt);
+        }
+        if latest.map(|v| dt > v).unwrap_or(true) {
+            latest = Some(dt);
+        }
+
+        weekday_freq[dt.weekday().num_days_from_monday() as usize] += 1;
+        hour_freq[dt.hour() as usize] += 1;
+        month_freq[dt.month0() as usize] += 1;
+        *year_freq.entry(dt.year()).or_insert(0) += 1;
+        *month_year_freq.entry(dt.format("%Y-%m").to_string()).or_insert(0) += 1;
+        day_of_month_freq[dt.day() as usize] += 1;
+    }
+
+    // ---------------------------------------------------------------------
+    // Output report
+    // ---------------------------------------------------------------------
+    let mut out = String::new();
+    out.push_str("Second Life chat frequency report (PST)\n");
+    out.push_str(&format!("Source file: {}\n", PATH));
+    out.push_str(&format!("Raw parsed entries: {}\n", entries.len()));
+    out.push_str(&format!("Total unique events: {}\n", events.len()));
+    out.push_str(&format!("Unique avatar IDs: {}\n", avatars.len()));
+    out.push_str(&format!("Unique message bodies: {}\n", messages.len()));
+
+    out.push_str(&format!(
+        "First event (PST): {}\n",
+        earliest
+            .map(|dt| dt.format("%Y-%m-%d %H:%M:%S %Z").to_string())
+            .unwrap_or_else(|| "N/A".to_string())
+    ));
+
+    out.push_str(&format!(
+        "Last event (PST):  {}\n",
+        latest
+            .map(|dt| dt.format("%Y-%m-%d %H:%M:%S %Z").to_string())
+            .unwrap_or_else(|| "N/A".to_string())
+    ));
+
+    out.push_str("\n=== Message Frequency by Day of Week ===\n");
+    for (i, day) in WEEKDAYS.iter().enumerate() {
+        out.push_str(&format!("{:<9} : {}\n", day, weekday_freq[i]));
+    }
+
+    out.push_str("\n=== Message Frequency by Hour (PST) ===\n");
+    for (h, count) in hour_freq.iter().enumerate() {
+        out.push_str(&format!("{:02}:00–{:02}:59 : {}\n", h, h, count));
+    }
+
+    out.push_str("\n=== Message Frequency by Month ===\n");
+    for (i, month) in MONTHS.iter().enumerate() {
+        out.push_str(&format!("{:<9} : {}\n", month, month_freq[i]));
+    }
+
+    out.push_str("\n=== Message Frequency by Year ===\n");
+    for (year, count) in &year_freq {
+        out.push_str(&format!("{} : {}\n", year, count));
+    }
+
+    out.push_str("\n=== Message Frequency by Month-Year ===\n");
+    for (ym, count) in &month_year_freq {
+        out.push_str(&format!("{} : {}\n", ym, count));
+    }
+
+    out.push_str("\n=== Message Frequency by Day of Month ===\n");
+    for day in 1..=31 {
+        out.push_str(&format!("{:02} : {}\n", day, day_of_month_freq[day]));
+    }
+
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(out);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+});
+
+
+/*
+        app.at("/sl_logger").post(|mut req: tide::Request<AppState>| async move {
+    // Catch all POST variables into a hashmap and print them
+    let body = req.body_string().await.unwrap_or_default();
+    println!("Received POST body: {}", body);
+
+    let script_dir = "/root/midscore_io/rustby/rustby-vm/target/release/scripts";
+    let file_name: String = "second_life_chat_log.txt".to_string();
+
+    let ruby_source = format!(r######"
+    body = {}
+    puts Dir.pwd
+    FileUtils.touch("/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt")
+    puts "logging chat message to file"
+     File.open('/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt', 'a+') do |file|
+       file.write("#{{body}}\n")
+     end
+    puts "Chat message logged to file successfully"
+
+    "message logged to file successfully"
+    "######, body);
+
+
+    if ruby_source.trim().is_empty() {
+        let mut resp = tide::Response::new(tide::StatusCode::Ok);
+        resp.set_body("No Ruby code supplied");
+        return Ok(resp);
+    }
+
+    // Create unique .rb filename.
+    let ts = Utc::now().timestamp_nanos_opt().unwrap_or(0);
+    let filename = format!("{}/sl_log_{}.rb", script_dir,ts);
+    std::fs::write(&filename, &ruby_source).map_err(|e| tide::Error::new(tide::StatusCode::InternalServerError, e))?;
+
+
+
+
+    let result_path = format!("/root/midscore_io/rustby/rustby-vm/target/release/scripts/sl_log_{}.txt", ts);
+
+    // Block until the result file is available or until timeout
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(120);
+    while !std::path::Path::new(&result_path).exists() {
+      if start.elapsed() > timeout {
+        return Ok("Timed out waiting for result file".into());
+      }
+      std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+    let output = std::fs::read_to_string(&result_path).unwrap_or_else(|_| "No output".to_string());
+
+
+    // Remove script file after evaluation.
+
+    let _ = std::fs::remove_file(&result_path);
+    let _ = std::fs::remove_file(&filename);
+
+      let output = "Log entry received and written to file successfully.";
+
+     // Return the HTML response.
+    let mut res = tide::Response::new(tide::StatusCode::Ok);
+    res.set_body(output);
+    res.insert_header("Content-Type", "text/plain; charset=utf-8");
+    Ok(res)
+    //Ok(output.into())
+  });
+*/
+
+
+
+
+use std::fs::{create_dir_all};
+use std::io::Write;
+use std::path::Path;
+
+   app.at("/sl_logger").post(|mut req: Request<AppState>| async move {
+        // Read POST body
+        let body = req.body_string().await.unwrap_or_default();
+        println!("Received POST body: {}", body);
+
+        // Log file path (adjust to a writable path for your process)
+        let log_path = "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
+
+        // Ensure parent directory exists
+        if let Some(parent) = Path::new(log_path).parent() {
+            create_dir_all(parent).map_err(|e| {
+                eprintln!("Failed to create directory {}: {}", parent.display(), e);
+                tide::Error::new(StatusCode::InternalServerError, e)
+            })?;
+        }
+
+        // Append to file (create if missing)
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(log_path)
+            .map_err(|e| {
+                eprintln!("Failed to open log file {}: {}", log_path, e);
+                tide::Error::new(StatusCode::InternalServerError, e)
+            })?;
+
+        writeln!(file, "{}", body).map_err(|e| {
+            eprintln!("Failed to write to log file: {}", e);
+            tide::Error::new(StatusCode::InternalServerError, e)
+        })?;
+
+        // Respond
+        let mut res = Response::new(StatusCode::Ok);
+        res.set_body("Log entry received and written to file successfully.");
+        res.insert_header("Content-Type", "text/plain; charset=utf-8");
+        Ok(res)
+    });
+
+
+
+      use tide::prelude::*;
+use serde_yaml;
+use serde_json;
+use chrono::{DateTime, FixedOffset, NaiveDateTime, Datelike, Timelike, Utc};
+use std::collections::{BTreeMap, HashSet};
+
+
+use std::{fs::File, io::{BufRead, BufReader}};
+
+#[derive(serde::Deserialize)]
+struct LogEntry {
+    avatar_id: Option<String>,
+    message: Option<String>,
+    timestamp: Option<i64>,
+}
+
+
+
+   use regex::Regex;
+
+
+use serde_json::Value;
+use chrono::TimeZone;
+
+
+use chrono_tz::America::Los_Angeles;
+
+
+
+
+   app.at("/chatlog").get(|mut req: Request<AppState>| async move {
+        // Path to your NDJSON log file
+        let log_path = "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
+        let raw = fs::read_to_string(log_path).unwrap_or_default();
+
+        // Regex to capture "timestamp": 1789856940 or timestamp: 1789856940
+        let re_ts = Regex::new(r#"timestamp["']?\s*[:]\s*([0-9]{9,12})"#).unwrap();
+
+        // Frequency table keyed by hour
+        let mut freq: BTreeMap<u32, usize> = BTreeMap::new();
+
+        for line in raw.lines() {
+            if let Some(caps) = re_ts.captures(line) {
+                if let Some(m) = caps.get(1) {
+                    if let Ok(ts) = m.as_str().parse::<i64>() {
+                        // Convert UNIX timestamp → America/Los_Angeles (DST handled automatically)
+                        let dt = Los_Angeles.timestamp(ts, 0);
+                        let hour = dt.hour();
+                        *freq.entry(hour).or_insert(0) += 1;
+                    }
+                }
+            }
+        }
+
+        // Build output table
+        let sep = "-".repeat(50);
+        let mut out = String::new();
+        out.push_str(&format!("{}\n", sep));
+        out.push_str(" CHAT LOG FREQUENCY TABLE (America/Los_Angeles)\n");
+        out.push_str(&format!("{}\n\n", sep));
+        out.push_str(" Hour    Count\n");
+        out.push_str(" ----------------\n");
+
+        for hour in 0..24 {
+            let count = freq.get(&hour).copied().unwrap_or(0);
+            out.push_str(&format!(" {:02}      {}\n", hour, count));
+        }
+
+        out.push_str(&format!("\n{}\n", sep));
+
+        let mut res = Response::new(StatusCode::Ok);
+        res.set_body(out);
+        res.insert_header("Content-Type", "text/plain; charset=utf-8");
+        Ok(res)
+    });
+
+
+
+    
 
     /*
       app.at("/rustby").get(|req: tide::Request<AppState>| {
@@ -2394,22 +2838,27 @@ WERE_FORMS = [
         Ok("File deleted")
     });
 
+    roda_tide_rewrite::mount_roda_compat_routes(&mut app);
   
 
-    // Listen on all interfaces over standard HTTPS (TLS) port.
-    let addresses = vec!["0.0.0.0:443"];
-    let cert_path = "/etc/letsencrypt/live/stimky.info/fullchain.pem";
-    let key_path = "/etc/letsencrypt/live/stimky.info/privkey.pem";
+    // Listen on all interfaces over standard HTTPS (TLS) port by default.
+    let addresses = vec![std::env::var("MSSL_ADDRESS")
+      .unwrap_or_else(|_| "0.0.0.0:443".to_string())];
+    let cert_path = std::env::var("MSSL_CERT_PATH")
+      .unwrap_or_else(|_| "/etc/letsencrypt/live/stimky.info/fullchain.pem".to_string());
+    let key_path = std::env::var("MSSL_KEY_PATH")
+      .unwrap_or_else(|_| "/etc/letsencrypt/live/stimky.info/privkey.pem".to_string());
 
     let mut tasks = vec![];
     for addr in addresses {
         let app_clone = app.clone();
-        let c = cert_path.to_string();
-        let k = key_path.to_string();
+        let c = cert_path.clone();
+        let k = key_path.clone();
+      let listen_addr = addr.clone();
         println!("Spawning server on address: {}", addr); // Debug message
         tasks.push(async_std::task::spawn(async move {
-            let listener = TlsListener::build().addrs(addr).cert(c).key(k);
-            println!("Server is starting on address: {}", addr); // Debug message
+        let listener = TlsListener::build().addrs(listen_addr.clone()).cert(c).key(k);
+        println!("Server is starting on address: {}", listen_addr); // Debug message
             app_clone.listen(listener).await
         }));
     }

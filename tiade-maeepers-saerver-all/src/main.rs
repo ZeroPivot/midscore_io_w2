@@ -1673,18 +1673,6 @@ app.at("/chatlog").get(|_req: Request<AppState>| async move {
     }
     out.push_str("</table>");
 
-    out.push_str("<h2>3D Heatmap</h2><div id=\"heatmap\"></div>");
-    out.push_str("<script>");
-    out.push_str("var trace={");
-    out.push_str(&format!("x:[{}],", xs.join(",")));
-    out.push_str(&format!("y:[{}],", ys.join(",")));
-    out.push_str(&format!("z:[{}],", zs.join(",")));
-    out.push_str(&format!("text:[{}],", labels.iter().map(|l| format!("'{}'", l)).collect::<Vec<_>>().join(",")));
-    out.push_str("mode:'markers',type:'scatter3d',marker:{size:5,color:[");
-    out.push_str(&zs.join(","));
-    out.push_str("],colorscale:'Viridis',opacity:0.8}};");
-    out.push_str("Plotly.newPlot('heatmap',[trace],{scene:{xaxis:{title:'X'},yaxis:{title:'Y'},zaxis:{title:'Z'}}});");
-    out.push_str("</script></body></html>");
 
     let mut res = Response::new(StatusCode::Ok);
     res.set_body(out);

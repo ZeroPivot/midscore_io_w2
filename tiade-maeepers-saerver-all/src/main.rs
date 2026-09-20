@@ -11,6 +11,9 @@ mod roda_tide_rewrite;
 
 use chrono::Utc;
 use tiade_ollama_relay::{RelayConfig as OllamaRelayConfig, mount_routes as mount_ollama_routes};
+use serde::Deserialize;
+
+
 
 
 // v1.0.0.0
@@ -862,6 +865,22 @@ use std::thread;
 #[derive(Clone)]
 struct AppState;
 
+
+
+#[derive(Debug, Deserialize)]
+struct LogEntrySl {
+    avatar_id: Option<String>,
+    avatar_name: Option<String>,
+    captured_by: Option<String>,
+    message: Option<String>,
+    sim_name: Option<String>,
+    timestamp: Option<i64>,
+    x_pos: Option<f64>,
+    y_pos: Option<f64>,
+    z_pos: Option<f64>,
+}
+
+
 #[async_std::main]
 async fn main() -> tide::Result<()> {
       let state = AppState { /* init fields if any */ };
@@ -1414,51 +1433,210 @@ use chrono_tz::America::Los_Angeles;
 
 
 
-   app.at("/chatlog").get(|mut req: Request<AppState>| async move {
-        // Path to your NDJSON log file
-        let log_path = "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
-        let raw = fs::read_to_string(log_path).unwrap_or_default();
+    use std::fs;
+ 
+  
 
-        // Regex to capture "timestamp": 1789856940 or timestamp: 1789856940
-        let re_ts = Regex::new(r#"timestamp["']?\s*[:]\s*([0-9]{9,12})"#).unwrap();
+app.at("/chatlog").get(|_req: Request<AppState>| async move {
 
-        // Frequency table keyed by hour
-        let mut freq: BTreeMap<u32, usize> = BTreeMap::new();
 
-        for line in raw.lines() {
-            if let Some(caps) = re_ts.captures(line) {
-                if let Some(m) = caps.get(1) {
-                    if let Ok(ts) = m.as_str().parse::<i64>() {
-                        // Convert UNIX timestamp → America/Los_Angeles (DST handled automatically)
-                        let dt = Los_Angeles.timestamp(ts, 0);
-                        let hour = dt.hour();
-                        *freq.entry(hour).or_insert(0) += 1;
-                    }
-                }
+    let raw = fs::read_to_string(
+        "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt"
+    ).unwrap_or_default();
+
+    //
+    // ---------------------------------------------------------
+    // 1. Split into individual JSON/YAML objects (CRITICAL FIX)
+    // ---------------------------------------------------------
+    //
+
+    let mut objects = Vec::new();
+    let mut buf = String::new();
+
+    for ch in raw.chars() {
+        buf.push(ch);
+        if ch == '}' {
+            objects.push(buf.clone());
+            buf.clear();
+        }
+    }
+
+    //
+    // ---------------------------------------------------------
+    // 2. Regexes for each field
+    // ---------------------------------------------------------
+    //
+
+    let re_avatar_id = Regex::new(r#""avatar_id"\s*:\s*"([^"]+)""#).unwrap();
+    let re_avatar_name = Regex::new(r#""avatar_name"\s*:\s*"([^"]+)""#).unwrap();
+    let re_captured_by = Regex::new(r#""captured_by"\s*:\s*"([^"]+)""#).unwrap();
+    let re_message = Regex::new(r#""message"\s*:\s*"([^"]+)""#).unwrap();
+    let re_sim_name = Regex::new(r#""sim_name"\s*:\s*"([^"]+)""#).unwrap();
+    let re_timestamp = Regex::new(r#""timestamp"\s*:\s*(\d+)"#).unwrap();
+    let re_x = Regex::new(r#""x_pos"\s*:\s*([\d\.]+)"#).unwrap();
+    let re_y = Regex::new(r#""y_pos"\s*:\s*([\d\.]+)"#).unwrap();
+    let re_z = Regex::new(r#""z_pos"\s*:\s*([\d\.]+)"#).unwrap();
+
+    //
+    // ---------------------------------------------------------
+    // 3. Statistics containers
+    // ---------------------------------------------------------
+    //
+
+    let mut unique_keys: HashSet<String> = HashSet::new();
+    let mut freq: BTreeMap<u32, usize> = BTreeMap::new();
+    let mut per_avatar: BTreeMap<String, usize> = BTreeMap::new();
+    let mut per_sim: BTreeMap<String, usize> = BTreeMap::new();
+
+    let mut xs = Vec::new();
+    let mut ys = Vec::new();
+    let mut zs = Vec::new();
+    let mut labels = Vec::new();
+
+    //
+    // ---------------------------------------------------------
+    // 4. Parse each object with regex
+    // ---------------------------------------------------------
+    //
+
+    for obj in &objects {
+        let line = obj.as_str();
+
+        let avatar_id = re_avatar_id.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let avatar_name = re_avatar_name.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let _captured_by = re_captured_by.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default(); // intentionally unused
+
+        let message = re_message.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let sim_name = re_sim_name.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let timestamp = re_timestamp.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<i64>().unwrap_or(0));
+
+        let x = re_x.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<f64>().unwrap_or(0.0));
+
+        let y = re_y.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<f64>().unwrap_or(0.0));
+
+        let z = re_z.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<f64>().unwrap_or(0.0));
+
+        //
+        // Uniqueness
+        //
+        let key = format!("{}|{}|{}", avatar_id, timestamp.unwrap_or(0), message);
+        unique_keys.insert(key);
+
+        //
+        // Hourly frequency
+        //
+        if let Some(ts) = timestamp {
+            if let chrono::LocalResult::Single(dt) = Los_Angeles.timestamp_opt(ts, 0) {
+                let hour = dt.hour();
+                *freq.entry(hour).or_insert(0) += 1;
             }
         }
 
-        // Build output table
-        let sep = "-".repeat(50);
-        let mut out = String::new();
-        out.push_str(&format!("{}\n", sep));
-        out.push_str(" CHAT LOG FREQUENCY TABLE (America/Los_Angeles)\n");
-        out.push_str(&format!("{}\n\n", sep));
-        out.push_str(" Hour    Count\n");
-        out.push_str(" ----------------\n");
-
-        for hour in 0..24 {
-            let count = freq.get(&hour).copied().unwrap_or(0);
-            out.push_str(&format!(" {:02}      {}\n", hour, count));
+        //
+        // Per-avatar
+        //
+        if !avatar_name.is_empty() {
+            *per_avatar.entry(avatar_name.clone()).or_insert(0) += 1;
         }
 
-        out.push_str(&format!("\n{}\n", sep));
+        //
+        // Per-sim
+        //
+        if !sim_name.is_empty() {
+            *per_sim.entry(sim_name.clone()).or_insert(0) += 1;
+        }
 
-        let mut res = Response::new(StatusCode::Ok);
-        res.set_body(out);
-        res.insert_header("Content-Type", "text/plain; charset=utf-8");
-        Ok(res)
-    });
+        //
+        // Coordinates
+        //
+        if let (Some(x), Some(y), Some(z)) = (x, y, z) {
+            xs.push(x.to_string());
+            ys.push(y.to_string());
+            zs.push(z.to_string());
+            labels.push(format!("{} @ {}", avatar_name, sim_name));
+        }
+    }
+
+    //
+    // ---------------------------------------------------------
+    // 5. Build HTML output
+    // ---------------------------------------------------------
+    //
+
+    let mut out = String::new();
+    out.push_str(r#"<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Chatlog Stats</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script></head><body>"#);
+
+    out.push_str(&format!("<p>Total Entries: {}</p>", objects.len()));
+    out.push_str(&format!("<p>Unique Entries: {}</p>", unique_keys.len()));
+
+    out.push_str("<h2>Hourly Frequency</h2><table><tr><th>Hour</th><th>Count</th></tr>");
+    for hour in 0..24 {
+        let count = freq.get(&hour).copied().unwrap_or(0);
+        out.push_str(&format!("<tr><td>{:02}</td><td>{}</td></tr>", hour, count));
+    }
+    out.push_str("</table>");
+
+    out.push_str("<h2>Per Avatar</h2><table><tr><th>Avatar</th><th>Count</th></tr>");
+    for (name, count) in &per_avatar {
+        out.push_str(&format!("<tr><td>{}</td><td>{}</td></tr>", name, count));
+    }
+    out.push_str("</table>");
+
+    out.push_str("<h2>Per Sim</h2><table><tr><th>Sim</th><th>Count</th></tr>");
+    for (sim, count) in &per_sim {
+        out.push_str(&format!("<tr><td>{}</td><td>{}</td></tr>", sim, count));
+    }
+    out.push_str("</table>");
+
+    out.push_str("<h2>3D Heatmap</h2><div id=\"heatmap\"></div>");
+    out.push_str("<script>");
+    out.push_str("var trace={");
+    out.push_str(&format!("x:[{}],", xs.join(",")));
+    out.push_str(&format!("y:[{}],", ys.join(",")));
+    out.push_str(&format!("z:[{}],", zs.join(",")));
+    out.push_str(&format!("text:[{}],", labels.iter().map(|l| format!("'{}'", l)).collect::<Vec<_>>().join(",")));
+    out.push_str("mode:'markers',type:'scatter3d',marker:{size:5,color:[");
+    out.push_str(&zs.join(","));
+    out.push_str("],colorscale:'Viridis',opacity:0.8}};");
+    out.push_str("Plotly.newPlot('heatmap',[trace],{scene:{xaxis:{title:'X'},yaxis:{title:'Y'},zaxis:{title:'Z'}}});");
+    out.push_str("</script></body></html>");
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(out);
+    res.insert_header("Content-Type", "text/html; charset=utf-8");
+    Ok(res)
+});
+
+
 
 
 

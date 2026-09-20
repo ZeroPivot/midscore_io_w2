@@ -1390,315 +1390,78 @@ use serde_json;
 use chrono::{DateTime, FixedOffset, NaiveDateTime, Datelike, Timelike, Utc};
 use std::collections::{BTreeMap, HashSet};
 
-app.at("/analytics").get(|_req: tide::Request<AppState>| async move {
-    const PATH: &str = "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
-    const WEEKDAYS: [&str; 7] = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-    const MONTHS: [&str; 12] = [
-        "January","February","March","April","May","June","July","August","September","October","November","December",
-    ];
-    println!("Starting analytics processing...");
 
-    fn extract_entries(value: serde_json::Value, out: &mut Vec<serde_json::Value>) {
-        match value {
-            serde_json::Value::Array(arr) => {
-                for item in arr {
-                    if item.is_object() { out.push(item); }
-                }
-            }
-            serde_json::Value::Object(_) => out.push(value),
-            _ => {}
-        }
-    }
+use std::{fs::File, io::{BufRead, BufReader}};
 
-    fn timestamp_as_i64(v: &serde_json::Value) -> Option<i64> {
-        if let Some(i) = v.as_i64() { return Some(i); }
-        if let Some(f) = v.as_f64() { return Some(f as i64); }
-        if let Some(s) = v.as_str() { return s.trim().parse::<i64>().ok(); }
-        None
-    }
-
-    // Read file
-    let raw = match std::fs::read_to_string(PATH) {
-        Ok(s) => s,
-        Err(_) => String::new(),
-    };
-    println!("Read raw log data, {} bytes", raw.len());
-    let mut entries: Vec<serde_json::Value> = Vec::new();
-    println!("Initialized entries container");
-
-    if !raw.trim().is_empty() {
-        println!("Raw log data is not empty, starting extraction...");
-        // Try parsing as multi-document YAML first
-        for doc in serde_yaml::Deserializer::from_str(&raw) {
-            if let Ok(yaml_val) = serde_yaml::Value::deserialize(doc) {
-                if let Ok(json_val) = serde_json::to_value(&yaml_val) {
-                    extract_entries(json_val, &mut entries);
-                }
-            }
-        }
-
-        // Fallback: line-by-line parse (YAML then JSON)
-        if entries.is_empty() {
-            println!("No entries found from multi-document YAML, falling back to line-by-line parsing...");
-            for line in raw.lines() {
-                let line = line.trim();
-                if line.is_empty() { continue; }
-
-                if let Ok(yaml_val) = serde_yaml::from_str::<serde_yaml::Value>(line) {
-                    if let Ok(json_val) = serde_json::to_value(&yaml_val) {
-                        extract_entries(json_val, &mut entries);
-                        continue;
-                    }
-                }
-
-                if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(line) {
-                    extract_entries(json_val, &mut entries);
-                }
-            }
-            println!("Finished line-by-line extraction, {} entries found", entries.len());
-        } else {
-            println!("Finished multi-document YAML extraction, {} entries found", entries.len());
-        }
-    }
-
-    // Use entries as-is (no deduplication)
-    let events = entries;
-
-    // Stats containers
-    let mut weekday_freq = [0usize; 7];
-    let mut hour_freq = [0usize; 24];
-    let mut month_freq = [0usize; 12];
-    let mut year_freq: BTreeMap<i32, usize> = BTreeMap::new();
-    let mut month_year_freq: BTreeMap<String, usize> = BTreeMap::new();
-    let mut day_of_month_freq = [0usize; 32];
-
-    let mut avatars: HashSet<String> = HashSet::new();
-    let mut messages: HashSet<String> = HashSet::new();
-    let mut earliest: Option<DateTime<FixedOffset>> = None;
-    let mut latest: Option<DateTime<FixedOffset>> = None;
-
-    // PST offset (fixed -7 hours as in original)
-    let pst = FixedOffset::west_opt(7 * 3600).unwrap();
-
-    for e in &events {
-        let avatar = e["avatar_id"].as_str().unwrap_or("").trim();
-        if !avatar.is_empty() { avatars.insert(avatar.to_string()); }
-
-        let msg = e["message"].as_str().unwrap_or("").trim();
-        if !msg.is_empty() { messages.insert(msg.to_string()); }
-
-        let ts = match timestamp_as_i64(&e["timestamp"]) {
-            Some(ts) if ts > 0 => ts,
-            _ => continue,
-        };
-
-        let naive = match NaiveDateTime::from_timestamp_opt(ts, 0) {
-            Some(n) => n,
-            None => continue,
-        };
-        let dt_utc = DateTime::<Utc>::from_utc(naive, Utc);
-        let dt = dt_utc.with_timezone(&pst);
-
-        if earliest.map(|v| dt < v).unwrap_or(true) { earliest = Some(dt); }
-        if latest.map(|v| dt > v).unwrap_or(true) { latest = Some(dt); }
-
-        let weekday_idx = dt.weekday().num_days_from_monday() as usize;
-        weekday_freq[weekday_idx] += 1;
-        hour_freq[dt.hour() as usize] += 1;
-        month_freq[dt.month0() as usize] += 1;
-        *year_freq.entry(dt.year()).or_insert(0) += 1;
-        *month_year_freq.entry(dt.format("%Y-%m").to_string()).or_insert(0) += 1;
-        day_of_month_freq[dt.day() as usize] += 1;
-    }
-
-    // Build output
-    let mut out = String::new();
-    out.push_str("Second Life chat frequency report (PST)\n");
-    out.push_str(&format!("Source file: {}\n", PATH));
-    out.push_str(&format!("Raw parsed entries: {}\n", events.len()));
-    out.push_str(&format!("Unique avatar IDs: {}\n", avatars.len()));
-    out.push_str(&format!("Unique message bodies: {}\n", messages.len()));
-    out.push_str(&format!(
-        "First event (PST): {}\n",
-        earliest
-            .map(|dt| dt.format("%Y-%m-%d %H:%M:%S %Z").to_string())
-            .unwrap_or_else(|| "N/A".to_string())
-    ));
-    out.push_str(&format!(
-        "Last event (PST):  {}\n",
-        latest
-            .map(|dt| dt.format("%Y-%m-%d %H:%M:%S %Z").to_string())
-            .unwrap_or_else(|| "N/A".to_string())
-    ));
-
-    out.push_str("\n=== Message Frequency by Day of Week (Monday-Sunday) ===\n");
-    for (i, day) in WEEKDAYS.iter().enumerate() {
-        out.push_str(&format!("{:<9} : {}\n", day, weekday_freq[i]));
-    }
-
-    out.push_str("\n=== Message Frequency by Hour (PST, 24h) ===\n");
-    for (h, count) in hour_freq.iter().enumerate() {
-        out.push_str(&format!("{:02}:00-{:02}:59 : {}\n", h, h, count));
-    }
-
-    out.push_str("\n=== Message Frequency by Month ===\n");
-    for (i, month) in MONTHS.iter().enumerate() {
-        out.push_str(&format!("{:<9} : {}\n", month, month_freq[i]));
-    }
-
-    out.push_str("\n=== Message Frequency by Year ===\n");
-    if year_freq.is_empty() {
-        out.push_str("No valid timestamped events found.\n");
-    } else {
-        for (year, count) in &year_freq {
-            out.push_str(&format!("{} : {}\n", year, count));
-        }
-    }
-
-    out.push_str("\n=== Message Frequency by Month-Year (YYYY-MM) ===\n");
-    if month_year_freq.is_empty() {
-        out.push_str("No valid timestamped events found.\n");
-    } else {
-        for (ym, count) in &month_year_freq {
-            out.push_str(&format!("{} : {}\n", ym, count));
-        }
-    }
-
-    out.push_str("\n=== Message Frequency by Day of Month (1-31) ===\n");
-    for day in 1..=31 {
-        out.push_str(&format!("{:02} : {}\n", day, day_of_month_freq[day]));
-    }
-
-    let mut res = tide::Response::new(tide::StatusCode::Ok);
-    res.set_body(out);
-    res.insert_header("Content-Type", "text/plain; charset=utf-8");
-    Ok(res)
-});
+#[derive(serde::Deserialize)]
+struct LogEntry {
+    avatar_id: Option<String>,
+    message: Option<String>,
+    timestamp: Option<i64>,
+}
 
 
 
-    app.at("/chatlog")
-        .get(|_req: tide::Request<AppState>| async move {
-            use std::collections::{HashMap, BTreeMap};
+   use regex::Regex;
 
-            let log_path = "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
-            let raw = std::fs::read_to_string(log_path).unwrap_or_default();
 
-            // Parse each line as a Ruby-hash-style array by converting to JSON
-            let mut all_entries: Vec<serde_json::Value> = Vec::new();
-            for line in raw.lines() {
-                let line = line.trim();
-                if line.is_empty() { continue; }
-                // Convert Ruby hash syntax to JSON: symbol keys to strings
-                let json_line = line
-                    .replace("\\.", ".")
-                    .replace("\\\"", "\"");
-                // Try direct JSON parse first
-                if let Ok(val) = serde_json::from_str::<serde_json::Value>(&json_line) {
-                    if let Some(arr) = val.as_array() {
-                        all_entries.extend(arr.iter().cloned());
-                    } else {
-                        all_entries.push(val);
-                    }
-                    continue;
-                }
-                // Convert Ruby symbol keys to JSON string keys
-                let converted = json_line
-                    .replace("{avatar_id:", "{\"avatar_id\":")
-                    .replace(", avatar_id:", ", \"avatar_id\":")
-                    .replace("avatar_name:", "\"avatar_name\":")
-                    .replace("captured_by:", "\"captured_by\":")
-                    .replace("message:", "\"message\":")
-                    .replace("sim_name:", "\"sim_name\":")
-                    .replace("timestamp:", "\"timestamp\":")
-                    .replace("x_pos:", "\"x_pos\":")
-                    .replace("y_pos:", "\"y_pos\":")
-                    .replace("z_pos:", "\"z_pos\":");
-                if let Ok(val) = serde_json::from_str::<serde_json::Value>(&converted) {
-                    if let Some(arr) = val.as_array() {
-                        all_entries.extend(arr.iter().cloned());
-                    } else {
-                        all_entries.push(val);
+use serde_json::Value;
+use chrono::TimeZone;
+
+
+use chrono_tz::America::Los_Angeles;
+
+
+
+
+   app.at("/chatlog").get(|mut req: Request<AppState>| async move {
+        // Path to your NDJSON log file
+        let log_path = "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
+        let raw = fs::read_to_string(log_path).unwrap_or_default();
+
+        // Regex to capture "timestamp": 1789856940 or timestamp: 1789856940
+        let re_ts = Regex::new(r#"timestamp["']?\s*[:]\s*([0-9]{9,12})"#).unwrap();
+
+        // Frequency table keyed by hour
+        let mut freq: BTreeMap<u32, usize> = BTreeMap::new();
+
+        for line in raw.lines() {
+            if let Some(caps) = re_ts.captures(line) {
+                if let Some(m) = caps.get(1) {
+                    if let Ok(ts) = m.as_str().parse::<i64>() {
+                        // Convert UNIX timestamp → America/Los_Angeles (DST handled automatically)
+                        let dt = Los_Angeles.timestamp(ts, 0);
+                        let hour = dt.hour();
+                        *freq.entry(hour).or_insert(0) += 1;
                     }
                 }
             }
+        }
 
-            // Deduplicate by (avatar_id, timestamp, message)
-            let mut unique: HashMap<String, &serde_json::Value> = HashMap::new();
-            for entry in &all_entries {
-                let key = format!("{}|{}|{}",
-                    entry["avatar_id"].as_str().unwrap_or(""),
-                    entry["timestamp"].as_i64().or_else(|| entry["timestamp"].as_f64().map(|f| f as i64)).unwrap_or(0),
-                    entry["message"].as_str().unwrap_or("")
-                );
-                unique.entry(key).or_insert(entry);
-            }
+        // Build output table
+        let sep = "-".repeat(50);
+        let mut out = String::new();
+        out.push_str(&format!("{}\n", sep));
+        out.push_str(" CHAT LOG FREQUENCY TABLE (America/Los_Angeles)\n");
+        out.push_str(&format!("{}\n\n", sep));
+        out.push_str(" Hour    Count\n");
+        out.push_str(" ----------------\n");
 
-            // Sort by timestamp
-            let mut events: Vec<&serde_json::Value> = unique.into_values().collect();
-            events.sort_by_key(|e| e["timestamp"].as_i64().or_else(|| e["timestamp"].as_f64().map(|f| f as i64)).unwrap_or(0));
+        for hour in 0..24 {
+            let count = freq.get(&hour).copied().unwrap_or(0);
+            out.push_str(&format!(" {:02}      {}\n", hour, count));
+        }
 
-            // Group by date (PST = UTC-8)
-            let mut grouped: BTreeMap<String, Vec<&serde_json::Value>> = BTreeMap::new();
-            for e in &events {
-                let ts = e["timestamp"].as_i64().or_else(|| e["timestamp"].as_f64().map(|f| f as i64)).unwrap_or(0);
-                let dt = chrono::DateTime::from_timestamp(ts, 0)
-                    .unwrap_or_default()
-                    .with_timezone(&chrono::FixedOffset::west_opt(8 * 3600).unwrap());
-                let day_key = dt.format("%A, %B %d, %Y").to_string();
-                grouped.entry(day_key).or_default().push(e);
-            }
+        out.push_str(&format!("\n{}\n", sep));
 
-            let sep = "-".repeat(80);
-            let now_pst = Utc::now().with_timezone(&chrono::FixedOffset::west_opt(8 * 3600).unwrap());
-            let mut out = String::new();
-            out.push_str(&format!("{}\n", sep));
-            out.push_str(&format!("  SECOND LIFE CHAT LOG VIEWER\n"));
-            out.push_str(&format!("  Total Messages: {} | Generated: {}\n", events.len(), now_pst.format("%m/%d/%Y %I:%M:%S %p PST")));
-            out.push_str(&format!("{}\n\n", sep));
+        let mut res = Response::new(StatusCode::Ok);
+        res.set_body(out);
+        res.insert_header("Content-Type", "text/plain; charset=utf-8");
+        Ok(res)
+    });
 
-            for (date, day_events) in &grouped {
-                out.push_str(&format!("  [ {} ] — {} message(s)\n", date, day_events.len()));
-                out.push_str(&format!("  {}\n\n", "~".repeat(76)));
 
-                for (i, e) in day_events.iter().enumerate() {
-                    let ts = e["timestamp"].as_i64().or_else(|| e["timestamp"].as_f64().map(|f| f as i64)).unwrap_or(0);
-                    let dt = chrono::DateTime::from_timestamp(ts, 0)
-                        .unwrap_or_default()
-                        .with_timezone(&chrono::FixedOffset::west_opt(8 * 3600).unwrap());
-                    let time_str = dt.format("%I:%M:%S %p").to_string();
-                    let name = e["avatar_name"].as_str().unwrap_or("(unknown)");
-                    let name = if name.is_empty() { "(unknown)" } else { name };
-                    let msg = e["message"].as_str().unwrap_or("");
-                    let sim = e["sim_name"].as_str().unwrap_or("");
-                    let captured = e["captured_by"].as_str().unwrap_or("");
-                    let avatar_id = e["avatar_id"].as_str().unwrap_or("");
 
-                    out.push_str(&format!("  #{}  {} PST\n", i + 1, time_str));
-                    out.push_str(&format!("  From:        {}\n", name));
-                    out.push_str(&format!("  Avatar ID:   {}\n", avatar_id));
-                    out.push_str(&format!("  Message:     {}\n", msg));
-                    out.push_str(&format!("  Region:      {}\n", sim));
-                    out.push_str(&format!("  Position:    ({}, {}, {})\n",
-                        e["x_pos"].as_f64().unwrap_or(0.0),
-                        e["y_pos"].as_f64().unwrap_or(0.0),
-                        e["z_pos"].as_f64().unwrap_or(0.0)));
-                    out.push_str(&format!("  Captured By: {}\n", captured));
-                    out.push_str(&format!("  Timestamp:   {}\n", ts));
-                    out.push_str(&format!("  {}\n", "-".repeat(40)));
-                }
-                out.push('\n');
-            }
-
-            out.push_str(&format!("{}\n", sep));
-            out.push_str(&format!("  END OF LOG — {} total entries\n", events.len()));
-            out.push_str(&format!("{}\n", sep));
-
-            let mut res = tide::Response::new(tide::StatusCode::Ok);
-            res.set_body(out);
-            res.insert_header("Content-Type", "text/plain; charset=utf-8");
-            Ok(res)
-        });
     
 
     /*

@@ -1648,8 +1648,7 @@ app.at("/chatlog").get(|_req: Request<AppState>| async move {
 
     let mut out = String::new();
     out.push_str(r#"<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Chatlog Stats</title>
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script></head><body>"#);
+<title>Chatlog Stats</title>"#);
 
     out.push_str(&format!("<p>Total Entries: {}</p>", objects.len()));
     out.push_str(&format!("<p>Unique Entries: {}</p>", unique_keys.len()));

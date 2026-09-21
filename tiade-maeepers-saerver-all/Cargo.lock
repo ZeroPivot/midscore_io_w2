@@ -1965,7 +1965,7 @@ dependencies = [
 [[package]]
 name = "magnus"
 version = "0.9.0"
-source = "git+https://github.com/matsadler/magnus#f6a6b5572ba2eea5e98c67b7c02cf259e1c8b115"
+source = "git+https://github.com/matsadler/magnus#347b986308fceb0798a9340320bfd9bad2030e7f"
 dependencies = [
  "magnus-macros",
  "rb-sys",
@@ -1976,7 +1976,7 @@ dependencies = [
 [[package]]
 name = "magnus-macros"
 version = "0.9.0"
-source = "git+https://github.com/matsadler/magnus#f6a6b5572ba2eea5e98c67b7c02cf259e1c8b115"
+source = "git+https://github.com/matsadler/magnus#347b986308fceb0798a9340320bfd9bad2030e7f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3657,7 +3657,9 @@ dependencies = [
  "chrono",
  "chrono-tz",
  "fast_image_resize",
+ "futures-util",
  "image",
+ "lazy_static",
  "magnus",
  "minijinja",
  "native-tls",

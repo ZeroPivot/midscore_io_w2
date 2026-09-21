@@ -1,42 +1,24 @@
-use magnus::embed::init;
-use magnus::{
-    Error, RArray, RClass, RFile, RFloat, RHash, RModule, RObject, RRegexp, RString, RStruct, Ruby,
-    Value, eval, function, method, prelude::*, rb_assert, typed_data, value::Lazy, value::Opaque,
-};
+
 use std::io::{self, BufRead};
 use tide::utils::After;
 use tide_rustls::TlsListener;
 
-mod roda_tide_rewrite;
+
 
 use chrono::Utc;
 use tiade_ollama_relay::{RelayConfig as OllamaRelayConfig, mount_routes as mount_ollama_routes};
+use serde::Deserialize;
+
+
 
 
 // v1.0.0.0
 
-/// Evaluates Ruby code and always returns a String.
-pub fn call_rustby_eval(code: &str) -> Result<String, Error> {
-    let result = eval::<RString>(code)?;
-    Ok(result.to_string()?)
-}
 
 /// Evaluates Ruby code from a &str and prints the result.
 /// This function initializes a Ruby VM, evaluates the code, and prints the output.
 /// If evaluation fails, it prints the error.
-fn execute_ruby_code(ruby_code: &str) {
-    match eval::<magnus::Value>(ruby_code) {
-        Ok(val) => println!("Ruby result: {:?}", val),
-        Err(e) => eprintln!("Ruby error: {}", e),
-    }
-}
 
-fn init_ruby_vm() -> Result<(), String> {
-  Ruby::init(|ruby| {
-    ruby.eval::<magnus::Value>(include_str!("../ruby_client/ollama_game_client.rb"))?;
-    Ok(())
-  })
-}
 
 // Helper: Create a JSON response.
 pub fn json_response<T: serde::Serialize>(data: T) -> tide::Response {
@@ -862,10 +844,122 @@ use std::thread;
 #[derive(Clone)]
 struct AppState;
 
+// Helper: convert HashMap<String, Value> -> serde_json::Map<String, Value>
+fn hashmap_to_map(src: &std::collections::HashMap<String, serde_json::Value>) -> serde_json::Map<String, serde_json::Value> {
+    let mut m = serde_json::Map::new();
+    for (k, v) in src.iter() {
+        m.insert(k.clone(), v.clone());
+    }
+    m
+}
+
+#[derive(Debug, Deserialize)]
+struct LogEntrySl {
+    avatar_id: Option<String>,
+    avatar_name: Option<String>,
+    captured_by: Option<String>,
+    message: Option<String>,
+    sim_name: Option<String>,
+    timestamp: Option<i64>,
+    x_pos: Option<f64>,
+    y_pos: Option<f64>,
+    z_pos: Option<f64>,
+}
+
+use tide::{Request, Response, StatusCode};
+use tide::prelude::*; // for serde_json
+use async_std::fs::{read_to_string};
+use async_std::prelude::*;
+use serde_json::{ Map};
+use serde_json::Value;
+use std::sync::{Arc};
+use async_std::io::prelude::*; // for WriteExt
+
+
+
+lazy_static! {
+    static ref VARS: Arc<Mutex<Map<String,Value>>> = Arc::new(Mutex::new(Map::new()));
+}
+use lazy_static::lazy_static;
+use async_std::io::WriteExt;
+
+ // Ensure these constants are defined at module top-level (not inside this function).
+    const DATA_DIR: &str = "/midscore_io/tiade-maeepers-saerver-all/target/release";
+  const FLAT_FILE: &str = "vars_flatfile.json";
+    const HISTORY_FILE: &str = "vars_history.log";
+use std::collections::HashMap;
+use futures_util::TryFutureExt;
+/// Async save_snapshot that accepts a serde_json::Map (the type you are passing from handlers).
+/// Writes DATA_DIR/FLAT_FILE and appends HISTORY_FILE. Returns tide::Result so callers can handle errors.
+async fn save_snapshot(snapshot: Map<String, Value>, tag: &str) -> tide::Result<()> {
+   
+
+    let dir = Path::new(DATA_DIR);
+
+    // create_dir_all is async; await it and map errors to tide::Error
+    fs::create_dir_all(dir).map_err(|e| {
+        tide::Error::from_str(
+            StatusCode::InternalServerError,
+            format!("create_dir_all failed: {}", e),
+        )
+    })?;
+
+    let flat_path = dir.join(FLAT_FILE);
+
+    // Serialize the serde_json::Map directly
+    let flat_json = serde_json::to_string_pretty(&snapshot).map_err(|e| {
+        tide::Error::from_str(
+            StatusCode::InternalServerError,
+            format!("serialize failed: {}", e),
+        )
+    })?;
+
+    // Write file asynchronously
+    fs::write(&flat_path, flat_json).map_err(|e| {
+        tide::Error::from_str(
+            StatusCode::InternalServerError,
+            format!("write flat file failed: {}", e),
+        )
+    });
+    eprintln!("save_snapshot: wrote {}", flat_path.display());
+
+    // Append history entry
+    let history_path = dir.join(HISTORY_FILE);
+    let entry = format!("{} - {}\n", Utc::now().to_rfc3339(), tag);
+
+    let mut f = async_std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&history_path)
+        .await
+        .map_err(|e| {
+            tide::Error::from_str(
+                StatusCode::InternalServerError,
+                format!("open history failed: {}", e),
+            )
+        })?;
+
+    f.write_all(entry.as_bytes()).await.map_err(|e| {
+        tide::Error::from_str(
+            StatusCode::InternalServerError,
+            format!("write history failed: {}", e),
+        )
+    })?;
+
+    Ok(())
+  }
+
+
+
 #[async_std::main]
 async fn main() -> tide::Result<()> {
-      let state = AppState { /* init fields if any */ };
-    let mut app = tide::with_state(state);
+    // Data directory and filenames (place near top of main.rs, after imports)
+
+    // Main HTTPS server - handling all defined routes
+let mut app = tide::with_state(AppState {
+    queue: Mutex::new(Vec::new()),
+    results: Mutex::new(Vec::new()),
+});
     // Spawn a background thread to listen for CLI input.
     std::thread::spawn(|| {
         let stdin = io::stdin();
@@ -975,8 +1069,60 @@ async fn main() -> tide::Result<()> {
     //Ok(())
     //
 
-    // Main HTTPS server - handling all defined routes
-    let mut app = tide::with_state(AppState {});
+    use std::cell::RefCell;
+
+// --------------------------------------------------------
+// Data types
+// --------------------------------------------------------
+
+#[derive(Clone, Serialize, Deserialize)]
+struct QueuedCommand {
+    id: u64,
+    command: String,
+    stack: Vec<String>,
+    memory: Vec<(String, String)>,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+struct CompletedResult {
+    id: u64,
+    stack: Vec<String>,
+    memory: Vec<(String, String)>,
+    output: String,
+    error: String,
+}
+
+// --------------------------------------------------------
+// AppState (Tide server state)
+// --------------------------------------------------------
+
+
+struct AppState {
+    queue: Mutex<Vec<QueuedCommand>>,
+    results: Mutex<Vec<CompletedResult>>,
+}
+
+impl Default for AppState {
+    fn default() -> Self {
+        Self {
+            queue: Mutex::new(Vec::new()),
+            results: Mutex::new(Vec::new()),
+        }
+    }
+}
+
+impl Clone for AppState {
+    fn clone(&self) -> Self {
+        let queue = self.queue.lock().unwrap().clone();
+        let results = self.results.lock().unwrap().clone();
+        Self {
+            queue: Mutex::new(queue),
+            results: Mutex::new(results),
+        }
+    }
+}
+
+ 
 
     // Custom middleware to log which route is being handled
     struct LogRoute;
@@ -997,10 +1143,7 @@ async fn main() -> tide::Result<()> {
     app.with(LogRoute);
     mount_ollama_routes(&mut app, OllamaRelayConfig::default())?;
 
-    // Initialize the embedded Ruby VM and load the shared game relay client.
-    init_ruby_vm().map_err(|error| {
-      tide::Error::from_str(tide::StatusCode::InternalServerError, error)
-    })?;
+   
 
     use std::sync::Arc;
 
@@ -1023,7 +1166,7 @@ async fn main() -> tide::Result<()> {
         content: String,
     }
 
-
+    
     
 
 
@@ -1042,7 +1185,7 @@ async fn main() -> tide::Result<()> {
     use std::collections::{BTreeMap, HashMap, HashSet};
 
     const PATH: &str =
-        "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
+        "/root/midscore_io/tiade-maeepers-saerver-all/second_life_chat_logs.txt";
 
     const WEEKDAYS: [&str; 7] = [
         "Monday", "Tuesday", "Wednesday", "Thursday",
@@ -1344,6 +1487,119 @@ use std::fs::{create_dir_all};
 use std::io::Write;
 use std::path::Path;
 
+
+/*
+// /vars/set
+app.at("/vars/set").post(|mut req: Request<AppState>| async move {
+    let body: Value = req.body_json().await?;
+
+    let mut vars = VARS.lock().unwrap();
+    if let Some(obj) = body.as_object() {
+        for (k,v) in obj {
+            vars.insert(k.clone(),v.clone());
+        }
+    }
+    let snapshot = vars.clone();
+    drop(vars);
+
+    save_snapshot(snapshot, "SET");
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body("set complete");
+    Ok(res)
+});
+
+// /vars/get/:name
+app.at("/vars/get/:name").post(|req: Request<AppState>| async move {
+    let name: String = req.param("name")?.to_string();
+
+    let vars = VARS.lock().unwrap();
+    let val = vars.get(&name).cloned();
+    let snapshot = vars.clone();
+    drop(vars);
+
+    if let Some(val) = val {
+        save_snapshot(snapshot, &format!("GET {}", name));
+        let mut res = Response::new(StatusCode::Ok);
+        res.set_body(serde_json::to_string(&val)?);
+        Ok(res)
+    } else {
+        save_snapshot(snapshot, &format!("GET {} not found", name));
+        let mut res = Response::new(StatusCode::NotFound);
+        res.set_body("not found");
+        Ok(res)
+    }
+});
+
+// /vars/view
+app.at("/vars/view").post(|_req: Request<AppState>| async move {
+    let vars = VARS.lock().unwrap();
+    let snapshot = vars.clone();
+    drop(vars);
+
+    save_snapshot(snapshot.clone(), "VIEW");
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(serde_json::to_string(&snapshot)?);
+    Ok(res)
+});
+
+// /vars/delete/:name
+app.at("/vars/delete/:name").post(|req: Request<AppState>| async move {
+    let name: String = req.param("name")?.to_string();
+
+    let mut vars = VARS.lock().unwrap();
+    vars.remove(&name);
+    let snapshot = vars.clone();
+    drop(vars);
+
+    save_snapshot(snapshot, &format!("DELETE {}", name));
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(format!("Deleted {}", name));
+    Ok(res)
+});
+
+// /vars/clear
+app.at("/vars/clear").post(|_req: Request<AppState>| async move {
+    let mut vars = VARS.lock().unwrap();
+    vars.clear();
+    let snapshot = vars.clone();
+    drop(vars);
+
+    save_snapshot(snapshot, "CLEAR");
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body("All variables cleared");
+    Ok(res)
+});
+
+// /vars/history
+app.at("/vars/history").post(|_req: Request<AppState>| async move {
+    let content = read_to_string("/root/midscore_io/tiade-maeepers-saerver-all/target/release/vars_flatfile.json").await.unwrap_or_default();
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(content);
+    Ok(res)
+});
+
+// /vars/status
+app.at("/vars/status").post(|_req: Request<AppState>| async move {
+    let vars = VARS.lock().unwrap();
+    let count = vars.len();
+    drop(vars);
+
+    let status = json!({
+        "vars_count": count,
+        "server": true,
+        "debug": true,
+        "public": true
+    });
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(status.to_string());
+    Ok(res)
+});
+
+
+
+
    app.at("/sl_logger").post(|mut req: Request<AppState>| async move {
         // Read POST body
         let body = req.body_string().await.unwrap_or_default();
@@ -1382,7 +1638,284 @@ use std::path::Path;
         Ok(res)
     });
 
+*/
 
+// Routes: set, get, view, delete (chunk 1)
+
+// -------------------------
+// Routes (corrected)
+// -------------------------
+
+// -------------------------
+// Corrected routes (snapshot passed as serde_json::Map to save_snapshot)
+// -------------------------
+
+/// /vars/set
+app.at("/vars/set").post(|mut req: Request<AppState>| async move {
+    let body: Value = req.body_json().await
+        .map_err(|e| tide::Error::from_str(StatusCode::BadRequest, format!("invalid json body: {}", e)))?;
+
+    {
+        let mut vars = VARS.lock().unwrap();
+        if let Some(obj) = body.as_object() {
+            for (k, v) in obj {
+                vars.insert(k.clone(), v.clone());
+            }
+        } else {
+            let mut res = Response::new(StatusCode::BadRequest);
+            res.set_body("expected JSON object");
+            res.insert_header("Content-Type", "text/plain");
+            return Ok(res);
+        }
+    }
+
+    // Build snapshot as serde_json::Map
+    let snapshot_map = {
+        let vars = VARS.lock().unwrap();
+        let mut map = Map::new();
+        for (k, v) in vars.iter() {
+            map.insert(k.clone(), v.clone());
+        }
+        map
+    };
+
+    if let Err(e) = save_snapshot(snapshot_map, "SET").await {
+        eprintln!("save_snapshot error (SET): {}", e);
+        let mut res = Response::new(StatusCode::InternalServerError);
+        res.set_body(format!("set failed: {}", e));
+        res.insert_header("Content-Type", "text/plain");
+        return Ok(res);
+    }
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body("set complete");
+    res.insert_header("Content-Type", "text/plain");
+    Ok(res)
+});
+
+/// /vars/get  (accepts JSON body {"name":"..."} to match client)
+app.at("/vars/get").post(|mut req: Request<AppState>| async move {
+    let body: Value = req.body_json().await
+        .map_err(|e| tide::Error::from_str(StatusCode::BadRequest, format!("invalid json body: {}", e)))?;
+
+    let name = body
+        .get("name")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| tide::Error::from_str(StatusCode::BadRequest, "missing name"))?
+        .to_string();
+
+    let val_opt = {
+        let vars = VARS.lock().unwrap();
+        vars.get(&name).cloned()
+    };
+
+    // Build snapshot_map from current in-memory vars
+    let snapshot_map = {
+        let vars = VARS.lock().unwrap();
+        let mut map = Map::new();
+        for (k, v) in vars.iter() {
+            map.insert(k.clone(), v.clone());
+        }
+        map
+    };
+
+    if let Some(val) = val_opt {
+        if let Err(e) = save_snapshot(snapshot_map, &format!("GET {}", name)).await {
+            eprintln!("save_snapshot error (GET {}): {}", name, e);
+        }
+        let mut res = Response::new(StatusCode::Ok);
+        res.set_body(serde_json::to_string(&val)?);
+        res.insert_header("Content-Type", "application/json");
+        Ok(res)
+    } else {
+        // rebuild snapshot for the "not found" case (snapshot_map was moved above)
+        let snapshot_map2 = {
+            let vars = VARS.lock().unwrap();
+            let mut map = Map::new();
+            for (k, v) in vars.iter() {
+                map.insert(k.clone(), v.clone());
+            }
+            map
+        };
+        if let Err(e) = save_snapshot(snapshot_map2, &format!("GET {} not found", name)).await {
+            eprintln!("save_snapshot error (GET not found {}): {}", name, e);
+        }
+        let mut res = Response::new(StatusCode::NotFound);
+        res.set_body("not found");
+        res.insert_header("Content-Type", "text/plain");
+        Ok(res)
+    }
+});
+
+/// /vars/view
+app.at("/vars/view").post(|_req: Request<AppState>| async move {
+    let snapshot_map = {
+        let vars = VARS.lock().unwrap();
+        let mut map = Map::new();
+        for (k, v) in vars.iter() {
+            map.insert(k.clone(), v.clone());
+        }
+        map
+    };
+
+    if let Err(e) = save_snapshot(snapshot_map.clone(), "VIEW").await {
+        eprintln!("save_snapshot error (VIEW): {}", e);
+    }
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(serde_json::to_string(&snapshot_map)?);
+    res.insert_header("Content-Type", "application/json");
+    Ok(res)
+});
+
+/// /vars/delete  (accepts JSON body {"name":"..."})
+app.at("/vars/delete").post(|mut req: Request<AppState>| async move {
+    let body: Value = req.body_json().await
+        .map_err(|e| tide::Error::from_str(StatusCode::BadRequest, format!("invalid json body: {}", e)))?;
+
+    let name = body
+        .get("name")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| tide::Error::from_str(StatusCode::BadRequest, "missing name"))?
+        .to_string();
+
+    {
+        let mut vars = VARS.lock().unwrap();
+        vars.remove(&name);
+    }
+
+    let snapshot_map = {
+        let vars = VARS.lock().unwrap();
+        let mut map = Map::new();
+        for (k, v) in vars.iter() {
+            map.insert(k.clone(), v.clone());
+        }
+        map
+    };
+
+    if let Err(e) = save_snapshot(snapshot_map, &format!("DELETE {}", name)).await {
+        eprintln!("save_snapshot error (DELETE {}): {}", name, e);
+    }
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(format!("Deleted {}", name));
+    res.insert_header("Content-Type", "text/plain");
+    Ok(res)
+});
+
+/// /vars/clear
+app.at("/vars/clear").post(|_req: Request<AppState>| async move {
+    {
+        let mut vars = VARS.lock().unwrap();
+        vars.clear();
+    }
+
+    let snapshot_map = {
+        let vars = VARS.lock().unwrap();
+        let mut map = Map::new();
+        for (k, v) in vars.iter() {
+            map.insert(k.clone(), v.clone());
+        }
+        map
+    };
+
+    if let Err(e) = save_snapshot(snapshot_map, "CLEAR").await{
+        eprintln!("save_snapshot error (CLEAR): {}", e);
+        let mut res = Response::new(StatusCode::InternalServerError);
+        res.set_body(format!("clear failed: {}", e));
+        res.insert_header("Content-Type", "text/plain");
+        return Ok(res);
+    }
+
+    let body = serde_json::json!({
+        "result": "cleared",
+        "vars_count": 0
+    });
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(body.to_string());
+    res.insert_header("Content-Type", "application/json");
+    Ok(res)
+});
+
+/// /vars/history (robust, uses DATA_DIR and FLAT_FILE)
+app.at("/vars/history").post(|_req: Request<AppState>| async move {
+    let path = format!("{}/{}", DATA_DIR, FLAT_FILE);
+
+    match fs::metadata(&path) {
+        Ok(meta) => {
+            if meta.len() == 0 {
+                eprintln!("history: file exists but is empty: {}", path);
+                let mut res = Response::new(StatusCode::Ok);
+                res.set_body("[]");
+                res.insert_header("Content-Type", "application/json");
+                return Ok(res);
+            }
+        }
+        Err(e) => {
+            eprintln!("history: metadata error for {}: {}", path, e);
+            let history_path = format!("{}/{}", DATA_DIR, HISTORY_FILE);
+            if let Ok(content) = fs::read_to_string(&history_path) {
+                let mut res = Response::new(StatusCode::Ok);
+                res.set_body(content);
+                res.insert_header("Content-Type", "text/plain");
+                return Ok(res);
+            }
+            let mut res = Response::new(StatusCode::NotFound);
+            res.set_body(format!("history file not found: {} (error: {})", path, e));
+            res.insert_header("Content-Type", "text/plain");
+            return Ok(res);
+        }
+    }
+
+    match fs::read_to_string(&path) {
+        Ok(content) => {
+            let mut res = Response::new(StatusCode::Ok);
+            res.set_body(content);
+            res.insert_header("Content-Type", "application/json");
+            Ok(res)
+        }
+        Err(e) => {
+            eprintln!("history: read error for {}: {}", path, e);
+            let mut res = Response::new(StatusCode::InternalServerError);
+            res.set_body(format!("failed to read history file: {}", e));
+            res.insert_header("Content-Type", "text/plain");
+            Ok(res)
+        }
+    }
+});
+
+/// /vars/status
+app.at("/vars/status").post(|_req: Request<AppState>| async move {
+    let count = {
+        let vars = VARS.lock().unwrap();
+        vars.len()
+    };
+
+    let status = serde_json::json!({
+        "vars_count": count,
+        "server": true,
+        "debug": true,
+        "public": true
+    });
+
+    eprintln!("status: vars_count = {}", count);
+
+    let mut res = Response::new(StatusCode::Ok);
+    match serde_json::to_string(&status) {
+        Ok(body) => {
+            res.set_body(body);
+            res.insert_header("Content-Type", "application/json");
+        }
+        Err(e) => {
+            eprintln!("status: serialization error: {}", e);
+            res.set_status(StatusCode::InternalServerError);
+            res.set_body(format!("serialization error: {}", e));
+            res.insert_header("Content-Type", "text/plain");
+        }
+    }
+    Ok(res)
+});
 
       use tide::prelude::*;
 use serde_yaml;
@@ -1414,51 +1947,197 @@ use chrono_tz::America::Los_Angeles;
 
 
 
-   app.at("/chatlog").get(|mut req: Request<AppState>| async move {
-        // Path to your NDJSON log file
-        let log_path = "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
-        let raw = fs::read_to_string(log_path).unwrap_or_default();
+    use std::fs;
+ 
+  
 
-        // Regex to capture "timestamp": 1789856940 or timestamp: 1789856940
-        let re_ts = Regex::new(r#"timestamp["']?\s*[:]\s*([0-9]{9,12})"#).unwrap();
+app.at("/chatlog").get(|_req: Request<AppState>| async move {
 
-        // Frequency table keyed by hour
-        let mut freq: BTreeMap<u32, usize> = BTreeMap::new();
 
-        for line in raw.lines() {
-            if let Some(caps) = re_ts.captures(line) {
-                if let Some(m) = caps.get(1) {
-                    if let Ok(ts) = m.as_str().parse::<i64>() {
-                        // Convert UNIX timestamp → America/Los_Angeles (DST handled automatically)
-                        let dt = Los_Angeles.timestamp(ts, 0);
-                        let hour = dt.hour();
-                        *freq.entry(hour).or_insert(0) += 1;
-                    }
-                }
+    let raw = fs::read_to_string(
+        "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt"
+    ).unwrap_or_default();
+
+    //
+    // ---------------------------------------------------------
+    // 1. Split into individual JSON/YAML objects (CRITICAL FIX)
+    // ---------------------------------------------------------
+    //
+
+    let mut objects = Vec::new();
+    let mut buf = String::new();
+
+    for ch in raw.chars() {
+        buf.push(ch);
+        if ch == '}' {
+            objects.push(buf.clone());
+            buf.clear();
+        }
+    }
+
+    //
+    // ---------------------------------------------------------
+    // 2. Regexes for each field
+    // ---------------------------------------------------------
+    //
+
+    let re_avatar_id = Regex::new(r#""avatar_id"\s*:\s*"([^"]+)""#).unwrap();
+    let re_avatar_name = Regex::new(r#""avatar_name"\s*:\s*"([^"]+)""#).unwrap();
+    let re_captured_by = Regex::new(r#""captured_by"\s*:\s*"([^"]+)""#).unwrap();
+    let re_message = Regex::new(r#""message"\s*:\s*"([^"]+)""#).unwrap();
+    let re_sim_name = Regex::new(r#""sim_name"\s*:\s*"([^"]+)""#).unwrap();
+    let re_timestamp = Regex::new(r#""timestamp"\s*:\s*(\d+)"#).unwrap();
+    let re_x = Regex::new(r#""x_pos"\s*:\s*([\d\.]+)"#).unwrap();
+    let re_y = Regex::new(r#""y_pos"\s*:\s*([\d\.]+)"#).unwrap();
+    let re_z = Regex::new(r#""z_pos"\s*:\s*([\d\.]+)"#).unwrap();
+
+    //
+    // ---------------------------------------------------------
+    // 3. Statistics containers
+    // ---------------------------------------------------------
+    //
+
+    let mut unique_keys: HashSet<String> = HashSet::new();
+    let mut freq: BTreeMap<u32, usize> = BTreeMap::new();
+    let mut per_avatar: BTreeMap<String, usize> = BTreeMap::new();
+    let mut per_sim: BTreeMap<String, usize> = BTreeMap::new();
+
+    let mut xs = Vec::new();
+    let mut ys = Vec::new();
+    let mut zs = Vec::new();
+    let mut labels = Vec::new();
+
+    //
+    // ---------------------------------------------------------
+    // 4. Parse each object with regex
+    // ---------------------------------------------------------
+    //
+
+    for obj in &objects {
+        let line = obj.as_str();
+
+        let avatar_id = re_avatar_id.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let avatar_name = re_avatar_name.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let _captured_by = re_captured_by.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default(); // intentionally unused
+
+        let message = re_message.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let sim_name = re_sim_name.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let timestamp = re_timestamp.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<i64>().unwrap_or(0));
+
+        let x = re_x.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<f64>().unwrap_or(0.0));
+
+        let y = re_y.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<f64>().unwrap_or(0.0));
+
+        let z = re_z.captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<f64>().unwrap_or(0.0));
+
+        //
+        // Uniqueness
+        //
+        let key = format!("{}|{}|{}", avatar_id, timestamp.unwrap_or(0), message);
+        unique_keys.insert(key);
+
+        //
+        // Hourly frequency
+        //
+        if let Some(ts) = timestamp {
+            if let chrono::LocalResult::Single(dt) = Los_Angeles.timestamp_opt(ts, 0) {
+                let hour = dt.hour();
+                *freq.entry(hour).or_insert(0) += 1;
             }
         }
 
-        // Build output table
-        let sep = "-".repeat(50);
-        let mut out = String::new();
-        out.push_str(&format!("{}\n", sep));
-        out.push_str(" CHAT LOG FREQUENCY TABLE (America/Los_Angeles)\n");
-        out.push_str(&format!("{}\n\n", sep));
-        out.push_str(" Hour    Count\n");
-        out.push_str(" ----------------\n");
-
-        for hour in 0..24 {
-            let count = freq.get(&hour).copied().unwrap_or(0);
-            out.push_str(&format!(" {:02}      {}\n", hour, count));
+        //
+        // Per-avatar
+        //
+        if !avatar_name.is_empty() {
+            *per_avatar.entry(avatar_name.clone()).or_insert(0) += 1;
         }
 
-        out.push_str(&format!("\n{}\n", sep));
+        //
+        // Per-sim
+        //
+        if !sim_name.is_empty() {
+            *per_sim.entry(sim_name.clone()).or_insert(0) += 1;
+        }
 
-        let mut res = Response::new(StatusCode::Ok);
-        res.set_body(out);
-        res.insert_header("Content-Type", "text/plain; charset=utf-8");
-        Ok(res)
-    });
+        //
+        // Coordinates
+        //
+        if let (Some(x), Some(y), Some(z)) = (x, y, z) {
+            xs.push(x.to_string());
+            ys.push(y.to_string());
+            zs.push(z.to_string());
+            labels.push(format!("{} @ {}", avatar_name, sim_name));
+        }
+    }
+
+    //
+    // ---------------------------------------------------------
+    // 5. Build HTML output
+    // ---------------------------------------------------------
+    //
+
+    let mut out = String::new();
+    out.push_str(r#"<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Chatlog Stats</title>"#);
+
+    out.push_str(&format!("<p>Total Entries: {}</p>", objects.len()));
+    out.push_str(&format!("<p>Unique Entries: {}</p>", unique_keys.len()));
+
+    out.push_str("<h2>Hourly Frequency</h2><table><tr><th>Hour</th><th>Count</th></tr>");
+    for hour in 0..24 {
+        let count = freq.get(&hour).copied().unwrap_or(0);
+        out.push_str(&format!("<tr><td>{:02}</td><td>{}</td></tr>", hour, count));
+    }
+    out.push_str("</table>");
+
+    out.push_str("<h2>Per Avatar</h2><table><tr><th>Avatar</th><th>Count</th></tr>");
+    for (name, count) in &per_avatar {
+        out.push_str(&format!("<tr><td>{}</td><td>{}</td></tr>", name, count));
+    }
+    out.push_str("</table>");
+
+    out.push_str("<h2>Per Sim</h2><table><tr><th>Sim</th><th>Count</th></tr>");
+    for (sim, count) in &per_sim {
+        out.push_str(&format!("<tr><td>{}</td><td>{}</td></tr>", sim, count));
+    }
+    out.push_str("</table>");
+
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(out);
+    res.insert_header("Content-Type", "text/html; charset=utf-8");
+    Ok(res)
+});
+
+
 
 
 
@@ -2838,7 +3517,7 @@ WERE_FORMS = [
         Ok("File deleted")
     });
 
-    roda_tide_rewrite::mount_roda_compat_routes(&mut app);
+    //roda_tide_rewrite::mount_roda_compat_routes(&mut app);
   
 
     // Listen on all interfaces over standard HTTPS (TLS) port by default.

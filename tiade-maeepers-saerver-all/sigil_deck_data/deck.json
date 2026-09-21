@@ -327,6 +327,30 @@
       "image_file": "sigil_45_1789766216009.png",
       "mime_type": "image/png",
       "created_at": "2026-09-18T21:16:56.012490281+00:00"
+    },
+    {
+      "id": 46,
+      "title": "NTEP-AFIP Sigil",
+      "description": "NTEP: Nothing is true, everything is permitted; AFIP: Actors' Flames (Are) In Place",
+      "image_file": "sigil_46_1789869949676.png",
+      "mime_type": "image/png",
+      "created_at": "2026-09-20T02:05:49.678895960+00:00"
+    },
+    {
+      "id": 47,
+      "title": "Fundamental Shield Sigil",
+      "description": "Casts out anything negative/low frequency and provides a permanent shield.",
+      "image_file": "sigil_47_1789872126785.png",
+      "mime_type": "image/png",
+      "created_at": "2026-09-20T02:42:06.786929261+00:00"
+    },
+    {
+      "id": 48,
+      "title": "Nil-Spaced Sigil",
+      "description": "The World Is a Nil-Space; they are all banished and are nil-spaced beastmachines whom sleep walk through life, period.",
+      "image_file": "sigil_48_1789888323016.png",
+      "mime_type": "image/png",
+      "created_at": "2026-09-20T07:12:03.019211550+00:00"
     }
   ]
 }

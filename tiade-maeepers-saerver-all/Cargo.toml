@@ -33,6 +33,8 @@ uuid = { version = "1.11.0", features = ["v4"] }
 serde_yaml = "0.9.34"
 regex = "1.13.1"
 chrono-tz = "0.10.4"
+lazy_static = "1.5.0"
+futures-util = "0.3.34"
 
 [profile.dev]
 opt-level = 3

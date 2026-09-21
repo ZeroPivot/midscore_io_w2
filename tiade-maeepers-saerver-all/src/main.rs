@@ -1,13 +1,9 @@
-use magnus::embed::init;
-use magnus::{
-    Error, RArray, RClass, RFile, RFloat, RHash, RModule, RObject, RRegexp, RString, RStruct, Ruby,
-    Value, eval, function, method, prelude::*, rb_assert, typed_data, value::Lazy, value::Opaque,
-};
+
 use std::io::{self, BufRead};
 use tide::utils::After;
 use tide_rustls::TlsListener;
 
-mod roda_tide_rewrite;
+
 
 use chrono::Utc;
 use tiade_ollama_relay::{RelayConfig as OllamaRelayConfig, mount_routes as mount_ollama_routes};
@@ -18,28 +14,11 @@ use serde::Deserialize;
 
 // v1.0.0.0
 
-/// Evaluates Ruby code and always returns a String.
-pub fn call_rustby_eval(code: &str) -> Result<String, Error> {
-    let result = eval::<RString>(code)?;
-    Ok(result.to_string()?)
-}
 
 /// Evaluates Ruby code from a &str and prints the result.
 /// This function initializes a Ruby VM, evaluates the code, and prints the output.
 /// If evaluation fails, it prints the error.
-fn execute_ruby_code(ruby_code: &str) {
-    match eval::<magnus::Value>(ruby_code) {
-        Ok(val) => println!("Ruby result: {:?}", val),
-        Err(e) => eprintln!("Ruby error: {}", e),
-    }
-}
 
-fn init_ruby_vm() -> Result<(), String> {
-  Ruby::init(|ruby| {
-    ruby.eval::<magnus::Value>(include_str!("../ruby_client/ollama_game_client.rb"))?;
-    Ok(())
-  })
-}
 
 // Helper: Create a JSON response.
 pub fn json_response<T: serde::Serialize>(data: T) -> tide::Response {
@@ -865,7 +844,14 @@ use std::thread;
 #[derive(Clone)]
 struct AppState;
 
-
+// Helper: convert HashMap<String, Value> -> serde_json::Map<String, Value>
+fn hashmap_to_map(src: &std::collections::HashMap<String, serde_json::Value>) -> serde_json::Map<String, serde_json::Value> {
+    let mut m = serde_json::Map::new();
+    for (k, v) in src.iter() {
+        m.insert(k.clone(), v.clone());
+    }
+    m
+}
 
 #[derive(Debug, Deserialize)]
 struct LogEntrySl {
@@ -880,10 +866,95 @@ struct LogEntrySl {
     z_pos: Option<f64>,
 }
 
+use tide::{Request, Response, StatusCode};
+use tide::prelude::*; // for serde_json
+use async_std::fs::{read_to_string};
+use async_std::prelude::*;
+use serde_json::{ Map};
+use serde_json::Value;
+use std::sync::{Arc};
+use async_std::io::prelude::*; // for WriteExt
+
+
+
+lazy_static! {
+    static ref VARS: Arc<Mutex<Map<String,Value>>> = Arc::new(Mutex::new(Map::new()));
+}
+use lazy_static::lazy_static;
+use async_std::io::WriteExt;
+
+ // Ensure these constants are defined at module top-level (not inside this function).
+    const DATA_DIR: &str = "/midscore_io/tiade-maeepers-saerver-all/target/release";
+  const FLAT_FILE: &str = "vars_flatfile.json";
+    const HISTORY_FILE: &str = "vars_history.log";
+use std::collections::HashMap;
+use futures_util::TryFutureExt;
+/// Async save_snapshot that accepts a serde_json::Map (the type you are passing from handlers).
+/// Writes DATA_DIR/FLAT_FILE and appends HISTORY_FILE. Returns tide::Result so callers can handle errors.
+async fn save_snapshot(snapshot: Map<String, Value>, tag: &str) -> tide::Result<()> {
+   
+
+    let dir = Path::new(DATA_DIR);
+
+    // create_dir_all is async; await it and map errors to tide::Error
+    fs::create_dir_all(dir).map_err(|e| {
+        tide::Error::from_str(
+            StatusCode::InternalServerError,
+            format!("create_dir_all failed: {}", e),
+        )
+    })?;
+
+    let flat_path = dir.join(FLAT_FILE);
+
+    // Serialize the serde_json::Map directly
+    let flat_json = serde_json::to_string_pretty(&snapshot).map_err(|e| {
+        tide::Error::from_str(
+            StatusCode::InternalServerError,
+            format!("serialize failed: {}", e),
+        )
+    })?;
+
+    // Write file asynchronously
+    fs::write(&flat_path, flat_json).map_err(|e| {
+        tide::Error::from_str(
+            StatusCode::InternalServerError,
+            format!("write flat file failed: {}", e),
+        )
+    });
+    eprintln!("save_snapshot: wrote {}", flat_path.display());
+
+    // Append history entry
+    let history_path = dir.join(HISTORY_FILE);
+    let entry = format!("{} - {}\n", Utc::now().to_rfc3339(), tag);
+
+    let mut f = async_std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&history_path)
+        .await
+        .map_err(|e| {
+            tide::Error::from_str(
+                StatusCode::InternalServerError,
+                format!("open history failed: {}", e),
+            )
+        })?;
+
+    f.write_all(entry.as_bytes()).await.map_err(|e| {
+        tide::Error::from_str(
+            StatusCode::InternalServerError,
+            format!("write history failed: {}", e),
+        )
+    })?;
+
+    Ok(())
+  }
+
+
 
 #[async_std::main]
 async fn main() -> tide::Result<()> {
-    
+    // Data directory and filenames (place near top of main.rs, after imports)
+
     // Main HTTPS server - handling all defined routes
 let mut app = tide::with_state(AppState {
     queue: Mutex::new(Vec::new()),
@@ -1072,10 +1143,7 @@ impl Clone for AppState {
     app.with(LogRoute);
     mount_ollama_routes(&mut app, OllamaRelayConfig::default())?;
 
-    // Initialize the embedded Ruby VM and load the shared game relay client.
-    init_ruby_vm().map_err(|error| {
-      tide::Error::from_str(tide::StatusCode::InternalServerError, error)
-    })?;
+   
 
     use std::sync::Arc;
 
@@ -1117,7 +1185,7 @@ impl Clone for AppState {
     use std::collections::{BTreeMap, HashMap, HashSet};
 
     const PATH: &str =
-        "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
+        "/root/midscore_io/tiade-maeepers-saerver-all/second_life_chat_logs.txt";
 
     const WEEKDAYS: [&str; 7] = [
         "Monday", "Tuesday", "Wednesday", "Thursday",
@@ -1419,6 +1487,119 @@ use std::fs::{create_dir_all};
 use std::io::Write;
 use std::path::Path;
 
+
+/*
+// /vars/set
+app.at("/vars/set").post(|mut req: Request<AppState>| async move {
+    let body: Value = req.body_json().await?;
+
+    let mut vars = VARS.lock().unwrap();
+    if let Some(obj) = body.as_object() {
+        for (k,v) in obj {
+            vars.insert(k.clone(),v.clone());
+        }
+    }
+    let snapshot = vars.clone();
+    drop(vars);
+
+    save_snapshot(snapshot, "SET");
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body("set complete");
+    Ok(res)
+});
+
+// /vars/get/:name
+app.at("/vars/get/:name").post(|req: Request<AppState>| async move {
+    let name: String = req.param("name")?.to_string();
+
+    let vars = VARS.lock().unwrap();
+    let val = vars.get(&name).cloned();
+    let snapshot = vars.clone();
+    drop(vars);
+
+    if let Some(val) = val {
+        save_snapshot(snapshot, &format!("GET {}", name));
+        let mut res = Response::new(StatusCode::Ok);
+        res.set_body(serde_json::to_string(&val)?);
+        Ok(res)
+    } else {
+        save_snapshot(snapshot, &format!("GET {} not found", name));
+        let mut res = Response::new(StatusCode::NotFound);
+        res.set_body("not found");
+        Ok(res)
+    }
+});
+
+// /vars/view
+app.at("/vars/view").post(|_req: Request<AppState>| async move {
+    let vars = VARS.lock().unwrap();
+    let snapshot = vars.clone();
+    drop(vars);
+
+    save_snapshot(snapshot.clone(), "VIEW");
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(serde_json::to_string(&snapshot)?);
+    Ok(res)
+});
+
+// /vars/delete/:name
+app.at("/vars/delete/:name").post(|req: Request<AppState>| async move {
+    let name: String = req.param("name")?.to_string();
+
+    let mut vars = VARS.lock().unwrap();
+    vars.remove(&name);
+    let snapshot = vars.clone();
+    drop(vars);
+
+    save_snapshot(snapshot, &format!("DELETE {}", name));
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(format!("Deleted {}", name));
+    Ok(res)
+});
+
+// /vars/clear
+app.at("/vars/clear").post(|_req: Request<AppState>| async move {
+    let mut vars = VARS.lock().unwrap();
+    vars.clear();
+    let snapshot = vars.clone();
+    drop(vars);
+
+    save_snapshot(snapshot, "CLEAR");
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body("All variables cleared");
+    Ok(res)
+});
+
+// /vars/history
+app.at("/vars/history").post(|_req: Request<AppState>| async move {
+    let content = read_to_string("/root/midscore_io/tiade-maeepers-saerver-all/target/release/vars_flatfile.json").await.unwrap_or_default();
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(content);
+    Ok(res)
+});
+
+// /vars/status
+app.at("/vars/status").post(|_req: Request<AppState>| async move {
+    let vars = VARS.lock().unwrap();
+    let count = vars.len();
+    drop(vars);
+
+    let status = json!({
+        "vars_count": count,
+        "server": true,
+        "debug": true,
+        "public": true
+    });
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(status.to_string());
+    Ok(res)
+});
+
+
+
+
    app.at("/sl_logger").post(|mut req: Request<AppState>| async move {
         // Read POST body
         let body = req.body_string().await.unwrap_or_default();
@@ -1457,7 +1638,284 @@ use std::path::Path;
         Ok(res)
     });
 
+*/
 
+// Routes: set, get, view, delete (chunk 1)
+
+// -------------------------
+// Routes (corrected)
+// -------------------------
+
+// -------------------------
+// Corrected routes (snapshot passed as serde_json::Map to save_snapshot)
+// -------------------------
+
+/// /vars/set
+app.at("/vars/set").post(|mut req: Request<AppState>| async move {
+    let body: Value = req.body_json().await
+        .map_err(|e| tide::Error::from_str(StatusCode::BadRequest, format!("invalid json body: {}", e)))?;
+
+    {
+        let mut vars = VARS.lock().unwrap();
+        if let Some(obj) = body.as_object() {
+            for (k, v) in obj {
+                vars.insert(k.clone(), v.clone());
+            }
+        } else {
+            let mut res = Response::new(StatusCode::BadRequest);
+            res.set_body("expected JSON object");
+            res.insert_header("Content-Type", "text/plain");
+            return Ok(res);
+        }
+    }
+
+    // Build snapshot as serde_json::Map
+    let snapshot_map = {
+        let vars = VARS.lock().unwrap();
+        let mut map = Map::new();
+        for (k, v) in vars.iter() {
+            map.insert(k.clone(), v.clone());
+        }
+        map
+    };
+
+    if let Err(e) = save_snapshot(snapshot_map, "SET").await {
+        eprintln!("save_snapshot error (SET): {}", e);
+        let mut res = Response::new(StatusCode::InternalServerError);
+        res.set_body(format!("set failed: {}", e));
+        res.insert_header("Content-Type", "text/plain");
+        return Ok(res);
+    }
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body("set complete");
+    res.insert_header("Content-Type", "text/plain");
+    Ok(res)
+});
+
+/// /vars/get  (accepts JSON body {"name":"..."} to match client)
+app.at("/vars/get").post(|mut req: Request<AppState>| async move {
+    let body: Value = req.body_json().await
+        .map_err(|e| tide::Error::from_str(StatusCode::BadRequest, format!("invalid json body: {}", e)))?;
+
+    let name = body
+        .get("name")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| tide::Error::from_str(StatusCode::BadRequest, "missing name"))?
+        .to_string();
+
+    let val_opt = {
+        let vars = VARS.lock().unwrap();
+        vars.get(&name).cloned()
+    };
+
+    // Build snapshot_map from current in-memory vars
+    let snapshot_map = {
+        let vars = VARS.lock().unwrap();
+        let mut map = Map::new();
+        for (k, v) in vars.iter() {
+            map.insert(k.clone(), v.clone());
+        }
+        map
+    };
+
+    if let Some(val) = val_opt {
+        if let Err(e) = save_snapshot(snapshot_map, &format!("GET {}", name)).await {
+            eprintln!("save_snapshot error (GET {}): {}", name, e);
+        }
+        let mut res = Response::new(StatusCode::Ok);
+        res.set_body(serde_json::to_string(&val)?);
+        res.insert_header("Content-Type", "application/json");
+        Ok(res)
+    } else {
+        // rebuild snapshot for the "not found" case (snapshot_map was moved above)
+        let snapshot_map2 = {
+            let vars = VARS.lock().unwrap();
+            let mut map = Map::new();
+            for (k, v) in vars.iter() {
+                map.insert(k.clone(), v.clone());
+            }
+            map
+        };
+        if let Err(e) = save_snapshot(snapshot_map2, &format!("GET {} not found", name)).await {
+            eprintln!("save_snapshot error (GET not found {}): {}", name, e);
+        }
+        let mut res = Response::new(StatusCode::NotFound);
+        res.set_body("not found");
+        res.insert_header("Content-Type", "text/plain");
+        Ok(res)
+    }
+});
+
+/// /vars/view
+app.at("/vars/view").post(|_req: Request<AppState>| async move {
+    let snapshot_map = {
+        let vars = VARS.lock().unwrap();
+        let mut map = Map::new();
+        for (k, v) in vars.iter() {
+            map.insert(k.clone(), v.clone());
+        }
+        map
+    };
+
+    if let Err(e) = save_snapshot(snapshot_map.clone(), "VIEW").await {
+        eprintln!("save_snapshot error (VIEW): {}", e);
+    }
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(serde_json::to_string(&snapshot_map)?);
+    res.insert_header("Content-Type", "application/json");
+    Ok(res)
+});
+
+/// /vars/delete  (accepts JSON body {"name":"..."})
+app.at("/vars/delete").post(|mut req: Request<AppState>| async move {
+    let body: Value = req.body_json().await
+        .map_err(|e| tide::Error::from_str(StatusCode::BadRequest, format!("invalid json body: {}", e)))?;
+
+    let name = body
+        .get("name")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| tide::Error::from_str(StatusCode::BadRequest, "missing name"))?
+        .to_string();
+
+    {
+        let mut vars = VARS.lock().unwrap();
+        vars.remove(&name);
+    }
+
+    let snapshot_map = {
+        let vars = VARS.lock().unwrap();
+        let mut map = Map::new();
+        for (k, v) in vars.iter() {
+            map.insert(k.clone(), v.clone());
+        }
+        map
+    };
+
+    if let Err(e) = save_snapshot(snapshot_map, &format!("DELETE {}", name)).await {
+        eprintln!("save_snapshot error (DELETE {}): {}", name, e);
+    }
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(format!("Deleted {}", name));
+    res.insert_header("Content-Type", "text/plain");
+    Ok(res)
+});
+
+/// /vars/clear
+app.at("/vars/clear").post(|_req: Request<AppState>| async move {
+    {
+        let mut vars = VARS.lock().unwrap();
+        vars.clear();
+    }
+
+    let snapshot_map = {
+        let vars = VARS.lock().unwrap();
+        let mut map = Map::new();
+        for (k, v) in vars.iter() {
+            map.insert(k.clone(), v.clone());
+        }
+        map
+    };
+
+    if let Err(e) = save_snapshot(snapshot_map, "CLEAR").await{
+        eprintln!("save_snapshot error (CLEAR): {}", e);
+        let mut res = Response::new(StatusCode::InternalServerError);
+        res.set_body(format!("clear failed: {}", e));
+        res.insert_header("Content-Type", "text/plain");
+        return Ok(res);
+    }
+
+    let body = serde_json::json!({
+        "result": "cleared",
+        "vars_count": 0
+    });
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(body.to_string());
+    res.insert_header("Content-Type", "application/json");
+    Ok(res)
+});
+
+/// /vars/history (robust, uses DATA_DIR and FLAT_FILE)
+app.at("/vars/history").post(|_req: Request<AppState>| async move {
+    let path = format!("{}/{}", DATA_DIR, FLAT_FILE);
+
+    match fs::metadata(&path) {
+        Ok(meta) => {
+            if meta.len() == 0 {
+                eprintln!("history: file exists but is empty: {}", path);
+                let mut res = Response::new(StatusCode::Ok);
+                res.set_body("[]");
+                res.insert_header("Content-Type", "application/json");
+                return Ok(res);
+            }
+        }
+        Err(e) => {
+            eprintln!("history: metadata error for {}: {}", path, e);
+            let history_path = format!("{}/{}", DATA_DIR, HISTORY_FILE);
+            if let Ok(content) = fs::read_to_string(&history_path) {
+                let mut res = Response::new(StatusCode::Ok);
+                res.set_body(content);
+                res.insert_header("Content-Type", "text/plain");
+                return Ok(res);
+            }
+            let mut res = Response::new(StatusCode::NotFound);
+            res.set_body(format!("history file not found: {} (error: {})", path, e));
+            res.insert_header("Content-Type", "text/plain");
+            return Ok(res);
+        }
+    }
+
+    match fs::read_to_string(&path) {
+        Ok(content) => {
+            let mut res = Response::new(StatusCode::Ok);
+            res.set_body(content);
+            res.insert_header("Content-Type", "application/json");
+            Ok(res)
+        }
+        Err(e) => {
+            eprintln!("history: read error for {}: {}", path, e);
+            let mut res = Response::new(StatusCode::InternalServerError);
+            res.set_body(format!("failed to read history file: {}", e));
+            res.insert_header("Content-Type", "text/plain");
+            Ok(res)
+        }
+    }
+});
+
+/// /vars/status
+app.at("/vars/status").post(|_req: Request<AppState>| async move {
+    let count = {
+        let vars = VARS.lock().unwrap();
+        vars.len()
+    };
+
+    let status = serde_json::json!({
+        "vars_count": count,
+        "server": true,
+        "debug": true,
+        "public": true
+    });
+
+    eprintln!("status: vars_count = {}", count);
+
+    let mut res = Response::new(StatusCode::Ok);
+    match serde_json::to_string(&status) {
+        Ok(body) => {
+            res.set_body(body);
+            res.insert_header("Content-Type", "application/json");
+        }
+        Err(e) => {
+            eprintln!("status: serialization error: {}", e);
+            res.set_status(StatusCode::InternalServerError);
+            res.set_body(format!("serialization error: {}", e));
+            res.insert_header("Content-Type", "text/plain");
+        }
+    }
+    Ok(res)
+});
 
       use tide::prelude::*;
 use serde_yaml;

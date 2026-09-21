@@ -1949,7 +1949,7 @@ dependencies = [
 [[package]]
 name = "magnus"
 version = "0.9.0"
-source = "git+https://github.com/matsadler/magnus#21f1e7a528a3b38d688f851c42880e9c1b0fe01d"
+source = "git+https://github.com/matsadler/magnus#7ae0c5ece4aafb3c63b0bdf85a0ae8c3d2a52111"
 dependencies = [
  "magnus-macros",
  "rb-sys",
@@ -1960,7 +1960,7 @@ dependencies = [
 [[package]]
 name = "magnus-macros"
 version = "0.9.0"
-source = "git+https://github.com/matsadler/magnus#21f1e7a528a3b38d688f851c42880e9c1b0fe01d"
+source = "git+https://github.com/matsadler/magnus#7ae0c5ece4aafb3c63b0bdf85a0ae8c3d2a52111"
 dependencies = [
  "proc-macro2",
  "quote",

@@ -512,6 +512,7 @@ pub mod uncategorized {
     pub const HAVE_ELF_H: u32 = 1;
     pub const HAVE_LIBZ: u32 = 1;
     pub const HAVE_BACKTRACE: u32 = 1;
+    pub const HAVE_VALGRIND_MEMCHECK_H: u32 = 1;
     pub const DLEXT_MAXLEN: u32 = 3;
     pub const DLEXT: &[u8; 4] = b".so\0";
     pub const SOEXT: &[u8; 4] = b".so\0";

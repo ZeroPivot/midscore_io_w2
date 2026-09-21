@@ -1726,11 +1726,12 @@ app.at("/vars/get").post(|mut req: Request<AppState>| async move {
         }
         let mut res = Response::new(StatusCode::Ok);
         res.set_body(serde_json::to_string(&val)?);
-        res.insert_header("Content-Type", "application/json");
+        res.insert_header("Content-Type", "application/json; charset=utf-8");
+
         Ok(res)
     } else {
         // rebuild snapshot for the "not found" case (snapshot_map was moved above)
-        let snapshot_map2 = {
+        let snapshot_map = {
             let vars = VARS.lock().unwrap();
             let mut map = Map::new();
             for (k, v) in vars.iter() {
@@ -1738,13 +1739,14 @@ app.at("/vars/get").post(|mut req: Request<AppState>| async move {
             }
             map
         };
-        if let Err(e) = save_snapshot(snapshot_map2, &format!("GET {} not found", name)).await {
+        if let Err(e) = save_snapshot(snapshot_map, &format!("GET {} not found", name)).await {
             println!("save_snapshot error (GET not found {}): {}", name, e);
         }
         let mut res = Response::new(StatusCode::NotFound);
         //res.set_body("not found"); -- we don't need to send a body for this response
         println!("GET {} not found", name);
-        res.insert_header("Content-Type", "text/plain");
+        res.insert_header("Content-Type", "text/plain; charset=utf-8");
+
         Ok(res)
     }
 });
@@ -1863,7 +1865,7 @@ app.at("/vars/history").post(|_req: Request<AppState>| async move {
             if let Ok(content) = fs::read_to_string(&history_path) {
                 let mut res = Response::new(StatusCode::Ok);
                 res.set_body(content);
-                res.insert_header("Content-Type", "text/plain");
+                res.insert_header("Content-Type", "application/json; charset=utf-8");
                 return Ok(res);
             }
             let mut res = Response::new(StatusCode::NotFound);
@@ -2743,7 +2745,7 @@ WERE_FORMS = [
     let mut res = tide::Response::new(tide::StatusCode::Ok);
     use rand::Rng;
     let mut rng = rand::thread_rng();
-    let random_value: u32 = rng.gen_range(0..2);
+    let random_value: u32 = rng.gen_range(0..4);
     let output = random_value.to_string();
 
      // Return the HTML response.

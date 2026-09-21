@@ -1837,7 +1837,8 @@ app.at("/vars/clear").post(|_req: Request<AppState>| async move {
     });
 
     let mut res = Response::new(StatusCode::Ok);
-    res.set_body(body.to_string());
+    //res.set_body(body.to_string()); -- dont need it
+    println!("Cleared all vars");
     res.insert_header("Content-Type", "application/json");
     Ok(res)
 });

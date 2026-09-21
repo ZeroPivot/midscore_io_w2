@@ -921,7 +921,7 @@ async fn save_snapshot(snapshot: Map<String, Value>, tag: &str) -> tide::Result<
             format!("write flat file failed: {}", e),
         )
     });
-    eprintln!("save_snapshot: wrote {}", flat_path.display());
+    println!("save_snapshot: wrote {}", flat_path.display());
 
     // Append history entry
     let history_path = dir.join(HISTORY_FILE);
@@ -979,7 +979,7 @@ let mut app = tide::with_state(AppState {
                         println!("Running Ruby code via named pipe sharing system...");
                         let script_dir = "./rustby_scripts";
                         if let Err(e) = std::fs::create_dir_all(script_dir) {
-                            eprintln!("Failed to create script directory: {}", e);
+                            println!("Failed to create script directory: {}", e);
                             continue;
                         }
                         let filename = format!(
@@ -992,7 +992,7 @@ let mut app = tide::with_state(AppState {
        'RustbySpace'
       "#;
                         if let Err(e) = std::fs::write(&filename, ruby_code) {
-                            eprintln!("Error writing script file: {}", e);
+                            println!("Error writing script file: {}", e);
                             continue;
                         }
                         println!("Script file written: {}", filename);
@@ -1002,7 +1002,7 @@ let mut app = tide::with_state(AppState {
                         let pipe_path = "/tmp/ruby_pipe";
                         if let Err(e) = std::fs::write(pipe_path, format!("load '{}'\n", filename))
                         {
-                            eprintln!("Error writing to named pipe: {}", e);
+                            println!("Error writing to named pipe: {}", e);
                         } else {
                             println!("Command sent to Ruby evaluator via pipe: {}", pipe_path);
                         }
@@ -1597,7 +1597,7 @@ app.at("/vars/status").post(|_req: Request<AppState>| async move {
     Ok(res)
 });
 
-
+*/
 
 
    app.at("/sl_logger").post(|mut req: Request<AppState>| async move {
@@ -1606,12 +1606,12 @@ app.at("/vars/status").post(|_req: Request<AppState>| async move {
         println!("Received POST body: {}", body);
 
         // Log file path (adjust to a writable path for your process)
-        let log_path = "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt";
+        let log_path = "/root/midscore_io/tiade-maeepers-saerver-all/second_life_chat_logs.txt";
 
         // Ensure parent directory exists
         if let Some(parent) = Path::new(log_path).parent() {
             create_dir_all(parent).map_err(|e| {
-                eprintln!("Failed to create directory {}: {}", parent.display(), e);
+                println!("Failed to create directory {}: {}", parent.display(), e);
                 tide::Error::new(StatusCode::InternalServerError, e)
             })?;
         }
@@ -1622,12 +1622,12 @@ app.at("/vars/status").post(|_req: Request<AppState>| async move {
             .append(true)
             .open(log_path)
             .map_err(|e| {
-                eprintln!("Failed to open log file {}: {}", log_path, e);
+                println!("Failed to open log file {}: {}", log_path, e);
                 tide::Error::new(StatusCode::InternalServerError, e)
             })?;
 
         writeln!(file, "{}", body).map_err(|e| {
-            eprintln!("Failed to write to log file: {}", e);
+            println!("Failed to write to log file: {}", e);
             tide::Error::new(StatusCode::InternalServerError, e)
         })?;
 
@@ -1638,7 +1638,7 @@ app.at("/vars/status").post(|_req: Request<AppState>| async move {
         Ok(res)
     });
 
-*/
+
 
 // Routes: set, get, view, delete (chunk 1)
 
@@ -1680,7 +1680,7 @@ app.at("/vars/set").post(|mut req: Request<AppState>| async move {
     };
 
     if let Err(e) = save_snapshot(snapshot_map, "SET").await {
-        eprintln!("save_snapshot error (SET): {}", e);
+        println!("save_snapshot error (SET): {}", e);
         let mut res = Response::new(StatusCode::InternalServerError);
         res.set_body(format!("set failed: {}", e));
         res.insert_header("Content-Type", "text/plain");
@@ -1688,7 +1688,8 @@ app.at("/vars/set").post(|mut req: Request<AppState>| async move {
     }
 
     let mut res = Response::new(StatusCode::Ok);
-    res.set_body("set complete");
+    //res.set_body("set complete"); -- we don't need to send a body for this response
+    println!("set complete");
     res.insert_header("Content-Type", "text/plain");
     Ok(res)
 });
@@ -1721,7 +1722,7 @@ app.at("/vars/get").post(|mut req: Request<AppState>| async move {
 
     if let Some(val) = val_opt {
         if let Err(e) = save_snapshot(snapshot_map, &format!("GET {}", name)).await {
-            eprintln!("save_snapshot error (GET {}): {}", name, e);
+            println!("save_snapshot error (GET {}): {}", name, e);
         }
         let mut res = Response::new(StatusCode::Ok);
         res.set_body(serde_json::to_string(&val)?);
@@ -1738,10 +1739,11 @@ app.at("/vars/get").post(|mut req: Request<AppState>| async move {
             map
         };
         if let Err(e) = save_snapshot(snapshot_map2, &format!("GET {} not found", name)).await {
-            eprintln!("save_snapshot error (GET not found {}): {}", name, e);
+            println!("save_snapshot error (GET not found {}): {}", name, e);
         }
         let mut res = Response::new(StatusCode::NotFound);
-        res.set_body("not found");
+        //res.set_body("not found"); -- we don't need to send a body for this response
+        println!("GET {} not found", name);
         res.insert_header("Content-Type", "text/plain");
         Ok(res)
     }
@@ -1759,7 +1761,7 @@ app.at("/vars/view").post(|_req: Request<AppState>| async move {
     };
 
     if let Err(e) = save_snapshot(snapshot_map.clone(), "VIEW").await {
-        eprintln!("save_snapshot error (VIEW): {}", e);
+        println!("save_snapshot error (VIEW): {}", e);
     }
 
     let mut res = Response::new(StatusCode::Ok);
@@ -1794,11 +1796,12 @@ app.at("/vars/delete").post(|mut req: Request<AppState>| async move {
     };
 
     if let Err(e) = save_snapshot(snapshot_map, &format!("DELETE {}", name)).await {
-        eprintln!("save_snapshot error (DELETE {}): {}", name, e);
+        println!("save_snapshot error (DELETE {}): {}", name, e);
     }
 
     let mut res = Response::new(StatusCode::Ok);
-    res.set_body(format!("Deleted {}", name));
+    //res.set_body(format!("Deleted {}", name)); -- we don't need to send a body for this response
+    println!("Deleted {}", name);
     res.insert_header("Content-Type", "text/plain");
     Ok(res)
 });
@@ -1820,10 +1823,11 @@ app.at("/vars/clear").post(|_req: Request<AppState>| async move {
     };
 
     if let Err(e) = save_snapshot(snapshot_map, "CLEAR").await{
-        eprintln!("save_snapshot error (CLEAR): {}", e);
+        println!("save_snapshot error (CLEAR): {}", e);
         let mut res = Response::new(StatusCode::InternalServerError);
-        res.set_body(format!("clear failed: {}", e));
-        res.insert_header("Content-Type", "text/plain");
+        //res.set_body(format!("clear failed: {}", e));
+        //res.insert_header("Content-Type", "text/plain");
+        println!("clear failed: {}", e);
         return Ok(res);
     }
 
@@ -1845,7 +1849,7 @@ app.at("/vars/history").post(|_req: Request<AppState>| async move {
     match fs::metadata(&path) {
         Ok(meta) => {
             if meta.len() == 0 {
-                eprintln!("history: file exists but is empty: {}", path);
+                println!("history: file exists but is empty: {}", path);
                 let mut res = Response::new(StatusCode::Ok);
                 res.set_body("[]");
                 res.insert_header("Content-Type", "application/json");
@@ -1853,7 +1857,7 @@ app.at("/vars/history").post(|_req: Request<AppState>| async move {
             }
         }
         Err(e) => {
-            eprintln!("history: metadata error for {}: {}", path, e);
+            println!("history: metadata error for {}: {}", path, e);
             let history_path = format!("{}/{}", DATA_DIR, HISTORY_FILE);
             if let Ok(content) = fs::read_to_string(&history_path) {
                 let mut res = Response::new(StatusCode::Ok);
@@ -1862,7 +1866,8 @@ app.at("/vars/history").post(|_req: Request<AppState>| async move {
                 return Ok(res);
             }
             let mut res = Response::new(StatusCode::NotFound);
-            res.set_body(format!("history file not found: {} (error: {})", path, e));
+            //res.set_body(format!("history file not found: {} (error: {})", path, e));
+            println!("history file not found: {} (error: {})", path, e);
             res.insert_header("Content-Type", "text/plain");
             return Ok(res);
         }
@@ -1876,10 +1881,11 @@ app.at("/vars/history").post(|_req: Request<AppState>| async move {
             Ok(res)
         }
         Err(e) => {
-            eprintln!("history: read error for {}: {}", path, e);
+            println!("history: read error for {}: {}", path, e);
             let mut res = Response::new(StatusCode::InternalServerError);
-            res.set_body(format!("failed to read history file: {}", e));
-            res.insert_header("Content-Type", "text/plain");
+            //res.set_body(format!("failed to read history file: {}", e));
+            //res.insert_header("Content-Type", "text/plain");
+            println!("failed to read history file: {}", e);
             Ok(res)
         }
     }
@@ -1899,7 +1905,7 @@ app.at("/vars/status").post(|_req: Request<AppState>| async move {
         "public": true
     });
 
-    eprintln!("status: vars_count = {}", count);
+    println!("status: vars_count = {}", count);
 
     let mut res = Response::new(StatusCode::Ok);
     match serde_json::to_string(&status) {
@@ -1908,10 +1914,11 @@ app.at("/vars/status").post(|_req: Request<AppState>| async move {
             res.insert_header("Content-Type", "application/json");
         }
         Err(e) => {
-            eprintln!("status: serialization error: {}", e);
+            println!("status: serialization error: {}", e);
             res.set_status(StatusCode::InternalServerError);
-            res.set_body(format!("serialization error: {}", e));
-            res.insert_header("Content-Type", "text/plain");
+            //res.set_body(format!("serialization error: {}", e));
+            //res.insert_header("Content-Type", "text/plain");
+            println!("serialization error: {}", e);
         }
     }
     Ok(res)
@@ -1955,7 +1962,7 @@ app.at("/chatlog").get(|_req: Request<AppState>| async move {
 
 
     let raw = fs::read_to_string(
-        "/root/midscore_io/tiade-maeepers-saerver-all/target/release/second_life_chat_logs.txt"
+        "/root/midscore_io/tiade-maeepers-saerver-all/second_life_chat_logs.txt"
     ).unwrap_or_default();
 
     //
@@ -3544,7 +3551,7 @@ WERE_FORMS = [
 
     for t in tasks {
         if let Err(e) = t.await {
-            eprintln!("Error while running server: {}", e); // Debug message
+            println!("Error while running server: {}", e); // Debug message
         }
     }
     println!("All servers have been spawned successfully."); // Debug message

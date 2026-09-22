@@ -10,7 +10,23 @@ use tiade_ollama_relay::{RelayConfig as OllamaRelayConfig, mount_routes as mount
 use serde::Deserialize;
 
 
+use std::fs;
+use std::collections::{HashSet, BTreeMap};
 
+use regex::Regex;
+use chrono::{Timelike, LocalResult};
+use serde::Serialize;
+
+#[derive(Clone, Serialize)]
+struct MsgEntry {
+    avatar_name: String,
+    sim_name: String,
+    message: String,
+    timestamp: i64,
+    x: f64,
+    y: f64,
+    z: f64,
+}
 
 // v1.0.0.0
 
@@ -783,11 +799,11 @@ use std::io::Cursor;
 
 // filepath: /path/to/helpers.rs
 
-use serde::Serialize;
+
 
 // filepath: /path/to/blog.rs
 
-use std::fs::{self, OpenOptions};
+use std::fs::{OpenOptions};
 use std::io::Write;
 
 
@@ -884,7 +900,7 @@ use lazy_static::lazy_static;
 use async_std::io::WriteExt;
 
  // Ensure these constants are defined at module top-level (not inside this function).
-    const DATA_DIR: &str = "/midscore_io/tiade-maeepers-saerver-all/target/release";
+    const DATA_DIR: &str = "/midscore_io/tiade-maeepers-saerver-all/";
   const FLAT_FILE: &str = "vars_flatfile.json";
     const HISTORY_FILE: &str = "vars_history.log";
 use std::collections::HashMap;
@@ -1958,9 +1974,566 @@ use chrono_tz::America::Los_Angeles;
 
 
     use std::fs;
- 
-  
+app.at("/chatlog").get(|_req: Request<AppState>| async move {
+    let raw = fs::read_to_string(
+        "/root/midscore_io/tiade-maeepers-saerver-all/second_life_chat_logs.txt"
+    ).unwrap_or_default();
 
+    // 1. Split into objects
+    let mut objects = Vec::new();
+    let mut buf = String::new();
+    for ch in raw.chars() {
+        buf.push(ch);
+        if ch == '}' {
+            objects.push(buf.clone());
+            buf.clear();
+        }
+    }
+
+    // 2. Regexes
+    let re_avatar_id = Regex::new(r#""avatar_id"\s*:\s*"([^"]+)""#).unwrap();
+    let re_avatar_name = Regex::new(r#""avatar_name"\s*:\s*"([^"]+)""#).unwrap();
+    let re_message = Regex::new(r#""message"\s*:\s*"([^"]+)""#).unwrap();
+    let re_sim_name = Regex::new(r#""sim_name"\s*:\s*"([^"]+)""#).unwrap();
+    let re_timestamp = Regex::new(r#""timestamp"\s*:\s*(\d+)"#).unwrap();
+    let re_x = Regex::new(r#""x_pos"\s*:\s*([\d\.]+)"#).unwrap();
+    let re_y = Regex::new(r#""y_pos"\s*:\s*([\d\.]+)"#).unwrap();
+    let re_z = Regex::new(r#""z_pos"\s*:\s*([\d\.]+)"#).unwrap();
+
+    // 3. Stats containers
+    let mut unique_keys: HashSet<String> = HashSet::new();
+
+    let mut freq_year: BTreeMap<i32, usize> = BTreeMap::new();
+    let mut freq_month: BTreeMap<u32, usize> = BTreeMap::new();
+    let mut freq_day: BTreeMap<u32, usize> = BTreeMap::new();
+    let mut freq_weekday: BTreeMap<String, usize> = BTreeMap::new();
+    let mut freq_hour: BTreeMap<u32, usize> = BTreeMap::new();
+
+    let mut per_avatar_time: BTreeMap<String, BTreeMap<String, usize>> = BTreeMap::new();
+    let mut per_sim_time: BTreeMap<String, BTreeMap<String, usize>> = BTreeMap::new();
+
+    let mut timeline: BTreeMap<String, usize> = BTreeMap::new();
+
+    let mut messages_vec: Vec<MsgEntry> = Vec::new();
+
+    // 4. Parse objects
+    for obj in &objects {
+        let line = obj.as_str();
+
+        let avatar_id = re_avatar_id
+            .captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let avatar_name = re_avatar_name
+            .captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let message = re_message
+            .captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let sim_name = re_sim_name
+            .captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().to_string())
+            .unwrap_or_default();
+
+        let timestamp = re_timestamp
+            .captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<i64>().unwrap_or(0))
+            .unwrap_or(0);
+
+        let x = re_x
+            .captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<f64>().unwrap_or(0.0))
+            .unwrap_or(0.0);
+
+        let y = re_y
+            .captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<f64>().unwrap_or(0.0))
+            .unwrap_or(0.0);
+
+        let z = re_z
+            .captures(line)
+            .and_then(|c| c.get(1))
+            .map(|m| m.as_str().parse::<f64>().unwrap_or(0.0))
+            .unwrap_or(0.0);
+
+        // Uniqueness
+        let key = format!("{}|{}|{}", avatar_id, timestamp, message);
+        unique_keys.insert(key);
+
+        // Timestamp analytics
+        if let LocalResult::Single(dt) = Los_Angeles.timestamp_opt(timestamp, 0) {
+            let year = dt.year();
+            let month = dt.month();
+            let day = dt.day();
+            let weekday = dt.weekday().to_string();
+            let hour = dt.hour();
+
+            *freq_year.entry(year).or_insert(0) += 1;
+            *freq_month.entry(month).or_insert(0) += 1;
+            *freq_day.entry(day).or_insert(0) += 1;
+            *freq_weekday.entry(weekday.clone()).or_insert(0) += 1;
+            *freq_hour.entry(hour).or_insert(0) += 1;
+
+            let date_key = dt.format("%Y-%m-%d").to_string();
+            *timeline.entry(date_key.clone()).or_insert(0) += 1;
+
+            // Per-avatar time analytics
+            let avatar_map = per_avatar_time.entry(avatar_name.clone()).or_insert(BTreeMap::new());
+            *avatar_map.entry(date_key.clone()).or_insert(0) += 1;
+
+            // Per-sim time analytics
+            let sim_map = per_sim_time.entry(sim_name.clone()).or_insert(BTreeMap::new());
+            *sim_map.entry(date_key.clone()).or_insert(0) += 1;
+        }
+
+        // Messages
+        messages_vec.push(MsgEntry {
+            avatar_name,
+            sim_name,
+            message,
+            timestamp,
+            x,
+            y,
+            z,
+        });
+    }
+
+    // 5. Build HTML
+    let mut out = String::new();
+    out.push_str(r#"<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Chatlog Stats</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body {
+    font-family: system-ui;
+    background: #111;
+    color: #eee;
+    margin: 20px;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 20px;
+}
+th, td {
+    border: 1px solid #444;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+th {
+    background: #222;
+}
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+}
+.stat-card {
+    border: 1px solid #444;
+    background: #181818;
+    padding: 8px;
+}
+#messageSelect {
+    width: 100%;
+    max-width: 800px;
+}
+#messageDetail {
+    border: 1px solid #444;
+    background: #181818;
+    padding: 8px;
+    max-width: 800px;
+}
+#minimapCanvas {
+    border: 1px solid #444;
+    background: #000;
+    width: 512px;
+    height: 512px;
+}
+#movementCanvas {
+    border: 1px solid #444;
+    background: #000;
+    width: 512px;
+    height: 512px;
+    margin-top: 16px;
+}
+#simGraph {
+    border: 1px solid #444;
+    background: #181818;
+    padding: 8px;
+    max-width: 512px;
+}
+#keywordCloud {
+    border: 1px solid #444;
+    background: #181818;
+    padding: 8px;
+    max-width: 512px;
+    margin-top: 16px;
+}
+</style>
+</head><body>
+"#);
+
+    out.push_str(&format!("<p>Total Entries: {}</p>", objects.len()));
+    out.push_str(&format!("<p>Unique Entries: {}</p>", unique_keys.len()));
+
+    out.push_str(r#"<div class="stat-grid">"#);
+
+    // Year Frequency
+    out.push_str("<div class=\"stat-card\"><h3>Year Frequency</h3><table><tr><th>Year</th><th>Count</th></tr>");
+    for (year, count) in &freq_year {
+        out.push_str(&format!("<tr><td>{}</td><td>{}</td></tr>", year, count));
+    }
+    out.push_str("</table></div>");
+
+    // Month Frequency
+    out.push_str("<div class=\"stat-card\"><h3>Month Frequency</h3><table><tr><th>Month</th><th>Count</th></tr>");
+    for (month, count) in &freq_month {
+        out.push_str(&format!("<tr><td>{:02}</td><td>{}</td></tr>", month, count));
+    }
+    out.push_str("</table></div>");
+
+    // Day of Month Frequency
+    out.push_str("<div class=\"stat-card\"><h3>Day of Month Frequency</h3><table><tr><th>Day</th><th>Count</th></tr>");
+    for (day, count) in &freq_day {
+        out.push_str(&format!("<tr><td>{:02}</td><td>{}</td></tr>", day, count));
+    }
+    out.push_str("</table></div>");
+
+    // Day of Week Frequency
+    out.push_str("<div class=\"stat-card\"><h3>Day of Week Frequency</h3><table><tr><th>Weekday</th><th>Count</th></tr>");
+    for (weekday, count) in &freq_weekday {
+        out.push_str(&format!("<tr><td>{}</td><td>{}</td></tr>", weekday, count));
+    }
+    out.push_str("</table></div>");
+
+    // Hour Frequency
+    out.push_str("<div class=\"stat-card\"><h3>Hour Frequency</h3><table><tr><th>Hour</th><th>Count</th></tr>");
+    for hour in 0..24 {
+        let count = freq_hour.get(&hour).copied().unwrap_or(0);
+        out.push_str(&format!("<tr><td>{:02}</td><td>{}</td></tr>", hour, count));
+    }
+    out.push_str("</table></div>");
+
+    out.push_str("</div>"); // stat-grid
+
+    // Timeline graph
+    out.push_str(r#"
+<h2>Timeline Graph</h2>
+<canvas id="timelineChart" width="800" height="300"></canvas>
+"#);
+
+    // Minimap + movement trails + sim graph + keyword cloud
+    out.push_str(r#"
+<h2>Minimap Viewer</h2>
+<canvas id="minimapCanvas" width="512" height="512"></canvas>
+
+<h2>Avatar Movement Trails</h2>
+<canvas id="movementCanvas" width="512" height="512"></canvas>
+
+<h2>Sim-to-Sim Migration</h2>
+<div id="simGraph"></div>
+
+<h2>Keyword Cloud</h2>
+<div id="keywordCloud"></div>
+"#);
+
+    // Messages
+    out.push_str(r#"
+<h2>Messages</h2>
+<select id="messageSelect"><option value="">Select a message...</option></select>
+<div id="messageDetail"></div>
+"#);
+
+    // 6. JS serialization
+    let js_messages = serde_json::to_string(&messages_vec).unwrap();
+    let js_timeline = serde_json::to_string(&timeline).unwrap();
+    let js_avatar_time = serde_json::to_string(&per_avatar_time).unwrap();
+    let js_sim_time = serde_json::to_string(&per_sim_time).unwrap();
+
+    // 7. JS logic
+    out.push_str("<script>\n");
+    out.push_str(&format!("const messages = {};\n", js_messages));
+    out.push_str(&format!("const timeline = {};\n", js_timeline));
+    out.push_str(&format!("const avatarTime = {};\n", js_avatar_time));
+    out.push_str(&format!("const simTime = {};\n", js_sim_time));
+    out.push_str(r#"
+const REFRESH_MS = 15000;
+
+// Timeline graph
+function initTimelineGraph() {
+    const ctx = document.getElementById('timelineChart').getContext('2d');
+    const labels = Object.keys(timeline).sort();
+    const data = labels.map(k => timeline[k]);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Messages per Day',
+                data,
+                borderColor: 'orange',
+                backgroundColor: 'rgba(255,165,0,0.2)',
+                tension: 0.2
+            }]
+        },
+        options: {
+            scales: {
+                x: { ticks: { color: '#eee' } },
+                y: { ticks: { color: '#eee' } }
+            },
+            plugins: {
+                legend: { labels: { color: '#eee' } }
+            }
+        }
+    });
+}
+
+// Minimap viewer (simple scatter of positions)
+function initMinimap() {
+    const canvas = document.getElementById('minimapCanvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!messages.length) return;
+
+    const xs = messages.map(m => m.x);
+    const ys = messages.map(m => m.y);
+
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+
+    const rangeX = maxX - minX || 1;
+    const rangeY = maxY - minY || 1;
+
+    function normX(x) { return ((x - minX) / rangeX) * canvas.width; }
+    function normY(y) { return canvas.height - ((y - minY) / rangeY) * canvas.height; }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'white';
+    ctx.font = '10px system-ui';
+
+    messages.forEach(m => {
+        const px = normX(m.x);
+        const py = normY(m.y);
+        ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+// Avatar movement trails
+function initMovementTrails() {
+    const canvas = document.getElementById('movementCanvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!messages.length) return;
+
+    const xs = messages.map(m => m.x);
+    const ys = messages.map(m => m.y);
+
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+
+    const rangeX = maxX - minX || 1;
+    const rangeY = maxY - minY || 1;
+
+    function normX(x) { return ((x - minX) / rangeX) * canvas.width; }
+    function normY(y) { return canvas.height - ((y - minY) / rangeY) * canvas.height; }
+
+    const byAvatar = {};
+    messages.forEach(m => {
+        if (!byAvatar[m.avatar_name]) byAvatar[m.avatar_name] = [];
+        byAvatar[m.avatar_name].push(m);
+    });
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    Object.keys(byAvatar).forEach((avatar, idx) => {
+        const path = byAvatar[avatar].sort((a, b) => a.timestamp - b.timestamp);
+        const hue = (idx * 47) % 360;
+        ctx.strokeStyle = `hsla(${hue}, 100%, 60%, 0.8)`;
+        ctx.lineWidth = 1;
+
+        ctx.beginPath();
+        path.forEach((m, i) => {
+            const px = normX(m.x);
+            const py = normY(m.y);
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+    });
+}
+
+// Sim-to-sim migration graph (simple adjacency list)
+function initSimGraph() {
+    const container = document.getElementById('simGraph');
+    container.innerHTML = '';
+
+    const byAvatar = {};
+    messages.forEach(m => {
+        if (!byAvatar[m.avatar_name]) byAvatar[m.avatar_name] = [];
+        byAvatar[m.avatar_name].push(m);
+    });
+
+    const edges = {};
+    Object.values(byAvatar).forEach(path => {
+        const sorted = path.sort((a, b) => a.timestamp - b.timestamp);
+        for (let i = 1; i < sorted.length; i++) {
+            const from = sorted[i - 1].sim_name || 'Unknown';
+            const to = sorted[i].sim_name || 'Unknown';
+            if (from === to) continue;
+            const key = `${from} -> ${to}`;
+            edges[key] = (edges[key] || 0) + 1;
+        }
+    });
+
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.innerHTML = '<tr><th>Transition</th><th>Count</th></tr>';
+
+    Object.keys(edges).sort().forEach(k => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${k}</td><td>${edges[k]}</td>`;
+        table.appendChild(tr);
+    });
+
+    container.appendChild(table);
+}
+
+// Keyword cloud (simple frequency list)
+function initKeywordCloud() {
+    const container = document.getElementById('keywordCloud');
+    container.innerHTML = '';
+
+    const freq = {};
+    const stopwords = new Set([
+        'the','and','a','to','of','in','is','it','i','you','that','this','for','on','with','at','be','are','was','were'
+    ]);
+
+    messages.forEach(m => {
+        const words = m.message
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .split(/\s+/)
+            .filter(w => w.length > 2 && !stopwords.has(w));
+        words.forEach(w => {
+            freq[w] = (freq[w] || 0) + 1;
+        });
+    });
+
+    const entries = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 50);
+
+    entries.forEach(([word, count]) => {
+        const span = document.createElement('span');
+        const size = 10 + Math.min(30, count * 2);
+        span.textContent = word + ' ';
+        span.style.fontSize = size + 'px';
+        span.style.color = `hsl(${(count * 13) % 360}, 80%, 60%)`;
+        container.appendChild(span);
+    });
+}
+
+// Basic sentiment scoring (client-side heuristic)
+function computeSentiment(message) {
+    const positive = ['good','great','awesome','nice','love','happy','cool','fun'];
+    const negative = ['bad','terrible','hate','angry','sad','annoying','awful'];
+
+    const text = message.toLowerCase();
+    let score = 0;
+    positive.forEach(w => { if (text.includes(w)) score += 1; });
+    negative.forEach(w => { if (text.includes(w)) score -= 1; });
+    return score;
+}
+
+// Messages dropdown
+function initMessageDropdown() {
+    const select = document.getElementById('messageSelect');
+    const detail = document.getElementById('messageDetail');
+
+    messages.forEach((m, idx) => {
+        const opt = document.createElement('option');
+        const ts = new Date(m.timestamp * 1000);
+        const tsStr = isNaN(ts.getTime()) ? m.timestamp : ts.toLocaleString();
+        const sentiment = computeSentiment(m.message);
+        const sentimentTag = sentiment > 0 ? ' (+)' : sentiment < 0 ? ' (-)' : '';
+        opt.value = idx;
+        opt.textContent = `[${tsStr}] ${m.avatar_name} @ ${m.sim_name}${sentimentTag}`;
+        select.appendChild(opt);
+    });
+
+    select.addEventListener('change', () => {
+        const idx = parseInt(select.value, 10);
+        if (isNaN(idx)) {
+            detail.textContent = '';
+            return;
+        }
+        const m = messages[idx];
+        const ts = new Date(m.timestamp * 1000);
+        const tsStr = isNaN(ts.getTime()) ? m.timestamp : ts.toLocaleString();
+        const sentiment = computeSentiment(m.message);
+
+        let sentimentLabel = 'Neutral';
+        if (sentiment > 0) sentimentLabel = 'Positive';
+        else if (sentiment < 0) sentimentLabel = 'Negative';
+
+        detail.innerHTML = `
+            <strong>Avatar:</strong> ${m.avatar_name}<br>
+            <strong>Sim:</strong> ${m.sim_name}<br>
+            <strong>Timestamp:</strong> ${tsStr}<br>
+            <strong>Position:</strong> (${m.x.toFixed(2)}, ${m.y.toFixed(2)}, ${m.z.toFixed(2)})<br>
+            <strong>Sentiment:</strong> ${sentimentLabel} (${sentiment})<br>
+            <strong>Message:</strong><br>
+            <pre style="white-space: pre-wrap;">${m.message}</pre>
+        `;
+    });
+}
+
+function initAutoRefresh() {
+    setInterval(() => window.location.reload(), REFRESH_MS);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initTimelineGraph();
+    initMinimap();
+    initMovementTrails();
+    initSimGraph();
+    initKeywordCloud();
+    initMessageDropdown();
+    initAutoRefresh();
+});
+</script>
+"#);
+
+    out.push_str("</body></html>");
+
+    let mut res = Response::new(StatusCode::Ok);
+    res.set_body(out);
+    res.insert_header("Content-Type", "text/html; charset=utf-8");
+    Ok(res)
+});
+
+
+  
+/*
 app.at("/chatlog").get(|_req: Request<AppState>| async move {
 
 
@@ -2147,7 +2720,7 @@ app.at("/chatlog").get(|_req: Request<AppState>| async move {
     Ok(res)
 });
 
-
+*/
 
 
 

@@ -12,8 +12,8 @@
       "id": 3,
       "title": "The Anti Anxiety Sigil",
       "description": "No more anxiety, 100% of the time.",
-      "image_file": "sigil_3_1786126121360.jpg",
-      "mime_type": "image/jpeg",
+      "image_file": "sigil_3_1790035033434.png",
+      "mime_type": "image/png",
       "created_at": "2026-08-07T18:08:41.360324823+00:00"
     },
     {
@@ -351,6 +351,22 @@
       "image_file": "sigil_50_1789970313861.png",
       "mime_type": "image/png",
       "created_at": "2026-09-21T05:58:33.862031361+00:00"
+    },
+    {
+      "id": 51,
+      "title": "The 100% Finalized Actors Spirit System Hypersigil (Final Wave)",
+      "description": "The spirit team is in place.",
+      "image_file": "sigil_51_1789999948575.png",
+      "mime_type": "image/png",
+      "created_at": "2026-09-21T14:12:28.578296729+00:00"
+    },
+    {
+      "id": 52,
+      "title": "Disappearing Repetive Phrases Sigil",
+      "description": "They should fade into memory",
+      "image_file": "sigil_52_1790034917164.png",
+      "mime_type": "image/png",
+      "created_at": "2026-09-21T23:55:17.167301714+00:00"
     }
   ]
 }

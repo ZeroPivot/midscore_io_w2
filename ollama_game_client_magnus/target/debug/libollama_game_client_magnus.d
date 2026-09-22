@@ -1,1 +1,0 @@
-/root/midscore_io/ollama_game_client_magnus/target/debug/libollama_game_client_magnus.so: /root/midscore_io/ollama_game_client_magnus/ruby/partitioned_game_client.rb /root/midscore_io/ollama_game_client_magnus/src/lib.rs

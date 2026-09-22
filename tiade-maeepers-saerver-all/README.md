@@ -27,10 +27,6 @@ State table mapping uses file stem naming:
 - Blog store path -> `blog_store`
 - Gallery store path -> `gallery_store`
 
-The Ollama 2.0 relay uses `LineDb` for team conversation history, team prompts, and isolated game-player histories:
-- Store root: `/root/midscore_io/logs/ollama_teams/line_db`
-- History is retained to the newest 500 entries per team by default.
-
 ## Admin Endpoints
 
 - `GET /admin/login?password=...`
@@ -91,6 +87,7 @@ Integration note:
 | GET | `/blog/:user/delete` | `src/roda_tide_rewrite.rs` | public/private by profile | Delete/lock listing page |
 | GET | `/blog/:user/delete/:id` | `src/roda_tide_rewrite.rs` | owner session | Toggle lock then redirect |
 | GET | `/blog/:user/list` | `src/roda_tide_rewrite.rs` | public/private by profile | Post list |
+| GET, POST | `/blog/:user/new` | `src/roda_tide_rewrite.rs` | owner session | New post page and save |
 | GET | `/blog/:user/private_toggle` | `src/roda_tide_rewrite.rs` | owner session | Toggle private view |
 | GET | `/blog/:user/view` | `src/roda_tide_rewrite.rs` | public/private by profile | Main blog index |
 | GET | `/blog/:user/view/:id` | `src/roda_tide_rewrite.rs` | public/private by profile | Post view (`?format=json` supported) |
@@ -101,6 +98,7 @@ Integration note:
 | Method | Path | Source | Auth | Notes |
 |---|---|---|---|---|
 | GET | `/gallery` | `src/roda_tide_rewrite.rs` | public | Gallery home/user list |
+| GET, POST | `/gallery/secondlifeapi` | `src/roda_tide_rewrite.rs` | public | GET HTML, POST JSON echo/status |
 | GET, POST | `/gallery/upload/url` | `src/roda_tide_rewrite.rs` | public | URL upload page and submit |
 | GET, POST | `/gallery/upload` | `src/roda_tide_rewrite.rs` | public | Raw body or multipart file/url upload |
 | GET | `/gallery/view/:user/latest` | `src/roda_tide_rewrite.rs` | public | Redirects to latest page index |
@@ -156,6 +154,7 @@ Integration note:
 
 These are mounted by `mount_ollama_routes(&mut app, OllamaRelayConfig::default())`:
 
+<<<<<<< HEAD
 - `GET /ollama` (general route catalog)
 - `POST /ollama` with Ollama-compatible `{"model":"...","messages":[...],"stream":false}`
 - `POST /chat/:team` with `{"message":"..."}`
@@ -248,27 +247,26 @@ const response = await fetch('https://your-host/game/arcade/player-42', {
 });
 const { response: reply } = await response.json();
 ```
+=======
+- `/chat/:team`
+- `/history/:team`
+- `/sl_logger`
+- `/_ethereal_life_sl_logger_get_`
+- `/_ethereal_life_sl_logger_show_`
+- `/incrementor_get`
+- `/incrementor`
+- `/analytics`
+- `/markov_metrics` (JSON conversation-flow and speaker-transition metrics)
+- `/chatlog`
+- `/schedule_ft`
+- `/read`
+>>>>>>> parent of 4bdd650af (Merge remote-tracking branch 'refs/remotes/origin/master')
 
 ## Run
 
 ```bash
 cargo run
 ```
-
-For the TLS production server, build and start the release binary:
-
-```bash
-cargo build --release
-./start.sh
-```
-
-To build and serve the browser WebAssembly client with the server instead:
-
-```bash
-./start-with-wasm.sh
-```
-
-Use `./stop-server.sh` to send the managed process `SIGTERM`.
 
 ## Verify
 

@@ -35,6 +35,12 @@ struct MsgEntry {
 /// This function initializes a Ruby VM, evaluates the code, and prints the output.
 /// If evaluation fails, it prints the error.
 
+<<<<<<< HEAD
+=======
+async fn init_ruby_vm() {
+    Ruby::init(|_ruby| Ok(())).unwrap();
+}
+>>>>>>> parent of 4bdd650af (Merge remote-tracking branch 'refs/remotes/origin/master')
 
 // Helper: Create a JSON response.
 pub fn json_response<T: serde::Serialize>(data: T) -> tide::Response {
@@ -1032,7 +1038,10 @@ let mut app = tide::with_state(AppState {
                             Ok(output) => Ok(output),
                             Err(e) => {
                                 eprintln!("Error reading Ruby output: {}", e);
-                            Err(format!("Error reading Ruby output: {}", e))
+                                Err(magnus::Error::new(
+                                    magnus::exception::runtime_error(),
+                                    format!("Error reading Ruby output: {}", e),
+                                ))
                             }
                         };
 
@@ -1159,7 +1168,12 @@ impl Clone for AppState {
     app.with(LogRoute);
     mount_ollama_routes(&mut app, OllamaRelayConfig::default())?;
 
+<<<<<<< HEAD
    
+=======
+    // Initialize the Ruby interpreter
+    let _ruby = init_ruby_vm().await;
+>>>>>>> parent of 4bdd650af (Merge remote-tracking branch 'refs/remotes/origin/master')
 
     use std::sync::Arc;
 

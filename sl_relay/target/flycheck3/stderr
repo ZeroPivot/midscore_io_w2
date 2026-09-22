@@ -1,4 +1,3 @@
-    Blocking waiting for file lock on package cache
    Compiling proc-macro2 v1.0.101
    Compiling libc v0.2.176
    Compiling crossbeam-utils v0.8.21
@@ -12,19 +11,19 @@ Caused by:
 Caused by:
   Permission denied (os error 13)
 warning: build failed, waiting for other jobs to finish...
-error: failed to run custom build command for `proc-macro2 v1.0.101`
-note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
-
-Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/proc-macro2/17e32568540fc90a/out/build_script_build` (never executed)
-
-Caused by:
-  Permission denied (os error 13)
 error: failed to run custom build command for `libc v0.2.176`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
 Caused by:
   could not execute process `/root/midscore_io/sl_relay/target/debug/build/libc/749313c087f1db00/out/build_script_build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
+error: failed to run custom build command for `proc-macro2 v1.0.101`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/proc-macro2/17e32568540fc90a/out/build_script_build` (never executed)
 
 Caused by:
   Permission denied (os error 13)
@@ -38,14 +37,6 @@ Caused by:
   Permission denied (os error 13)
    Compiling generic-array v0.14.7
    Compiling syn v1.0.109
-error: failed to run custom build command for `syn v1.0.109`
-note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
-
-Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/syn/e6b2105ef72c534e/out/build_script_build` (never executed)
-
-Caused by:
-  Permission denied (os error 13)
 error: failed to run custom build command for `generic-array v0.14.7`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
@@ -54,23 +45,23 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
-   Compiling serde_core v1.0.227
    Compiling openssl-sys v0.9.109
+   Compiling serde_core v1.0.227
    Compiling serde v1.0.227
    Compiling num-traits v0.2.19
+error: failed to run custom build command for `syn v1.0.109`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/syn/e6b2105ef72c534e/out/build_script_build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
 error: failed to run custom build command for `serde_core v1.0.227`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
 Caused by:
   could not execute process `/root/midscore_io/sl_relay/target/debug/build/serde_core/a32b9da1d6fada94/out/build_script_build` (never executed)
-
-Caused by:
-  Permission denied (os error 13)
-error: failed to run custom build command for `openssl-sys v0.9.109`
-note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
-
-Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/openssl-sys/1f903c7ea0b5a361/out/build_script_main` (never executed)
 
 Caused by:
   Permission denied (os error 13)
@@ -90,26 +81,28 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
-   Compiling zerocopy v0.8.27
    Compiling rustix v1.1.2
    Compiling icu_normalizer_data v2.0.0
+   Compiling zerocopy v0.8.27
    Compiling icu_properties_data v2.0.1
-   Compiling libnghttp2-sys v0.1.11+1.64.0
-   Compiling libz-sys v1.1.22
    Compiling lock_api v0.4.13
+   Compiling libnghttp2-sys v0.1.11+1.64.0
+   Compiling clang-sys v1.8.1
+error: failed to run custom build command for `openssl-sys v0.9.109`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/openssl-sys/1f903c7ea0b5a361/out/build_script_main` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
+   Compiling thiserror v1.0.69
+   Compiling libz-sys v1.1.22
 error: failed to run custom build command for `zerocopy v0.8.27`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
 Caused by:
   could not execute process `/root/midscore_io/sl_relay/target/debug/build/zerocopy/d0009e2093b4a46d/out/build_script_build` (never executed)
-
-Caused by:
-  Permission denied (os error 13)
-error: failed to run custom build command for `icu_normalizer_data v2.0.0`
-note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
-
-Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/icu_normalizer_data/974c793d49dc37bd/out/build_script_build` (never executed)
 
 Caused by:
   Permission denied (os error 13)
@@ -129,19 +122,11 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
-error: failed to run custom build command for `libc v0.2.176`
+error: failed to run custom build command for `icu_normalizer_data v2.0.0`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
 Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/libc/c378ce4175c6403e/out/build_script_build` (never executed)
-
-Caused by:
-  Permission denied (os error 13)
-error: failed to run custom build command for `libnghttp2-sys v0.1.11+1.64.0`
-note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
-
-Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/libnghttp2-sys/e174d3447016eb18/out/build_script_build` (never executed)
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/icu_normalizer_data/974c793d49dc37bd/out/build_script_build` (never executed)
 
 Caused by:
   Permission denied (os error 13)
@@ -153,22 +138,11 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
-   Compiling thiserror v1.0.69
-   Compiling clang-sys v1.8.1
-   Compiling wasm-bindgen-shared v0.2.104
-error: failed to run custom build command for `libz-sys v1.1.22`
+error: failed to run custom build command for `libnghttp2-sys v0.1.11+1.64.0`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
 Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/libz-sys/6a878eebcc42f574/out/build_script_build` (never executed)
-
-Caused by:
-  Permission denied (os error 13)
-error: failed to run custom build command for `thiserror v1.0.69`
-note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
-
-Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/thiserror/faab551a6ed83879/out/build_script_build` (never executed)
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/libnghttp2-sys/e174d3447016eb18/out/build_script_build` (never executed)
 
 Caused by:
   Permission denied (os error 13)
@@ -180,15 +154,48 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
+error: failed to run custom build command for `libc v0.2.176`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/libc/c378ce4175c6403e/out/build_script_build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
+error: failed to run custom build command for `thiserror v1.0.69`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/thiserror/faab551a6ed83879/out/build_script_build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
+   Compiling standback v0.2.17
+   Compiling wasm-bindgen-shared v0.2.104
+error: failed to run custom build command for `libz-sys v1.1.22`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/libz-sys/6a878eebcc42f574/out/build_script_build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
    Compiling async-io v2.6.0
    Compiling anyhow v1.0.100
    Compiling proc-macro-hack v0.5.20+deprecated
-   Compiling standback v0.2.17
 error: failed to run custom build command for `wasm-bindgen-shared v0.2.104`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
 Caused by:
   could not execute process `/root/midscore_io/sl_relay/target/debug/build/wasm-bindgen-shared/d49da21ae6e4acea/out/build_script_build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
+error: failed to run custom build command for `standback v0.2.17`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/standback/1d2b96a64980d330/out/build_script_build` (never executed)
 
 Caused by:
   Permission denied (os error 13)
@@ -208,38 +215,14 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
+   Compiling rustversion v1.0.22
+   Compiling rayon-core v1.13.0
+   Compiling getrandom v0.1.16
 error: failed to run custom build command for `proc-macro-hack v0.5.20+deprecated`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
 Caused by:
   could not execute process `/root/midscore_io/sl_relay/target/debug/build/proc-macro-hack/6493b3201e22390d/out/build_script_build` (never executed)
-
-Caused by:
-  Permission denied (os error 13)
-   Compiling rustversion v1.0.22
-   Compiling getrandom v0.1.16
-error: failed to run custom build command for `standback v0.2.17`
-note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
-
-Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/standback/1d2b96a64980d330/out/build_script_build` (never executed)
-
-Caused by:
-  Permission denied (os error 13)
-error: failed to run custom build command for `getrandom v0.1.16`
-note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
-
-Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/getrandom/91dd4f82aa10d016/out/build_script_build` (never executed)
-
-Caused by:
-  Permission denied (os error 13)
-   Compiling rayon-core v1.13.0
-error: failed to run custom build command for `rustversion v1.0.22`
-note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
-
-Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/rustversion/40be1d7cd574670a/out/build_script_build` (never executed)
 
 Caused by:
   Permission denied (os error 13)
@@ -251,17 +234,23 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
-error: failed to run custom build command for `wasm-bindgen-shared v0.2.104`
+error: failed to run custom build command for `rustversion v1.0.22`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
 Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/wasm-bindgen-shared/d49da21ae6e4acea/out/build_script_build` (never executed)
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/rustversion/40be1d7cd574670a/out/build_script_build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
+error: failed to run custom build command for `getrandom v0.1.16`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/getrandom/91dd4f82aa10d016/out/build_script_build` (never executed)
 
 Caused by:
   Permission denied (os error 13)
    Compiling const_fn v0.4.11
-   Compiling time v0.2.27
-   Compiling crc32fast v1.5.0
 error: failed to run custom build command for `standback v0.2.17`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
@@ -278,6 +267,16 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
+   Compiling time v0.2.27
+   Compiling crc32fast v1.5.0
+error: failed to run custom build command for `wasm-bindgen-shared v0.2.104`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/wasm-bindgen-shared/d49da21ae6e4acea/out/build_script_build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
 error: failed to run custom build command for `time v0.2.27`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
@@ -286,6 +285,7 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
+   Compiling paste v1.0.15
 error: failed to run custom build command for `crc32fast v1.5.0`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
@@ -296,15 +296,14 @@ Caused by:
   Permission denied (os error 13)
    Compiling serde_json v1.0.145
    Compiling bytecheck v0.6.12
-   Compiling paste v1.0.15
    Compiling parking_lot_core v0.9.11
    Compiling ahash v0.7.8
    Compiling cookie v0.14.4
-error: failed to run custom build command for `serde_json v1.0.145`
+error: failed to run custom build command for `bytecheck v0.6.12`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
 Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/serde_json/a61f8fdb2e20bb60/out/build_script_build` (never executed)
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/bytecheck/c9ecc35072cfec35/out/build_script_build` (never executed)
 
 Caused by:
   Permission denied (os error 13)
@@ -324,14 +323,6 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
-error: failed to run custom build command for `bytecheck v0.6.12`
-note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
-
-Caused by:
-  could not execute process `/root/midscore_io/sl_relay/target/debug/build/bytecheck/c9ecc35072cfec35/out/build_script_build` (never executed)
-
-Caused by:
-  Permission denied (os error 13)
 error: failed to run custom build command for `ahash v0.7.8`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
@@ -340,8 +331,15 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
-   Compiling rend v0.4.2
    Compiling rav1e v0.7.1
+error: failed to run custom build command for `serde_json v1.0.145`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  could not execute process `/root/midscore_io/sl_relay/target/debug/build/serde_json/a61f8fdb2e20bb60/out/build_script_build` (never executed)
+
+Caused by:
+  Permission denied (os error 13)
 error: failed to run custom build command for `cookie v0.14.4`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
@@ -351,6 +349,7 @@ Caused by:
 Caused by:
   Permission denied (os error 13)
    Compiling http-types v2.12.0
+   Compiling rend v0.4.2
 error: failed to run custom build command for `rav1e v0.7.1`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
@@ -367,6 +366,7 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
+   Compiling mime_guess v2.0.5
 error: failed to run custom build command for `http-types v2.12.0`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
 
@@ -375,7 +375,6 @@ Caused by:
 
 Caused by:
   Permission denied (os error 13)
-   Compiling mime_guess v2.0.5
    Compiling rkyv v0.7.45
 error: failed to run custom build command for `mime_guess v2.0.5`
 note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.

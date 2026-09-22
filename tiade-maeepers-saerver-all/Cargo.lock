@@ -3546,11 +3546,10 @@ dependencies = [
 
 [[package]]
 name = "tiade_ollama_relay"
-version = "3.0.0"
+version = "0.1.0"
 dependencies = [
  "async-std",
  "chrono",
- "partitioned_array_rust",
  "serde",
  "serde_json",
  "surf",
